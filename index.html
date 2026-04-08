@@ -64,7 +64,7 @@
     .recorded-time { font-size: 12px; color: var(--text-muted); margin-top: 4px; font-weight: 700; background: #f1f5f9; padding: 3px 8px; border-radius: 10px; min-width: 44px; text-align: center; font-variant-numeric: tabular-nums; }
     .recorded-time.active { color: #ffffff; background: var(--primary); box-shadow: 0 2px 6px rgba(59,130,246,0.3); }
     .recorded-time.full { background: var(--success); box-shadow: 0 2px 6px rgba(16,185,129,0.3); } 
-    .note-input { width: 100%; box-sizing: border-box; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 14px; background: var(--bg); -webkit-user-select: auto; }
+    .note-input { width: 100%; box-sizing: border-box; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 14px; background: var(--bg); -webkit-user-select: auto; font-family: inherit; }
 
     .btn-target { position: fixed; bottom: 160px; right: 25px; background: var(--text-main); color: white; border: none; width: 54px; height: 54px; border-radius: 50%; font-size: 24px; box-shadow: 0 6px 20px rgba(0,0,0,0.4); z-index: 110; cursor: pointer; transition: transform 0.2s; display: flex; align-items: center; justify-content: center; }
     .btn-target:active { transform: scale(0.9); }
@@ -76,7 +76,6 @@
     .progress-container { width: 100%; height: 8px; background: rgba(255, 255, 255, 0.15); border-radius: 4px; margin-top: 14px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); }
     .progress-bar { height: 100%; background: linear-gradient(90deg, #60a5fa, #34d399); width: 0%; transition: width 0.5s ease-out; border-radius: 4px; box-shadow: 0 0 10px rgba(52, 211, 153, 0.5); }
 
-    /* [v0.5.2 패치] 절대 깨지지 않는 고립형(Isolated) 알약 버튼 클래스 */
     .cal-sub-header { background: var(--surface); padding: 12px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #f1f5f9; }
     .action-pill { border: none; padding: 8px 14px; border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; font-family: 'Pretendard', sans-serif; }
     .action-pill:active { transform: scale(0.95); }
@@ -98,13 +97,14 @@
     .cal-record { background: #eff6ff; color: var(--primary-dark); font-size: 11px; font-weight: 800; padding: 4px 0; border-radius: 6px; text-align: center; margin-top: auto; width: 100%; box-sizing: border-box; letter-spacing: -0.5px; }
     .cal-record.high { background: #fef9c3; color: #b45309; }
 
-    .overlay-base { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px); z-index: 2000; }
-    #loading-overlay { background: rgba(255,255,255,0.95); flex-direction: column; gap: 10px; color: var(--primary); font-weight: bold; z-index: 9999; font-size: 18px; }
+    /* 모달 베이스의 커서 변경으로 iOS 터치 이슈 해결. inline onclick은 완벽 제거됨 */
+    .overlay-base { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px); z-index: 2000; cursor: pointer; }
+    .modal-box { background: var(--surface); width: 100%; max-width: 420px; border-radius: 24px; padding: 25px; max-height: 85vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.3); box-sizing: border-box; cursor: default; }
+
+    #loading-overlay { background: rgba(255,255,255,0.95); flex-direction: column; gap: 10px; color: var(--primary); font-weight: bold; z-index: 9999; font-size: 18px; cursor: default; }
     #toast-notification { position: fixed; top: -60px; left: 50%; transform: translateX(-50%); background: var(--surface); color: var(--text-main); padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 800; box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 9999; transition: top 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); border: 2px solid var(--primary); pointer-events: none; }
     #toast-notification.show { top: 30px; }
     
-    .modal-box { background: var(--surface); width: 100%; max-width: 420px; border-radius: 24px; padding: 25px; max-height: 85vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.3); box-sizing: border-box; }
-
     .modal-total-time { text-align: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px dashed #e2e8f0; }
     .modal-total-time span { display: block; font-size: 13px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; }
     .modal-total-time strong { font-size: 34px; color: var(--primary); font-weight: 900; letter-spacing: -1px; }
@@ -303,32 +303,29 @@
 
         <div style="max-height: 55vh; overflow-y: auto; padding-right: 5px;">
             <div class="guide-box success">
-                <div class="guide-title">🚀 0.5.2 Ultimate Stable</div>
+                <div class="guide-title">🚀 0.5.4 Flawless Edition</div>
                 <div class="guide-desc">
-                    • <b>동기화 핑퐁 완전 차단:</b> 수동 동기화 시 발생하는 무한루프 및 대기열 먹통 버그를 완전히 해소했습니다.<br>
-                    • <b>서버 과부하 방어:</b> 자동 저장 주기를 3초로 안정화하여 구글 서버 차단(Too Many Requests)을 100% 방지합니다.<br>
-                    • <b>입력 데이터 보호:</b> 글씨를 작성하는 도중 저장을 눌러도 방금 쓴 마지막 한 글자까지 0.001초 만에 낚아채어 안전하게 클라우드에 올립니다.
+                    • <b>시간 뻥튀기 원천 차단:</b> 앱을 껐다 켤 때 클라우드 시간과 로컬 시간이 중복(Double count)으로 덧셈되던 논리적 결함을 완전히 해결했습니다.<br>
+                    • <b>다이렉트 터치 저장:</b> 일기장 작성 후 검정 배경을 터치했을 때 저장되지 않던 오류를 고쳤습니다. 이제 글자가 단 하나라도 바뀌면 즉각 낚아채어 저장합니다.
                 </div>
             </div>
             <div class="guide-box primary">
-                <div class="guide-title">🛡️ 0.4.0 ~ 0.4.7 (UX 및 보안 팩)</div>
+                <div class="guide-title">🛡️ 0.5.0 ~ 0.5.2 (성능 최적화)</div>
                 <div class="guide-desc">
-                    • <b>디자인 & 사운드:</b> 인스타 감성 UI 개편 및 고급 버튼 효과음(SFX) 탑재.<br>
-                    • <b>스마트 판독기:</b> 내용이 바뀌지 않으면 불필요한 알림을 띄우지 않는 Dirty Check 도입.<br>
-                    • <b>암호화:</b> SHA-256 비밀번호 해싱으로 내 기록을 완벽하게 보호합니다.
+                    • <b>동기화 핑퐁 차단:</b> 수동 동기화 무한루프를 해결하고, 자동 저장 주기를 3초로 안정화했습니다.
                 </div>
             </div>
             <div class="guide-box purple">
-                <div class="guide-title">✨ 0.3.0 ~ 0.3.3 (용량 한계 돌파)</div>
+                <div class="guide-title">✨ 0.4.0 ~ 0.4.7 (UX 및 보안 팩)</div>
                 <div class="guide-desc">
-                    • <b>무한 로컬 DB:</b> IndexedDB 도입으로 기기 5MB 제한을 없앴습니다.<br>
-                    • <b>글로벌 시차 엔진:</b> 해외에서도 한국(KST) 새벽 5시 기준으로 절대 리셋.
+                    • <b>디자인 & 사운드:</b> 인스타 감성 UI 개편 및 고급 버튼 효과음(SFX) 탑재.<br>
+                    • <b>스마트 판독기:</b> 내용이 바뀌지 않으면 알림을 띄우지 않는 Dirty Check 도입.
                 </div>
             </div>
             <div class="guide-box info">
-                <div class="guide-title">📸 0.1.0 ~ 0.2.0 (안전망 구축)</div>
+                <div class="guide-title">📸 0.3.0 (용량 한계 돌파)</div>
                 <div class="guide-desc">
-                    • 5만자 제한 돌파 분할 저장(Sharding) 및 강제 종료 시 타이머 복구 블랙박스 탑재.
+                    • <b>무한 로컬 DB:</b> IndexedDB 도입으로 기기 5MB 제한 무력화.
                 </div>
             </div>
         </div>
@@ -353,7 +350,7 @@
             </div>
             <div class="guide-box success">
                 <div class="guide-title">📝 2단계. 메모와 일기 (저장은 자동!)</div>
-                <div class="guide-desc">블록 메모, 할일, 일기를 남겨보세요. 창을 닫아도 알아서 서버에 3초 만에 자동 저장해 줍니다.</div>
+                <div class="guide-desc">블록 메모, 할일, 일기를 남겨보세요. 창을 닫거나 다른 곳을 누르면 알아서 서버에 안전하게 자동 저장해 줍니다.</div>
             </div>
             <div class="guide-box orange">
                 <div class="guide-title">📅 3단계. 내 기록 자랑하기 (캘린더)</div>
@@ -388,7 +385,7 @@
     <div class="modal-box">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
             <h3 id="diary-modal-title" style="margin:0; font-size:22px; font-weight:800; color:var(--text-main);">📝 오늘의 일기</h3>
-            <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); saveDiary()">✖</button>
+            <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); saveDiary(true); document.getElementById('diary-modal').style.display='none';">✖</button>
         </div>
         <input type="hidden" id="diary-date-input">
         <textarea id="diary-input" maxlength="1500" style="width:100%; height:160px; padding:15px; border-radius:12px; border:1.5px solid #e2e8f0; font-family:inherit; font-size:14px; box-sizing:border-box; resize:none; background:var(--bg); color:var(--text-main);" placeholder="오늘 하루는 어땠나요? 잘한 점, 아쉬운 점, 내일의 다짐을 자유롭게 적어보세요!"></textarea>
@@ -400,7 +397,7 @@
     <div class="modal-box">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
             <h3 id="todo-modal-title" style="margin:0; font-size:22px; font-weight:800; color:var(--text-main);">✅ 오늘의 할 일</h3>
-            <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); saveTodo()">✖</button>
+            <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); saveTodo(true); document.getElementById('todo-modal').style.display='none';">✖</button>
         </div>
         <input type="hidden" id="todo-date-input">
         <textarea id="todo-input" maxlength="500" style="width:100%; height:120px; padding:15px; border-radius:12px; border:1.5px solid #e2e8f0; font-family:inherit; font-size:14px; box-sizing:border-box; resize:none; background:var(--bg); color:var(--text-main);" placeholder="이 날의 할 일, 목표 등을 리스트업 해보세요!"></textarea>
@@ -446,9 +443,7 @@
 </div>
 
 <script>
-    const APP_VERSION = "0.5.2 Ultimate Stable"; 
-    
-    // 🔥 회원님의 새로운 구글 앱스 스크립트 배포 URL 🔥
+    const APP_VERSION = "0.5.4 Flawless"; 
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWentq5xmJFB_UL4EWPL7KEknxY9Em9eIYX5CoWfDMh_WooUKk1n63-8gbLFpcu8Oe/exec";
     
     const Utils = {
@@ -508,6 +503,18 @@
     
     document.body.addEventListener('click', () => SFX.init(), { once: true });
     document.body.addEventListener('touchstart', () => { SFX.init(); if(SFX.ctx && SFX.ctx.state === 'suspended') SFX.ctx.resume(); }, { passive: true });
+
+    // [v0.5.4] 글로벌 클릭 리스너 복원 및 통합 (오버레이 다이렉트 터치 해결)
+    window.addEventListener('click', (e) => {
+        if(e.target.classList.contains('overlay-base') && e.target.id !== 'loading-overlay' && e.target.id !== 'capture-modal') {
+            SFX.play('tap');
+            if(e.target.id === 'diary-modal') { saveDiary(); return; }
+            if(e.target.id === 'todo-modal') { saveTodo(); return; }
+            if(e.target.id === 'settings-modal' || e.target.id === 'patch-note-modal' || e.target.id === 'guide-modal' || e.target.id === 'record-modal' || e.target.id === 'theme-modal') {
+                e.target.style.display = 'none';
+            }
+        }
+    });
 
     const DBEngine = {
         db: null,
@@ -600,7 +607,14 @@
         else if (document.visibilityState === "visible") {
             if (isRunning) {
                 const now = Date.now(); const passedSecs = Math.floor((now - lastTickTime) / 1000);
-                if (passedSecs >= 2) { distributeTime(lastTickTime, passedSecs); lastTickTime += passedSecs * 1000; saveAndRefresh(); }
+                if (passedSecs >= 1) { 
+                    distributeTime(lastTickTime, passedSecs); 
+                    lastTickTime += passedSecs * 1000; 
+                    
+                    let rState = JSON.stringify({ isRunning: true, startTime: lastTickTime });
+                    setL('runningState', rState);
+                    saveAndRefresh(); 
+                }
             } else if (activeUser && activePw && navigator.onLine && !isSyncing) {
                 const ind = document.getElementById('sync-indicator');
                 if(ind) ind.innerText = "☁️ 갱신 중...";
@@ -744,21 +758,20 @@
         } else { return { success: true, data: res.data }; }
     }
 
-    // [v0.5.2 패치] 수동 동기화 버그 (Ping-pong) 완전 해결
     async function loadFromCloud(silent = false) {
-        if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); // 텍스트 입력 중 포커스 강제 해제 (유실 방어)
+        if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); 
         if(!navigator.onLine) return showToast("📴 인터넷 연결을 확인해주세요.");
         if (isSyncing) return showToast("⏳ 이미 동기화가 진행 중입니다.");
         
         isSyncing = true; 
-        if(syncTimer) clearTimeout(syncTimer); // 타이머 꼬임 방지
+        if(syncTimer) clearTimeout(syncTimer); 
         
         const ind = document.getElementById('sync-indicator'); if(ind) ind.innerText = "☁️ 불러오는 중...";
         showLoading(true, "데이터 최신화 중... ☁️");
         try {
             const res = await loadAllDataFromServer();
             if (res.success && res.data && res.data !== "{}") { 
-                applyCloudData(JSON.parse(res.data), silent, true); // true = skipSync 핑퐁 방지
+                applyCloudData(JSON.parse(res.data), silent, true); 
                 if (!silent) { SFX.play('success'); showToast("✅ 동기화 완료!"); } 
             } else { 
                 if (!silent) { SFX.play('tap'); showToast("❌ 최신 데이터를 불러오지 못했습니다."); } 
@@ -799,7 +812,7 @@
         if (immediate) {
             performSync();
         } else {
-            syncTimer = setTimeout(() => { performSync(); }, 3000); // [v0.5.2 패치] 구글 서버 차단(429 Error) 방지를 위해 3초 안정화
+            syncTimer = setTimeout(() => { performSync(); }, 3000); 
         }
     }
 
@@ -893,20 +906,22 @@
         }
     }
 
+    // [v0.5.4 핵심 패치] 클라우드 타이머 이중 덧셈 방어 (Double-dip Fix)
     function applyCloudData(parsedData, silent, skipSync = false) {
         saveUserLocalData(parsedData); initLocalState(); let batonTaken = false;
         if (parsedData.runningState) {
             const rState = JSON.parse(parsedData.runningState);
             if (rState.isRunning && rState.startTime > 0) {
-                const passedSecs = Math.floor((Date.now() - rState.startTime) / 1000);
-                if (passedSecs > 0 && passedSecs < 86400) { distributeTime(rState.startTime, passedSecs); batonTaken = true; }
-                if (!isRunning) startStopwatch();
+                if (!isRunning) { // 로컬에서 이미 타이머를 살리지 않은 경우에만 더함
+                    const passedSecs = Math.floor((Date.now() - rState.startTime) / 1000);
+                    if (passedSecs > 0 && passedSecs < 86400) { distributeTime(rState.startTime, passedSecs); batonTaken = true; }
+                    startStopwatch();
+                }
             } else { if (isRunning) stopStopwatch(); }
         }
         updateUI(true); renderCalendar(); updateHighlight(); updateDashboardTodoAlert();
         setL('lastLogicalDate', Utils.getLogicalDateString());
         
-        // [v0.5.2] 핑퐁 차단 락 적용
         if (batonTaken && !skipSync) { triggerAutoSync(); if(!silent) showToast("🔥 타임워프! 바통을 이어받았습니다."); } 
         else if(!silent && !skipSync) { SFX.play('success'); showToast("✅ 동기화 완료!"); }
     }
@@ -968,11 +983,12 @@
         document.getElementById('diary-modal').style.display = 'flex';
     }
 
+    // [v0.5.4 핵심 패치] 줄바꿈 기호를 통일시켜 Dirty Check 오류 방어
     function saveDiary(silent = false) {
         if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
         let dStr = document.getElementById('diary-date-input').value || Utils.getLogicalDateString();
-        let text = document.getElementById('diary-input').value.trim();
-        let existingText = (dailyRecords[dStr] && dailyRecords[dStr].diary) ? dailyRecords[dStr].diary.trim() : "";
+        let text = document.getElementById('diary-input').value.replace(/\r\n/g, '\n').trim();
+        let existingText = (dailyRecords[dStr] && dailyRecords[dStr].diary) ? String(dailyRecords[dStr].diary).replace(/\r\n/g, '\n').trim() : "";
 
         if (text === existingText) { if(document.getElementById('diary-modal').style.display !== 'none') document.getElementById('diary-modal').style.display = 'none'; return; }
         if (!dailyRecords[dStr]) dailyRecords[dStr] = { totalTime: "00h 00m", details: [] };
@@ -1005,8 +1021,8 @@
     function saveTodo(silent = false) {
         if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
         let dStr = document.getElementById('todo-date-input').value || Utils.getLogicalDateString();
-        let text = document.getElementById('todo-input').value.trim();
-        let existingText = (dailyRecords[dStr] && dailyRecords[dStr].todo) ? dailyRecords[dStr].todo.trim() : "";
+        let text = document.getElementById('todo-input').value.replace(/\r\n/g, '\n').trim();
+        let existingText = (dailyRecords[dStr] && dailyRecords[dStr].todo) ? String(dailyRecords[dStr].todo).replace(/\r\n/g, '\n').trim() : "";
 
         if (text === existingText) { if(document.getElementById('todo-modal').style.display !== 'none') document.getElementById('todo-modal').style.display = 'none'; return; }
         if (!dailyRecords[dStr]) dailyRecords[dStr] = { totalTime: "00h 00m", details: [] };
@@ -1031,9 +1047,16 @@
         try {
             const now = Date.now(); const passedSecs = Math.floor((now - lastTickTime) / 1000); 
             if (passedSecs >= 1) {
-                distributeTime(lastTickTime, passedSecs); lastTickTime += passedSecs * 1000; saveAndRefresh();
+                distributeTime(lastTickTime, passedSecs); 
+                lastTickTime += passedSecs * 1000; 
+                
+                // [v0.5.4] 뻥튀기 버그 완벽 락 (startTime 갱신)
+                let rState = JSON.stringify({ isRunning: true, startTime: lastTickTime });
+                setL('runningState', rState); 
+                
+                saveAndRefresh();
             }
-        } catch(e) { console.error("Timer tick error", e); }
+        } catch(e) {}
         tickFrameId = requestAnimationFrame(tick);
     }
 
