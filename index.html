@@ -23,61 +23,88 @@
         --primary: #3b82f6; --primary-dark: #2563eb; --bg: #f8fafc; 
         --surface: #ffffff; --text-main: #1e293b; --text-muted: #64748b; 
         --success: #10b981; --warning: #fef08a; --warning-text: #b45309; 
+        --target: #8b5cf6; 
+        --target-light: #f5f3ff;
     }
     html, body { overscroll-behavior: none; overflow-x: hidden; width: 100%; margin: 0; padding: 0; scroll-behavior: smooth; }
     body { font-family: 'Pretendard', sans-serif; background-color: var(--bg); display: flex; flex-direction: column; align-items: center; padding-bottom: 180px; -webkit-user-select: none; }
     .view-layer { width: 100%; display: none; flex-direction: column; align-items: center; }
     .container { background: var(--surface); width: 100%; max-width: 600px; min-height: 100vh; box-shadow: 0 4px 20px rgba(0,0,0,0.05); position: relative; overflow-x: hidden; }
 
-    .input-field { width: 100%; box-sizing: border-box; padding: 14px; margin-bottom: 16px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 15px; background: var(--bg); transition: all 0.2s; }
+    .input-field { width: 100%; box-sizing: border-box; padding: 14px; margin-bottom: 16px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 15px; background: var(--bg); transition: all 0.2s; font-family: inherit; }
     .input-field:focus { outline: none; border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 4px rgba(59,130,246,0.1); }
-    .btn-primary { background: var(--primary); color: white; border: none; padding: 16px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
+    .btn-primary { background: var(--primary); color: white; border: none; padding: 16px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 12px rgba(59,130,246,0.3); touch-action: manipulation; }
     .btn-primary:active { transform: scale(0.98); }
 
     #login-view, #dashboard-view { justify-content: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
     .auth-box { background: var(--surface); padding: 40px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); width: 100%; max-width: 360px; text-align: center; }
     .auth-box h1 { font-size: 26px; color: var(--text-main); margin-bottom: 8px; font-weight: 800; }
     
-    .dash-card { background: var(--surface); padding: 50px 30px; border-radius: 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.08); width: 100%; max-width: 380px; text-align: center; position: relative; }
-    .dash-today-summary { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 16px; padding: 20px; margin-bottom: 30px; }
+    .dash-card { background: var(--surface); padding: 40px 30px; border-radius: 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.08); width: 100%; max-width: 380px; text-align: center; position: relative; }
+    .dash-today-summary { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 16px; padding: 20px; margin-bottom: 30px; display: flex; flex-direction: column; gap: 10px; }
     .dash-today-summary strong { font-size: 36px; color: var(--primary); font-variant-numeric: tabular-nums; font-weight: 900; letter-spacing: -1px; }
-    .dash-btn { width: 100%; padding: 20px; border-radius: 16px; font-size: 16px; font-weight: 800; border: none; cursor: pointer; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; transition: transform 0.2s;}
+    
+    .dash-btn { width: 100%; padding: 20px; border-radius: 16px; font-size: 16px; font-weight: 800; border: none; cursor: pointer; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; transition: transform 0.2s; touch-action: manipulation;}
     .dash-btn:active { transform: scale(0.96); }
-    .dash-btn-outline { width: 100%; padding: 18px; border-radius: 16px; font-size: 15px; font-weight: 800; border: 2px solid #e2e8f0; background: var(--surface); color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; margin-top: 15px; }
+    .dash-btn-outline { width: 100%; padding: 18px; border-radius: 16px; font-size: 15px; font-weight: 800; border: 2px solid #e2e8f0; background: var(--surface); color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; margin-top: 15px; touch-action: manipulation;}
     .dash-btn-outline:active { background: #f8fafc; transform: scale(0.98); }
     
-    #todo-alert-banner { display:none; width: 100%; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 16px; padding: 16px; margin-bottom: 25px; text-align: left; cursor: pointer; box-sizing: border-box; box-shadow: 0 4px 12px rgba(59,130,246,0.1); transition: transform 0.2s; }
+    #todo-alert-banner { display:none; width: 100%; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 16px; padding: 16px; margin-bottom: 25px; text-align: left; cursor: pointer; box-sizing: border-box; box-shadow: 0 4px 12px rgba(59,130,246,0.1); transition: transform 0.2s; touch-action: manipulation;}
     #todo-alert-banner:active { transform: scale(0.98); }
+
+    /* [v0.5.11] 홈 화면 디데이 배지 스타일 */
+    .dday-badge { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 8px 14px; border-radius: 14px; font-size: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3); transition: transform 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+    .dday-badge:active { transform: scale(0.95); box-shadow: 0 2px 5px rgba(139, 92, 246, 0.2); }
 
     .fixed-header { position: fixed; top: 0; left: 50%; transform: translateX(-50%); z-index: 150; background: var(--text-main); color: white; padding: 15px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 100%; max-width: 600px; box-sizing: border-box; }
     .cal-fixed-wrap { position: fixed; top: 0; left: 50%; transform: translateX(-50%); z-index: 150; width: 100%; max-width: 600px; box-sizing: border-box; box-shadow: 0 10px 25px rgba(0,0,0,0.2); background: var(--surface); }
     
     .action-row { display: flex; justify-content: center; gap: 8px; width: 100%; margin-top: 12px; }
-    .btn-action { flex: 1; border: none; padding: 12px 0; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; white-space: nowrap; transition: transform 0.1s; }
+    .btn-action { flex: 1; border: none; padding: 12px 0; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; white-space: nowrap; transition: transform 0.1s; touch-action: manipulation;}
     .btn-action:active { transform: scale(0.96); }
     
-    .list-wrapper { padding: 10px; width: 100%; box-sizing: border-box; }
-    .list-item { display: flex; padding: 16px 10px; border-bottom: 1px solid #f1f5f9; align-items: center; border-radius: 16px; transition: background-color 0.3s; }
-    .list-item.current { background-color: #fef9c3; box-shadow: inset 4px 0 0 #eab308; }
-    input[type="checkbox"] { width: 24px; height: 24px; cursor: pointer; accent-color: var(--primary); margin: 0 10px 0 0; }
-    .time-col { display: flex; flex-direction: column; align-items: center; width: 60px; flex-shrink: 0; margin-right: 10px;}
-    .recorded-time { font-size: 12px; color: var(--text-muted); margin-top: 4px; font-weight: 700; background: #f1f5f9; padding: 3px 8px; border-radius: 10px; min-width: 44px; text-align: center; font-variant-numeric: tabular-nums; }
+    .list-wrapper { padding: 8px; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px; }
+    
+    .list-item { display: flex; padding: 10px 8px; align-items: center; border-radius: 14px; background: var(--surface); border: 1px solid #f1f5f9; transition: background-color 0.3s, border-color 0.2s; }
+    .list-item.planned { background-color: var(--target-light); border-color: #ddd6fe; box-shadow: inset 3px 0 0 var(--target); }
+    .list-item.current { background-color: #fef9c3 !important; border-color: #fef08a; box-shadow: inset 3px 0 0 #eab308 !important; }
+    
+    .controls-wrap { display: flex; flex-direction: row; gap: 6px; margin-right: 10px; align-items: center; flex-shrink: 0; }
+    .cb-icon-box { position: relative; width: 28px; height: 28px; border-radius: 8px; border: 1.5px solid #e2e8f0; background: #f8fafc; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; touch-action: manipulation; }
+    .cb-icon-box input { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; margin: 0; z-index: 2; }
+    .cb-icon-box span { font-size: 14px; opacity: 0.4; transition: opacity 0.2s; }
+    
+    .cb-icon-box.target.active { background: var(--target); border-color: var(--target); }
+    .cb-icon-box.target.active span { opacity: 1; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+    
+    .cb-icon-box.done.active { background: var(--primary); border-color: var(--primary); }
+    .cb-icon-box.done.active span { opacity: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2)); }
+    
+    .time-col { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 44px; flex-shrink: 0; margin-right: 8px;}
+    .time { font-size: 14px; font-weight: 900; color: var(--text-main); letter-spacing: -0.5px; }
+    .recorded-time { font-size: 10px; color: var(--text-muted); margin-top: 2px; font-weight: 800; background: #f1f5f9; padding: 2px 6px; border-radius: 8px; width: 100%; text-align: center; box-sizing: border-box; font-variant-numeric: tabular-nums; }
     .recorded-time.active { color: #ffffff; background: var(--primary); box-shadow: 0 2px 6px rgba(59,130,246,0.3); }
     .recorded-time.full { background: var(--success); box-shadow: 0 2px 6px rgba(16,185,129,0.3); } 
-    .note-input { width: 100%; box-sizing: border-box; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 14px; background: var(--bg); -webkit-user-select: auto; font-family: inherit; }
+    
+    .text-wrapper { flex-grow: 1; min-width: 0; }
+    .note-input { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1.5px solid transparent; border-radius: 10px; font-size: 13.5px; background: transparent; -webkit-user-select: auto; font-family: inherit; transition: border-color 0.2s, background 0.2s; }
+    .note-input:focus { outline: none; border-color: var(--primary); background: var(--surface); }
+    .note-input::placeholder { color: #94a3b8; }
 
-    .btn-target { position: fixed; bottom: 160px; right: 25px; background: var(--text-main); color: white; border: none; width: 54px; height: 54px; border-radius: 50%; font-size: 24px; box-shadow: 0 6px 20px rgba(0,0,0,0.4); z-index: 110; cursor: pointer; transition: transform 0.2s; display: flex; align-items: center; justify-content: center; }
+    .btn-target { position: fixed; bottom: 160px; right: 25px; background: var(--text-main); color: white; border: none; width: 54px; height: 54px; border-radius: 50%; font-size: 24px; box-shadow: 0 6px 20px rgba(0,0,0,0.4); z-index: 110; cursor: pointer; transition: transform 0.2s; display: flex; align-items: center; justify-content: center; touch-action: manipulation;}
     .btn-target:active { transform: scale(0.9); }
 
     #stopwatch-popup { display: none; position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 400px; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: white; padding: 16px 24px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); z-index: 100; box-sizing: border-box; border: 1px solid rgba(255,255,255,0.1); }
-    .timer-btn { background: var(--primary); color: white; border: none; width: 50px; height: 50px; border-radius: 25px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(59,130,246,0.4); }
+    .timer-btn { background: var(--primary); color: white; border: none; width: 50px; height: 50px; border-radius: 25px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(59,130,246,0.4); transition: opacity 0.2s; touch-action: manipulation; }
+    .timer-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .timer-btn.running { background: #ef4444; box-shadow: 0 4px 15px rgba(239,68,68,0.4); animation: pulse 2s infinite; }
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+    
     .progress-container { width: 100%; height: 8px; background: rgba(255, 255, 255, 0.15); border-radius: 4px; margin-top: 14px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); }
     .progress-bar { height: 100%; background: linear-gradient(90deg, #60a5fa, #34d399); width: 0%; transition: width 0.5s ease-out; border-radius: 4px; box-shadow: 0 0 10px rgba(52, 211, 153, 0.5); }
 
     .cal-sub-header { background: var(--surface); padding: 12px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #f1f5f9; }
-    .action-pill { border: none; padding: 8px 14px; border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; font-family: 'Pretendard', sans-serif; }
+    .action-pill { border: none; padding: 8px 14px; border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; font-family: 'Pretendard', sans-serif; touch-action: manipulation;}
     .action-pill:active { transform: scale(0.95); }
     .action-pill-gray { background: #f1f5f9; color: #475569; }
     .action-pill-blue { background: #eff6ff; color: #3b82f6; border: 1px solid #bfdbfe; }
@@ -86,18 +113,23 @@
     .cal-weekdays { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); text-align: center; padding: 12px 0; font-size: 12px; font-weight: 900; color: var(--text-muted); width: 100%; box-sizing: border-box; background: var(--bg); border-bottom: 1px solid #f1f5f9; }
     .cal-weekdays .sun { color: #ef4444; }
     .cal-weekdays .sat { color: #3b82f6; }
+    
     .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; padding: 10px; background: var(--bg); width: 100%; box-sizing: border-box; }
-    .cal-day { background: var(--surface); min-height: 85px; padding: 8px 4px; border-radius: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); box-sizing: border-box; position: relative; transition: transform 0.1s; }
+    .cal-day { background: var(--surface); min-height: 80px; padding: 4px; border-radius: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; box-shadow: 0 2px 4px rgba(0,0,0,0.02); box-sizing: border-box; position: relative; transition: transform 0.1s; touch-action: manipulation; border: 1px solid transparent; }
     .cal-day:active { transform: scale(0.96); }
-    .cal-day.today { border: 2px solid var(--primary); background: #f8fafc; }
+    .cal-day.today { border: 1.5px solid var(--primary); background: #f8fafc; }
     .cal-day.empty { background: transparent; box-shadow: none; cursor: default; }
-    .date-num { font-size: 14px; font-weight: bold; color: var(--text-main); margin-bottom: 4px; }
+    
+    .date-num { font-size: 13px; font-weight: 900; color: var(--text-main); align-self: flex-start; padding-left: 2px; margin-bottom: auto; z-index: 2; }
     .date-num.sun { color: #ef4444; }
     .date-num.sat { color: #3b82f6; }
-    .cal-record { background: #eff6ff; color: var(--primary-dark); font-size: 11px; font-weight: 800; padding: 4px 0; border-radius: 6px; text-align: center; margin-top: auto; width: 100%; box-sizing: border-box; letter-spacing: -0.5px; }
-    .cal-record.high { background: #fef9c3; color: #b45309; }
+    
+    .cal-badge-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%; padding-bottom: 2px; margin-top: 4px; }
+    .cal-badge { font-size: 10px; font-weight: 800; padding: 2px 0; border-radius: 4px; width: 100%; text-align: center; letter-spacing: -0.5px; white-space: nowrap; line-height: 1.1; font-variant-numeric: tabular-nums; }
+    .cal-badge.target { color: var(--target); background: transparent; }
+    .cal-badge.actual { color: #ffffff; background: var(--primary); font-weight: 900; margin-top: 1px; }
+    .cal-badge.actual.high { background: #ea580c; }
 
-    /* 모달 베이스의 커서 변경으로 iOS 터치 이슈 해결. inline onclick은 완벽 제거됨 */
     .overlay-base { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px); z-index: 2000; cursor: pointer; }
     .modal-box { background: var(--surface); width: 100%; max-width: 420px; border-radius: 24px; padding: 25px; max-height: 85vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.3); box-sizing: border-box; cursor: default; }
 
@@ -105,17 +137,22 @@
     #toast-notification { position: fixed; top: -60px; left: 50%; transform: translateX(-50%); background: var(--surface); color: var(--text-main); padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 800; box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 9999; transition: top 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); border: 2px solid var(--primary); pointer-events: none; }
     #toast-notification.show { top: 30px; }
     
-    .modal-total-time { text-align: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px dashed #e2e8f0; }
+    .modal-total-time { text-align: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px dashed #e2e8f0; display: flex; justify-content: space-around; }
+    .modal-total-time div { display: flex; flex-direction: column; align-items: center; }
     .modal-total-time span { display: block; font-size: 13px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; }
-    .modal-total-time strong { font-size: 34px; color: var(--primary); font-weight: 900; letter-spacing: -1px; }
+    .modal-total-time strong { font-size: 30px; color: var(--primary); font-weight: 900; letter-spacing: -1px; }
+    .modal-total-time strong.target-text { color: var(--target); }
+    
     .timeline { padding-left: 10px; border-left: 3px solid #e2e8f0; margin-left: 10px; padding-bottom: 10px; }
     .timeline-item { position: relative; padding-bottom: 20px; padding-left: 20px; }
     .timeline-item:last-child { padding-bottom: 0; }
     .timeline-item::before { content: ''; position: absolute; left: -29.5px; top: 0; width: 12px; height: 12px; border-radius: 50%; background: #cbd5e1; border: 4px solid var(--surface); }
     .timeline-item.focused::before { background: var(--primary); box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
+    .timeline-item.planned::before { background: var(--target); box-shadow: 0 0 0 2px rgba(139,92,246,0.2); }
     .tl-time { font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 6px; }
     .tl-content { background: var(--bg); padding: 12px 14px; border-radius: 12px; font-size: 14px; border: 1px solid #f1f5f9; }
     .tl-badge { display: inline-block; background: #eff6ff; color: var(--primary-dark); padding: 6px 10px; border-radius: 8px; font-weight: 800; font-size: 12px; letter-spacing: -0.5px;}
+    .tl-badge.target { background: #f5f3ff; color: #6d28d9; }
     .tl-note { color: var(--text-main); line-height: 1.5; font-weight: 500; word-break: break-word; white-space: pre-wrap;}
     .tl-empty-state { text-align: center; color: var(--text-muted); padding: 30px 0; font-weight: bold; }
 
@@ -123,17 +160,17 @@
     .guide-box.primary { border-left: 5px solid var(--primary); }
     .guide-box.success { border-left: 5px solid var(--success); }
     .guide-box.info { border-left: 5px solid #0ea5e9; }
-    .guide-box.purple { border-left: 5px solid #8b5cf6; }
+    .guide-box.purple { border-left: 5px solid var(--target); }
     .guide-box.orange { border-left: 5px solid #f97316; }
     .guide-title { font-size: 16px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; letter-spacing: -0.5px;}
     .guide-desc { font-size: 13.5px; color: var(--text-muted); line-height: 1.6; word-break: keep-all; font-weight: 500;}
 
-    #settings-modal, #patch-note-modal, #guide-modal { z-index: 2200; }
+    #settings-modal, #patch-note-modal, #guide-modal, #dday-modal { z-index: 2200; }
     #diary-modal, #todo-modal, #capture-modal { z-index: 2100; }
     #record-modal { z-index: 2000; }
 
     .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: #f8fafc; border-radius: 12px; margin-bottom: 10px; font-weight: 800; color: var(--text-main); }
-    .setting-btn { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; transition: background 0.2s;}
+    .setting-btn { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; transition: background 0.2s; touch-action: manipulation;}
     .setting-btn.off { background: #cbd5e1; color: white; }
 
     #insta-card-container { position: fixed; top: -9999px; left: -9999px; width: 1080px; height: 1500px; opacity: 0; pointer-events: none; z-index: -9999; }
@@ -163,12 +200,22 @@
 </div>
 
 <div id="dashboard-view" class="view-layer">
-    <div class="dash-card" style="margin-top:20px;">
-        <button style="position:absolute; top:20px; left:20px; border:none; background:#eff6ff; color:#3b82f6; padding:8px; border-radius:10px; font-size:18px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow: 0 2px 8px rgba(59,130,246,0.2);" onclick="SFX.play('pop'); document.getElementById('patch-note-modal').style.display='flex'">📢</button>
-        <button style="position:absolute; top:20px; right:20px; border:none; background:#f1f5f9; color:#475569; padding:8px; border-radius:10px; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('pop'); document.getElementById('settings-modal').style.display='flex'">⚙️</button>
+    <div class="dash-card" style="margin-top:20px; padding-top: 20px;">
         
-        <div style="font-size: 45px; margin-bottom: 15px; margin-top: 15px;">👋</div>
-        <h2 style="margin-bottom:20px;">반갑습니다,<br><span id="dash-user-name" style="color:var(--primary);">User</span>님!</h2>
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; width:100%; margin-bottom: 10px;">
+             <div id="dday-badge" onclick="SFX.play('pop'); openDdayModal()" class="dday-badge">
+                 ⏳ 디데이 설정 +
+             </div>
+             <div style="display:flex; gap:8px;">
+                 <button style="background:#eff6ff; color:#3b82f6; border:none; padding:8px; border-radius:10px; font-size:16px; cursor:pointer;" onclick="SFX.play('pop'); document.getElementById('patch-note-modal').style.display='flex'; document.body.style.overflow='hidden';">📢</button>
+                 <button style="background:#f1f5f9; color:#475569; border:none; padding:8px; border-radius:10px; font-size:16px; cursor:pointer;" onclick="SFX.play('pop'); document.getElementById('settings-modal').style.display='flex'; document.body.style.overflow='hidden';">⚙️</button>
+             </div>
+        </div>
+        
+        <div style="display:flex; flex-direction:column; align-items:center; text-align:center;">
+            <div style="font-size: 40px; margin-bottom: 5px;">👋</div>
+            <h2 style="margin-bottom:25px; margin-top:0;">반갑습니다,<br><span id="dash-user-name" style="color:var(--primary);">User</span>님!</h2>
+        </div>
         
         <div id="todo-alert-banner" style="display:none;" onclick="SFX.play('tap'); teleportToTodo(this.dataset.targetDStr)">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
@@ -179,14 +226,20 @@
         </div>
 
         <div class="dash-today-summary">
-            <span>🔥 오늘 달린 시간</span>
-            <strong id="dash-today-time">00h 00m</strong>
+            <div style="display:flex; flex-direction:column; gap:4px;">
+                <span style="font-size:13px; color:var(--target); font-weight:800;">🎯 오늘의 목표 시간</span>
+                <strong id="dash-today-target" style="font-size:24px; color:var(--target);">00h 00m</strong>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:4px; margin-top:10px; padding-top:15px; border-top:1px dashed #cbd5e1;">
+                <span style="font-size:13px; color:var(--text-muted); font-weight:800;">🔥 오늘 달린 시간</span>
+                <strong id="dash-today-time">00h 00m</strong>
+            </div>
         </div>
         
         <button class="dash-btn" style="background:var(--primary); color:white; box-shadow: 0 8px 20px rgba(59,130,246,0.3);" onclick="SFX.play('tap'); switchView('study')">🔥 오늘의 달리기 시작</button>
         <button class="dash-btn" style="background:var(--warning); color:var(--warning-text); box-shadow: 0 8px 20px rgba(254,240,138,0.5);" onclick="SFX.play('tap'); switchView('calendar')">📅 내 전체 기록 보기</button>
         
-        <button class="dash-btn-outline" onclick="SFX.play('pop'); document.getElementById('guide-modal').style.display='flex'">📖 페이스메이커 사용 설명서</button>
+        <button class="dash-btn-outline" onclick="SFX.play('pop'); document.getElementById('guide-modal').style.display='flex'; document.body.style.overflow='hidden';">📖 페이스메이커 사용 설명서</button>
         
         <div style="margin-top: 25px; font-size: 12px; color: #94a3b8; font-weight: 700; letter-spacing: 0.5px;">
             Pacemaker Planner ver <span class="app-version-display"></span>
@@ -201,11 +254,11 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
                 <button style="background:rgba(255,255,255,0.15); border:none; color:white; padding:8px 12px; border-radius:10px; font-weight:bold; cursor:pointer;" onclick="SFX.play('tap'); switchView('dashboard')">🏠 홈</button>
                 <h2 style="margin:0; font-size:18px; letter-spacing:-0.5px;">🔥 페이스메이커</h2>
-                <button style="background:rgba(255,255,255,0.15); border:none; color:white; padding:8px 12px; border-radius:10px; font-size:14px; font-weight:bold; cursor:pointer;" onclick="SFX.play('pop'); document.getElementById('settings-modal').style.display='flex'">⚙️ 설정</button>
+                <button style="background:rgba(255,255,255,0.15); border:none; color:white; padding:8px 12px; border-radius:10px; font-size:14px; font-weight:bold; cursor:pointer;" onclick="SFX.play('pop'); document.getElementById('settings-modal').style.display='flex'; document.body.style.overflow='hidden';">⚙️ 설정</button>
             </div>
             <div class="action-row">
-                <button class="btn-action" style="background:#8b5cf6; color:white;" onclick="SFX.play('pop'); openDiaryModal(Utils.getLogicalDateString())">📝 일기</button>
-                <button class="btn-action" style="background:#0ea5e9; color:white;" onclick="SFX.play('pop'); openTodoModal(Utils.getLogicalDateString())">✅ 할일</button>
+                <button class="btn-action" style="background:#8b5cf6; color:white;" onclick="SFX.play('pop'); openTextModal('diary', Utils.getLogicalDateString())">📝 일기</button>
+                <button class="btn-action" style="background:#0ea5e9; color:white;" onclick="SFX.play('pop'); openTextModal('todo', Utils.getLogicalDateString())">✅ 할일</button>
                 <button id="btn-manual-save" class="btn-action" style="background:var(--success); color:white; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);" onclick="SFX.play('tap'); manualForceSave()">💾 저장</button>
             </div>
         </div>
@@ -221,6 +274,10 @@
         <div style="display: flex; align-items: center; gap: 16px;">
             <button id="toggle-timer-btn" class="timer-btn" onclick="toggleTimer()">▶</button>
             <div style="display: flex; flex-direction: column;">
+                <div style="font-size:11px; color:#c4b5fd; font-weight:800; margin-bottom:2px; display:flex; align-items:center;">
+                    <span id="popup-dday" style="background:var(--primary); color:white; padding:2px 4px; border-radius:4px; margin-right:4px; font-size:9px; display:none;"></span>
+                    🎯 목표 <span id="popup-target-time" style="margin-left:4px;">00h 00m</span>
+                </div>
                 <div style="display:flex; align-items:center;">
                     <span style="font-size:11px; color:#94a3b8; font-weight:800;">TOTAL STUDY TIME</span>
                     <span id="sync-indicator" style="font-size:11px; color:#cbd5e1; font-weight:bold; margin-left:8px;"></span>
@@ -245,14 +302,14 @@
                     <h3 id="cal-month-year" style="margin:0; font-size:18px; font-weight:800;">연월 표시</h3>
                     <button onclick="SFX.play('tap'); changeMonth(1)" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;">▶</button>
                 </div>
-                <button style="background:rgba(255,255,255,0.15); border:none; color:white; padding:8px 12px; border-radius:10px; font-size:14px; font-weight:bold; cursor:pointer;" onclick="SFX.play('pop'); document.getElementById('settings-modal').style.display='flex'">⚙️ 설정</button>
+                <button style="background:rgba(255,255,255,0.15); border:none; color:white; padding:8px 12px; border-radius:10px; font-size:14px; font-weight:bold; cursor:pointer;" onclick="SFX.play('pop'); document.getElementById('settings-modal').style.display='flex'; document.body.style.overflow='hidden';">⚙️ 설정</button>
             </div>
             
             <div class="cal-sub-header">
                 <button class="action-pill action-pill-gray" onclick="SFX.play('tap'); goToToday()">오늘로 이동</button>
                 <div style="display:flex; gap:8px;">
                     <button class="action-pill action-pill-blue" onclick="SFX.play('tap'); loadFromCloud(false)">☁️ 수동 동기화</button>
-                    <button class="action-pill action-pill-insta" onclick="SFX.play('pop'); document.getElementById('theme-modal').style.display='flex'">📸 인스타 캡처</button>
+                    <button class="action-pill action-pill-insta" onclick="SFX.play('pop'); document.getElementById('theme-modal').style.display='flex'; document.body.style.overflow='hidden';">📸 인스타 캡처</button>
                 </div>
             </div>
             <div class="cal-weekdays">
@@ -263,11 +320,29 @@
     </div>
 </div>
 
+<div id="dday-modal" class="overlay-base" onclick="if(event.target===this) { SFX.play('tap'); document.getElementById('dday-modal').style.display='none'; document.body.style.overflow=''; }">
+    <div class="modal-box">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h3 style="margin:0; font-size:22px; font-weight:800; color:var(--text-main);">⏳ 디데이 설정</h3>
+            <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); document.getElementById('dday-modal').style.display='none'; document.body.style.overflow='';">✖</button>
+        </div>
+        
+        <div style="font-size:13px; color:var(--text-muted); margin-bottom:6px; font-weight:700;">목표 시험/일정 이름</div>
+        <input type="text" id="dday-title-input" class="input-field" placeholder="예: 2차 경찰 채용 시험" maxlength="20" style="margin-bottom:15px;">
+        
+        <div style="font-size:13px; color:var(--text-muted); margin-bottom:6px; font-weight:700;">목표 날짜</div>
+        <input type="date" id="dday-date-input" class="input-field">
+        
+        <button class="btn-primary" style="margin-top:15px; background:linear-gradient(135deg, #6366f1, #8b5cf6); box-shadow: 0 4px 12px rgba(139,92,246,0.3);" onclick="SFX.play('tap'); saveDday()">💾 디데이 저장 및 동기화</button>
+        <button class="btn-action" style="margin-top:10px; background:#f1f5f9; color:#ef4444; width:100%; box-shadow:none; font-weight:bold;" onclick="SFX.play('tap'); clearDday()">🗑️ 설정 지우기</button>
+    </div>
+</div>
+
 <div id="settings-modal" class="overlay-base">
     <div class="modal-box" style="padding: 25px; max-width: 360px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <h3 style="margin:0; font-size:22px; font-weight:900; color:var(--text-main);">⚙️ 시스템 설정</h3>
-            <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); document.getElementById('settings-modal').style.display='none'">✖</button>
+            <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); document.getElementById('settings-modal').style.display='none'; document.body.style.overflow='';">✖</button>
         </div>
         
         <div style="text-align:center; padding:15px; background:#eff6ff; border-radius:16px; margin-bottom:20px;">
@@ -298,38 +373,33 @@
     <div class="modal-box" style="padding: 25px; max-width: 420px; background: var(--bg);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <h3 style="margin:0; font-size:20px; font-weight:800; color:var(--text-main);">📢 업데이트 히스토리</h3>
-            <button style="background:var(--surface); color:#64748b; border:1px solid #e2e8f0; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; transition: background 0.2s;" onclick="SFX.play('tap'); document.getElementById('patch-note-modal').style.display='none'">✖</button>
+            <button style="background:var(--surface); color:#64748b; border:1px solid #e2e8f0; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; transition: background 0.2s;" onclick="SFX.play('tap'); document.getElementById('patch-note-modal').style.display='none'; document.body.style.overflow='';">✖</button>
         </div>
 
         <div style="max-height: 55vh; overflow-y: auto; padding-right: 5px;">
             <div class="guide-box success">
-                <div class="guide-title">🚀 0.5.4 Flawless Edition</div>
+                <div class="guide-title">🚀 0.5.11 D-Day Edition</div>
                 <div class="guide-desc">
-                    • <b>시간 뻥튀기 원천 차단:</b> 앱을 껐다 켤 때 클라우드 시간과 로컬 시간이 중복(Double count)으로 덧셈되던 논리적 결함을 완전히 해결했습니다.<br>
-                    • <b>다이렉트 터치 저장:</b> 일기장 작성 후 검정 배경을 터치했을 때 저장되지 않던 오류를 고쳤습니다. 이제 글자가 단 하나라도 바뀌면 즉각 낚아채어 저장합니다.
-                </div>
-            </div>
-            <div class="guide-box primary">
-                <div class="guide-title">🛡️ 0.5.0 ~ 0.5.2 (성능 최적화)</div>
-                <div class="guide-desc">
-                    • <b>동기화 핑퐁 차단:</b> 수동 동기화 무한루프를 해결하고, 자동 저장 주기를 3초로 안정화했습니다.
+                    • <b>디데이 엔진 탑재:</b> 목표 시험일까지의 D-Day를 계산해주는 영구 보존(Persistent) 기능이 추가되었습니다.<br>
+                    • <b>캘린더 렌더링 최적화:</b> 목표/집중 시간이 좁은 칸에서 답답하게 겹치던 현상을 없애고, 미니멀 텍스트 + 솔리드 캡슐의 깔끔한 디자인으로 개편했습니다.<br>
+                    • <b>알람 무결성 확인:</b> 30분 달성 시 팝업과 효과음이 정확한 타이밍에 1회만 울리도록 코어 로직을 재검증했습니다.
                 </div>
             </div>
             <div class="guide-box purple">
-                <div class="guide-title">✨ 0.4.0 ~ 0.4.7 (UX 및 보안 팩)</div>
+                <div class="guide-title">🎯 0.5.8 Target Master</div>
                 <div class="guide-desc">
-                    • <b>디자인 & 사운드:</b> 인스타 감성 UI 개편 및 고급 버튼 효과음(SFX) 탑재.<br>
-                    • <b>스마트 판독기:</b> 내용이 바뀌지 않으면 알림을 띄우지 않는 Dirty Check 도입.
+                    • <b>듀얼 체크박스 도입:</b> 공부 전 미리 계획을 세울 수 있는 [🎯 계획] 체크박스 추가 및 시각적 피드백 제공.<br>
+                    • <b>스크롤 잠김 완전 방어:</b> 팝업을 열거나 화면을 넘나들 때 스크롤이 멈추던 고질적 버그를 원천 차단했습니다.
                 </div>
             </div>
-            <div class="guide-box info">
-                <div class="guide-title">📸 0.3.0 (용량 한계 돌파)</div>
+            <div class="guide-box primary">
+                <div class="guide-title">🛡️ 0.5.0 ~ 0.5.5 (코어 강화)</div>
                 <div class="guide-desc">
-                    • <b>무한 로컬 DB:</b> IndexedDB 도입으로 기기 5MB 제한 무력화.
+                    • 자정 리셋 꼬임 방어, 시간 뻥튀기 원천 방어, 스톱워치 1.5초 쿨타임 적용 등 뼈대 엔진의 치명적 결함을 모두 해결했습니다.
                 </div>
             </div>
         </div>
-        <button class="btn-primary" style="margin-top:15px; padding:14px; border-radius:12px; font-size:15px;" onclick="SFX.play('tap'); document.getElementById('patch-note-modal').style.display='none'">확인 완료</button>
+        <button class="btn-primary" style="margin-top:15px; padding:14px; border-radius:12px; font-size:15px;" onclick="SFX.play('tap'); document.getElementById('patch-note-modal').style.display='none'; document.body.style.overflow='';">확인 완료</button>
     </div>
 </div>
 
@@ -337,36 +407,46 @@
     <div class="modal-box" style="padding: 25px; max-width: 450px; background: var(--bg);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
             <h3 style="margin:0; font-size:22px; font-weight:900; color:var(--text-main);">🙋‍♀️ 무작정 따라하는 초보 가이드</h3>
-            <button style="background:var(--surface); color:#64748b; border:1px solid #e2e8f0; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); document.getElementById('guide-modal').style.display='none'">✖</button>
+            <button style="background:var(--surface); color:#64748b; border:1px solid #e2e8f0; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); document.getElementById('guide-modal').style.display='none'; document.body.style.overflow='';">✖</button>
         </div>
 
         <div style="max-height: 60vh; overflow-y: auto; padding-right: 5px;">
             <div style="font-size:14.5px; color:var(--text-main); font-weight:700; margin-bottom:20px; line-height:1.6; padding:0 5px;">
-                안녕하세요! 🎉<br>Pacemaker Planner에 오신 것을 환영합니다.<br>복잡하게 생각할 필요 없어요. <b>이 5가지만 순서대로 읽고 바로 시작해 보세요!</b>
+                안녕하세요! 🎉<br>Pacemaker Planner에 오신 것을 환영합니다.<br>복잡하게 생각할 필요 없어요. <b>이 6가지만 순서대로 읽고 바로 시작해 보세요!</b>
             </div>
-            <div class="guide-box primary">
-                <div class="guide-title">▶️ 1단계. 그냥 누르세요! (스톱워치)</div>
-                <div class="guide-desc">공부를 시작할 때 맨 아래 파란색 <b>[▶ 재생]</b> 버튼을 꾹 누르세요. 끝입니다!</div>
+            
+            <div class="guide-box" style="border-left: 5px solid #6366f1;">
+                <div class="guide-title">⏳ 1단계. 디데이(D-Day) 설정</div>
+                <div class="guide-desc">홈 화면 좌측 상단의 <b>[⏳ 디데이 설정 +]</b> 버튼을 눌러 목표 시험일을 등록하세요. 매일 스톱워치 창에서 D-Day를 확인하며 전력 질주할 수 있습니다!</div>
             </div>
-            <div class="guide-box success">
-                <div class="guide-title">📝 2단계. 메모와 일기 (저장은 자동!)</div>
-                <div class="guide-desc">블록 메모, 할일, 일기를 남겨보세요. 창을 닫거나 다른 곳을 누르면 알아서 서버에 안전하게 자동 저장해 줍니다.</div>
-            </div>
-            <div class="guide-box orange">
-                <div class="guide-title">📅 3단계. 내 기록 자랑하기 (캘린더)</div>
-                <div class="guide-desc">홈 화면에서 전체 기록 보기를 누르고, <b>[📸 인스타 캡처]</b>로 예쁜 감성 이미지를 만들어보세요.</div>
-            </div>
-            <div class="guide-box info">
-                <div class="guide-title">☁️ 4단계. 기기 연동 (타임워프)</div>
-                <div class="guide-desc">태블릿에서 타이머를 켜두고 폰으로 로그인해도 <b>타이머 시간이 끊김없이 그대로 이어집니다.</b></div>
-            </div>
+            
             <div class="guide-box purple">
-                <div class="guide-title">🛡️ 5단계. 절대 안전망 (새벽 5시 리셋)</div>
-                <div class="guide-desc">우리의 하루는 밤 12시가 아니라 <b>매일 새벽 5시에 리셋</b>됩니다. 안심하고 달리세요!</div>
+                <div class="guide-title">🎯 2단계. 오늘의 코스 계획하기</div>
+                <div class="guide-desc">공부 시작 전, 회색 캡슐 안의 <b>[🎯 계획]</b> 아이콘을 눌러보세요. 해당 구간이 보라색으로 변하며 오늘 달려야 할 목표 시간이 스톱워치 위에 표시됩니다.</div>
+            </div>
+
+            <div class="guide-box primary">
+                <div class="guide-title">▶️ 3단계. 그냥 누르세요! (스톱워치)</div>
+                <div class="guide-desc">공부를 시작할 때 맨 아래 파란색 <b>[▶ 재생]</b> 버튼을 꾹 누르세요. 30분을 채우면 자동으로 파란색 불과 함께 알람이 울립니다!</div>
+            </div>
+            
+            <div class="guide-box orange">
+                <div class="guide-title">✅ 4단계. 구간 마스터 (수동 체크)</div>
+                <div class="guide-desc">스톱워치를 깜빡 잊었거나 오프라인에서 공부했나요? 시간표의 <b>[✅ 완료]</b> 아이콘을 직접 누르세요. 해당 구간이 즉시 꽉 채워진 것으로 보정됩니다!</div>
+            </div>
+            
+            <div class="guide-box success">
+                <div class="guide-title">📝 5단계. 메모와 일기 (저장은 자동!)</div>
+                <div class="guide-desc">메모장, 할일, 일기를 남겨보세요. 창을 닫거나 배경을 누르기만 해도 안전하게 <b>클라우드에 자동 저장</b>됩니다.</div>
+            </div>
+            
+            <div class="guide-box info">
+                <div class="guide-title">🛡️ 6단계. 절대 안전망 (새벽 5시 리셋)</div>
+                <div class="guide-desc">우리의 하루는 밤 12시가 아니라 <b>매일 새벽 5시에 리셋</b>됩니다. 안심하고 새벽까지 달리세요!</div>
             </div>
         </div>
         
-        <button class="btn-primary" style="margin-top:20px; padding:16px; border-radius:12px; font-size:16px;" onclick="SFX.play('success'); document.getElementById('guide-modal').style.display='none'">와, 진짜 쉽네요! 이제 시작할게요 🔥</button>
+        <button class="btn-primary" style="margin-top:20px; padding:16px; border-radius:12px; font-size:16px;" onclick="SFX.play('success'); document.getElementById('guide-modal').style.display='none'; document.body.style.overflow='';">와, 진짜 쉽네요! 이제 시작할게요 🔥</button>
     </div>
 </div>
 
@@ -377,7 +457,7 @@
         <button style="width:100%; padding:15px; margin-bottom:10px; border-radius:12px; border:none; background:linear-gradient(135deg, #a7f3d0, #10b981); color:white; font-size:16px; font-weight:bold; cursor:pointer;" onclick="SFX.play('tap'); generateInstaImage('summer')">🌿 싱그러운 여름</button>
         <button style="width:100%; padding:15px; margin-bottom:10px; border-radius:12px; border:none; background:linear-gradient(135deg, #fed7aa, #ea580c); color:white; font-size:16px; font-weight:bold; cursor:pointer;" onclick="SFX.play('tap'); generateInstaImage('autumn')">🍁 따뜻한 가을</button>
         <button style="width:100%; padding:15px; margin-bottom:10px; border-radius:12px; border:none; background:linear-gradient(135deg, #e0f2fe, #38bdf8); color:white; font-size:16px; font-weight:bold; cursor:pointer;" onclick="SFX.play('tap'); generateInstaImage('winter')">❄️ 차분한 겨울</button>
-        <button style="width:100%; padding:14px; margin-top:10px; border-radius:12px; border:none; background:#e2e8f0; color:#475569; font-weight:bold; cursor:pointer;" onclick="SFX.play('tap'); document.getElementById('theme-modal').style.display='none'">취소</button>
+        <button style="width:100%; padding:14px; margin-top:10px; border-radius:12px; border:none; background:#e2e8f0; color:#475569; font-weight:bold; cursor:pointer;" onclick="SFX.play('tap'); document.getElementById('theme-modal').style.display='none'; document.body.style.overflow='';">취소</button>
     </div>
 </div>
 
@@ -385,11 +465,11 @@
     <div class="modal-box">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
             <h3 id="diary-modal-title" style="margin:0; font-size:22px; font-weight:800; color:var(--text-main);">📝 오늘의 일기</h3>
-            <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); saveDiary(true); document.getElementById('diary-modal').style.display='none';">✖</button>
+            <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); saveTextData('diary', true); document.getElementById('diary-modal').style.display='none'; document.body.style.overflow='';">✖</button>
         </div>
         <input type="hidden" id="diary-date-input">
         <textarea id="diary-input" maxlength="1500" style="width:100%; height:160px; padding:15px; border-radius:12px; border:1.5px solid #e2e8f0; font-family:inherit; font-size:14px; box-sizing:border-box; resize:none; background:var(--bg); color:var(--text-main);" placeholder="오늘 하루는 어땠나요? 잘한 점, 아쉬운 점, 내일의 다짐을 자유롭게 적어보세요!"></textarea>
-        <button class="btn-primary" style="margin-top:15px; background:#8b5cf6; box-shadow: 0 4px 12px rgba(139,92,246,0.3);" onclick="SFX.play('tap'); saveDiary()">💾 일기 저장하고 동기화</button>
+        <button class="btn-primary" style="margin-top:15px; background:#8b5cf6; box-shadow: 0 4px 12px rgba(139,92,246,0.3);" onclick="SFX.play('tap'); saveTextData('diary')">💾 일기 저장하고 동기화</button>
     </div>
 </div>
 
@@ -397,11 +477,11 @@
     <div class="modal-box">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
             <h3 id="todo-modal-title" style="margin:0; font-size:22px; font-weight:800; color:var(--text-main);">✅ 오늘의 할 일</h3>
-            <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); saveTodo(true); document.getElementById('todo-modal').style.display='none';">✖</button>
+            <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); saveTextData('todo', true); document.getElementById('todo-modal').style.display='none'; document.body.style.overflow='';">✖</button>
         </div>
         <input type="hidden" id="todo-date-input">
         <textarea id="todo-input" maxlength="500" style="width:100%; height:120px; padding:15px; border-radius:12px; border:1.5px solid #e2e8f0; font-family:inherit; font-size:14px; box-sizing:border-box; resize:none; background:var(--bg); color:var(--text-main);" placeholder="이 날의 할 일, 목표 등을 리스트업 해보세요!"></textarea>
-        <button class="btn-primary" style="margin-top:15px; background:#0ea5e9; box-shadow: 0 4px 12px rgba(14,165,233,0.3);" onclick="SFX.play('tap'); saveTodo()">💾 할 일 저장하고 동기화</button>
+        <button class="btn-primary" style="margin-top:15px; background:#0ea5e9; box-shadow: 0 4px 12px rgba(14,165,233,0.3);" onclick="SFX.play('tap'); saveTextData('todo')">💾 할 일 저장하고 동기화</button>
     </div>
 </div>
 
@@ -409,7 +489,7 @@
     <div class="modal-box">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
             <h3 id="modal-title" style="margin:0; font-size:22px; font-weight:800; color:var(--text-main);">상세 기록</h3>
-            <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; transition: background 0.2s;" onclick="SFX.play('tap'); document.getElementById('record-modal').style.display='none'">✖</button>
+            <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; transition: background 0.2s;" onclick="SFX.play('tap'); document.getElementById('record-modal').style.display='none'; document.body.style.overflow='';">✖</button>
         </div>
         <div id="modal-body"></div>
     </div>
@@ -418,7 +498,7 @@
 <div id="capture-modal" class="overlay-base" style="flex-direction:column; background:rgba(0,0,0,0.95); z-index: 2200;">
     <img id="capture-result-img" style="width:100%; max-width:400px; border-radius:20px; margin-bottom:20px;">
     <div style="color:white; font-weight:bold; margin-bottom:20px; text-align:center; line-height: 1.5;">👆<br>이미지를 길게 꾹 눌러서 저장하세요!<br>(인스타 스토리에 딱 맞습니다)</div>
-    <button style="background:#475569; color:white; border:none; padding:14px 40px; border-radius:12px; font-weight:bold; font-size:16px; cursor:pointer;" onclick="SFX.play('tap'); document.getElementById('capture-modal').style.display='none'">닫기</button>
+    <button style="background:#475569; color:white; border:none; padding:14px 40px; border-radius:12px; font-weight:bold; font-size:16px; cursor:pointer;" onclick="SFX.play('tap'); document.getElementById('capture-modal').style.display='none'; document.body.style.overflow='';">닫기</button>
 </div>
 
 <div id="insta-card-container">
@@ -443,20 +523,16 @@
 </div>
 
 <script>
-    const APP_VERSION = "0.5.4 Flawless"; 
+    const APP_VERSION = "0.5.11 D-Day Ed."; 
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWentq5xmJFB_UL4EWPL7KEknxY9Em9eIYX5CoWfDMh_WooUKk1n63-8gbLFpcu8Oe/exec";
     
     const Utils = {
         pad: (num) => String(num).padStart(2, '0'),
-        escapeHTML: (str) => {
-            if(typeof str !== 'string') return str;
-            return str.replace(/[&<>'"]/g, match => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[match]));
-        },
+        escapeHTML: (str) => typeof str !== 'string' ? str : str.replace(/[&<>'"]/g, match => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[match])),
         getAbsMins: (h, m) => (Number(h) < 5 ? Number(h) + 24 : Number(h)) * 60 + Number(m),
         getKoreaDate: () => {
             const d = new Date();
-            const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
-            return new Date(utc + (9 * 3600000));
+            return new Date(d.getTime() + (d.getTimezoneOffset() * 60000) + (9 * 3600000));
         },
         getRelativeDateString: (offsetDays = 0) => {
             const n = Utils.getKoreaDate(); 
@@ -504,15 +580,12 @@
     document.body.addEventListener('click', () => SFX.init(), { once: true });
     document.body.addEventListener('touchstart', () => { SFX.init(); if(SFX.ctx && SFX.ctx.state === 'suspended') SFX.ctx.resume(); }, { passive: true });
 
-    // [v0.5.4] 글로벌 클릭 리스너 복원 및 통합 (오버레이 다이렉트 터치 해결)
     window.addEventListener('click', (e) => {
         if(e.target.classList.contains('overlay-base') && e.target.id !== 'loading-overlay' && e.target.id !== 'capture-modal') {
             SFX.play('tap');
-            if(e.target.id === 'diary-modal') { saveDiary(); return; }
-            if(e.target.id === 'todo-modal') { saveTodo(); return; }
-            if(e.target.id === 'settings-modal' || e.target.id === 'patch-note-modal' || e.target.id === 'guide-modal' || e.target.id === 'record-modal' || e.target.id === 'theme-modal') {
-                e.target.style.display = 'none';
-            }
+            if(e.target.id === 'diary-modal') { saveTextData('diary'); }
+            else if(e.target.id === 'todo-modal') { saveTextData('todo'); }
+            else { e.target.style.display = 'none'; document.body.style.overflow = ''; } 
         }
     });
 
@@ -564,13 +637,16 @@
     
     let isAlarmOn = true, isSoundOn = true, isRunning = false;
     let lastTickTime = 0, syncTimer = null;
-    let isSyncing = false;
-    let pendingSync = false;
+    let isSyncing = false, pendingSync = false;
     let tickFrameId = null; 
     
-    let blockSeconds = [], backupSeconds = [], dailyRecords = {}, alarmedBlocks = [];
-    const domCache = { items: [], timeTexts: [], checks: [], notes: [] };
+    let blockSeconds = [], targetBlocks = [], backupSeconds = [], dailyRecords = {}, alarmedBlocks = [];
+    // [v0.5.11] D-Day 영구 데이터 객체
+    let ddayConfig = { title: "", date: "" }; 
+    
+    const domCache = { items: [], timeTexts: [], checks: [], targets: [], notes: [] };
     let totalStudyString = "00h 00m";
+    let targetStudyString = "00h 00m";
     let currentRenderDate = new Date();
 
     const timeData = Array.from({ length: 48 }, (_, i) => {
@@ -599,8 +675,8 @@
             const activeEl = document.activeElement;
             if (activeEl && activeEl.classList.contains('note-input')) {
                 const idx = parseInt(activeEl.id.split('_')[1]); if(!isNaN(idx)) saveNote(idx, activeEl.value);
-            } else if (activeEl && activeEl.id === 'diary-input') saveDiary(true);
-            else if (activeEl && activeEl.id === 'todo-input') saveTodo(true);
+            } else if (activeEl && activeEl.id === 'diary-input') saveTextData('diary', true);
+            else if (activeEl && activeEl.id === 'todo-input') saveTextData('todo', true);
             
             if(activeUser && navigator.onLine) triggerAutoSync(true); 
         } 
@@ -610,7 +686,6 @@
                 if (passedSecs >= 1) { 
                     distributeTime(lastTickTime, passedSecs); 
                     lastTickTime += passedSecs * 1000; 
-                    
                     let rState = JSON.stringify({ isRunning: true, startTime: lastTickTime });
                     setL('runningState', rState);
                     saveAndRefresh(); 
@@ -639,9 +714,9 @@
             dbData.forEach(item => memCache[item.id] = item.value);
 
             document.getElementById('login-view').style.display = 'none';
-            document.getElementById('loading-text').innerText = "데이터 불러오는 중... 🛰️";
+            showLoading(true, "데이터 불러오는 중... 🛰️");
             const res = await loadAllDataFromServer();
-            document.getElementById('loading-overlay').style.display = 'none';
+            showLoading(false);
 
             if(res.success) {
                 if(res.data && res.data !== "{}") applyCloudData(JSON.parse(res.data), true);
@@ -657,19 +732,20 @@
 
     function setL(k, v) { 
         try {
-            memCache[activeUser + '_' + k] = v; 
-            DBEngine.set(activeUser + '_' + k, v); 
+            memCache[activeUser + '_' + k] = v; DBEngine.set(activeUser + '_' + k, v); 
             if(k !== 'dailyRecords') localStorage.setItem(activeUser + '_' + k, v); 
-        } catch(e) {
-            console.error("Local Save Error", e);
-            showToast("🚨 기기 저장 공간이 부족할 수 있습니다.");
-        }
+        } catch(e) { showToast("🚨 기기 저장 공간이 부족할 수 있습니다."); }
     }
     function getL(k) { return memCache[activeUser + '_' + k] || localStorage.getItem(activeUser + '_' + k) || null; }
     function removeL(k) { try { delete memCache[activeUser + '_' + k]; DBEngine.remove(activeUser + '_' + k); localStorage.removeItem(activeUser + '_' + k); } catch(e) {} }
 
     function saveUserLocalData(d) {
-        ['blockSeconds', 'backupSeconds', 'alarmedBlocks', 'settings'].forEach(k => { if (d[k]) setL(k, d[k]); });
+        // [v0.5.11] D-Day 데이터 클라우드 수신 병합
+        if(d['ddayConfig']) setL('ddayConfig', d['ddayConfig']);
+        
+        ['blockSeconds', 'targetBlocks', 'backupSeconds', 'alarmedBlocks', 'settings', 'lastLogicalDate'].forEach(k => { 
+            if (d[k] !== undefined && d[k] !== "") setL(k, d[k]); 
+        });
         if (d['dailyRecords']) {
             try {
                 let localRec = JSON.parse(getL('dailyRecords') || '{}'); let cloudRec = JSON.parse(d['dailyRecords'] || '{}');
@@ -678,6 +754,7 @@
                     let l = localRec[date] || {}; let c = cloudRec[date] || {};
                     mergedRec[date] = {
                         totalTime: (c.totalTime && c.totalTime !== "00h 00m") ? c.totalTime : (l.totalTime || "00h 00m"),
+                        targetTime: (c.targetTime && c.targetTime !== "00h 00m") ? c.targetTime : (l.targetTime || "00h 00m"),
                         details: (c.details && c.details.length > 0) ? c.details : (l.details || []),
                         diary: (c.diary && c.diary.trim() !== "") ? c.diary : (l.diary || ""),
                         todo: (c.todo && c.todo.trim() !== "") ? c.todo : (l.todo || "")
@@ -691,7 +768,11 @@
 
     function getUserLocalData() {
         const backup = { runningState: JSON.stringify({ isRunning: isRunning, startTime: isRunning ? lastTickTime : 0 }) };
-        ['blockSeconds', 'backupSeconds', 'dailyRecords', 'alarmedBlocks', 'settings'].forEach(k => { backup[k] = getL(k) || ""; });
+        
+        // [v0.5.11] D-Day 데이터 클라우드 송신
+        backup['ddayConfig'] = getL('ddayConfig') || "";
+        
+        ['blockSeconds', 'targetBlocks', 'backupSeconds', 'dailyRecords', 'alarmedBlocks', 'settings', 'lastLogicalDate'].forEach(k => { backup[k] = getL(k) || ""; });
         for (let i=0; i<48; i++) { let n = getL(`note_${i}`); backup[`note_${i}`] = (!n || n === "null" || n.trim() === "") ? "" : n; }
         return backup;
     }
@@ -772,7 +853,6 @@
             const res = await loadAllDataFromServer();
             if (res.success && res.data && res.data !== "{}") { 
                 applyCloudData(JSON.parse(res.data), silent, true); 
-                if (!silent) { SFX.play('success'); showToast("✅ 동기화 완료!"); } 
             } else { 
                 if (!silent) { SFX.play('tap'); showToast("❌ 최신 데이터를 불러오지 못했습니다."); } 
             }
@@ -808,12 +888,8 @@
             return;
         }
         if(syncTimer) clearTimeout(syncTimer); 
-        
-        if (immediate) {
-            performSync();
-        } else {
-            syncTimer = setTimeout(() => { performSync(); }, 3000); 
-        }
+        if (immediate) performSync();
+        else syncTimer = setTimeout(() => { performSync(); }, 3000); 
     }
 
     async function handleAuth() {
@@ -824,7 +900,6 @@
         
         showLoading(true, "보안 인증 및 로그인 중... 🔐"); 
         activePw = await hashSHA256(rawPw);
-        
         memCache = {};
         let dbData = await DBEngine.getAll(activeUser + '_');
         dbData.forEach(item => memCache[item.id] = item.value);
@@ -863,6 +938,69 @@
         if (foundTodo) { alertEl.style.display = 'block'; textEl.innerText = `${dateLabel}: ${foundTodo}`; alertEl.dataset.targetDStr = targetDStr; } 
         else { alertEl.style.display = 'none'; }
     }
+    
+    // [v0.5.11] D-Day 날짜/텍스트 UI 계산 및 렌더링 코어
+    function updateDdayUI() {
+        const badge = document.getElementById('dday-badge');
+        const popupBadge = document.getElementById('popup-dday');
+        
+        if (!ddayConfig || !ddayConfig.date) {
+            badge.innerHTML = `⏳ 디데이 설정 +`;
+            popupBadge.style.display = 'none';
+            return;
+        }
+        
+        const todayStr = Utils.getLogicalDateString();
+        const targetStr = ddayConfig.date;
+        
+        const todayDate = new Date(todayStr + "T00:00:00");
+        const targetDate = new Date(targetStr + "T00:00:00");
+        const diffTime = targetDate - todayDate;
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+        
+        let dString = "";
+        if (diffDays > 0) dString = `D-${diffDays}`;
+        else if (diffDays === 0) dString = `D-Day`;
+        else dString = `D+${Math.abs(diffDays)}`;
+        
+        let titleText = ddayConfig.title ? ddayConfig.title + " " : "";
+        badge.innerHTML = `<span style="opacity:0.8; font-size:11px;">${Utils.escapeHTML(titleText)}</span><span style="font-size:16px;">${dString}</span>`;
+        
+        popupBadge.innerText = dString;
+        popupBadge.style.display = 'inline-block';
+    }
+
+    function openDdayModal() {
+        document.body.style.overflow = 'hidden';
+        document.getElementById('dday-title-input').value = ddayConfig.title || "";
+        document.getElementById('dday-date-input').value = ddayConfig.date || "";
+        document.getElementById('dday-modal').style.display = 'flex';
+    }
+
+    function saveDday() {
+        const t = document.getElementById('dday-title-input').value.trim();
+        const d = document.getElementById('dday-date-input').value;
+        if(!d) { showToast("날짜를 선택해주세요."); return; }
+        
+        ddayConfig = { title: t, date: d };
+        setL('ddayConfig', JSON.stringify(ddayConfig));
+        updateDdayUI();
+        
+        document.getElementById('dday-modal').style.display = 'none';
+        document.body.style.overflow = '';
+        showToast("디데이가 설정되었습니다.");
+        triggerAutoSync(true); // 즉각 클라우드 백업
+    }
+
+    function clearDday() {
+        ddayConfig = { title: "", date: "" };
+        removeL('ddayConfig');
+        updateDdayUI();
+        document.getElementById('dday-modal').style.display = 'none';
+        document.body.style.overflow = '';
+        showToast("디데이가 초기화되었습니다.");
+        triggerAutoSync(true);
+    }
 
     function startDashboard() {
         updateHighlight(); setInterval(() => { updateHighlight(); checkNewDay(); }, 10000); 
@@ -873,11 +1011,17 @@
 
     function initLocalState() {
         blockSeconds = JSON.parse(getL('blockSeconds')) || Array(48).fill(0); 
+        try { targetBlocks = JSON.parse(getL('targetBlocks')) || Array(48).fill(false); } catch(e) { targetBlocks = Array(48).fill(false); }
+        if(!Array.isArray(targetBlocks) || targetBlocks.length !== 48) targetBlocks = Array(48).fill(false);
         backupSeconds = JSON.parse(getL('backupSeconds')) || Array(48).fill(0); 
         alarmedBlocks = JSON.parse(getL('alarmedBlocks')) || Array(48).fill(false); 
         dailyRecords = JSON.parse(getL('dailyRecords')) || {}; 
         const settings = JSON.parse(getL('settings') || '{"isAlarmOn":true, "isSoundOn":true}');
         isAlarmOn = settings.isAlarmOn ?? true; isSoundOn = settings.isSoundOn ?? true; updateSettingsUI();
+        
+        // [v0.5.11] D-Day 로컬 파싱
+        try { ddayConfig = JSON.parse(getL('ddayConfig')) || {title:"", date:""}; } 
+        catch(e) { ddayConfig = {title:"", date:""}; }
         
         let rStateLocal = localStorage.getItem(activeUser + '_runningState') || getL('runningState');
         if (rStateLocal && !isRunning) {
@@ -891,10 +1035,8 @@
             } catch(e){}
         }
 
-        if(domCache.items.length === 0) initListUI(); 
-        else updateNotesFromLocal();
-
-        updateHighlight(); updateUI(true); 
+        if(domCache.items.length === 0) initListUI(); else updateNotesFromLocal();
+        updateHighlight(); updateUI(true); updateDdayUI(); 
     }
 
     function updateNotesFromLocal() {
@@ -906,21 +1048,38 @@
         }
     }
 
-    // [v0.5.4 핵심 패치] 클라우드 타이머 이중 덧셈 방어 (Double-dip Fix)
     function applyCloudData(parsedData, silent, skipSync = false) {
-        saveUserLocalData(parsedData); initLocalState(); let batonTaken = false;
+        const currentLogicalDate = Utils.getLogicalDateString();
+        const cloudLogicalDate = parsedData.lastLogicalDate || currentLogicalDate;
+
+        saveUserLocalData(parsedData); 
+        initLocalState(); 
+
+        let batonTaken = false;
         if (parsedData.runningState) {
             const rState = JSON.parse(parsedData.runningState);
             if (rState.isRunning && rState.startTime > 0) {
-                if (!isRunning) { // 로컬에서 이미 타이머를 살리지 않은 경우에만 더함
+                if (!isRunning) { 
                     const passedSecs = Math.floor((Date.now() - rState.startTime) / 1000);
-                    if (passedSecs > 0 && passedSecs < 86400) { distributeTime(rState.startTime, passedSecs); batonTaken = true; }
-                    startStopwatch();
+                    if (passedSecs > 0 && passedSecs < 57600) { distributeTime(rState.startTime, passedSecs); batonTaken = true; startStopwatch(); }
+                    else { stopStopwatch(); }
                 }
             } else { if (isRunning) stopStopwatch(); }
         }
-        updateUI(true); renderCalendar(); updateHighlight(); updateDashboardTodoAlert();
-        setL('lastLogicalDate', Utils.getLogicalDateString());
+
+        if (cloudLogicalDate !== currentLogicalDate) {
+            syncTodayRecord(cloudLogicalDate); 
+            blockSeconds = Array(48).fill(0); targetBlocks = Array(48).fill(false); backupSeconds = Array(48).fill(0); alarmedBlocks = Array(48).fill(false); 
+            for(let i=0; i<48; i++) { removeL(`note_${i}`); if(domCache.notes[i]) domCache.notes[i].value = ""; }
+            setL('targetBlocks', JSON.stringify(targetBlocks)); setL('backupSeconds', JSON.stringify(backupSeconds)); setL('alarmedBlocks', JSON.stringify(alarmedBlocks));
+            setL('blockSeconds', JSON.stringify(blockSeconds)); setL('lastLogicalDate', currentLogicalDate); 
+            if (isRunning) stopStopwatch();
+            showToast("📅 어제 기록을 백업하고 보드를 초기화했습니다.");
+        } else {
+            setL('lastLogicalDate', currentLogicalDate);
+        }
+
+        updateUI(true); renderCalendar(); updateHighlight(); updateDashboardTodoAlert(); updateDdayUI();
         
         if (batonTaken && !skipSync) { triggerAutoSync(); if(!silent) showToast("🔥 타임워프! 바통을 이어받았습니다."); } 
         else if(!silent && !skipSync) { SFX.play('success'); showToast("✅ 동기화 완료!"); }
@@ -940,16 +1099,16 @@
             }
 
             syncTodayRecord(lastLogicDate); 
-            triggerAutoSync(true); 
             
-            blockSeconds = Array(48).fill(0); backupSeconds = Array(48).fill(0); alarmedBlocks = Array(48).fill(false); 
+            blockSeconds = Array(48).fill(0); targetBlocks = Array(48).fill(false); backupSeconds = Array(48).fill(0); alarmedBlocks = Array(48).fill(false); 
             for(let i=0; i<48; i++) { removeL(`note_${i}`); if(domCache.notes[i]) domCache.notes[i].value = ""; }
             
-            setL('backupSeconds', JSON.stringify(backupSeconds)); setL('alarmedBlocks', JSON.stringify(alarmedBlocks));
+            // [v0.5.11 안전성] ddayConfig는 날짜가 바뀌어도 절대 건드리지 않음 (영구 보존 락)
+            setL('targetBlocks', JSON.stringify(targetBlocks)); setL('backupSeconds', JSON.stringify(backupSeconds)); setL('alarmedBlocks', JSON.stringify(alarmedBlocks));
             setL('blockSeconds', JSON.stringify(blockSeconds)); setL('lastLogicalDate', currentLogicDate); 
             
-            updateUI(true); updateHighlight(); renderCalendar(); updateDashboardTodoAlert();
-            if(wasRunning) startStopwatch();
+            updateUI(true); updateHighlight(); renderCalendar(); updateDashboardTodoAlert(); updateDdayUI();
+            triggerAutoSync(true); 
             showToast("🌅 새로운 하루가 시작되었습니다! 보드가 리셋되었습니다."); 
         }
     }
@@ -957,10 +1116,16 @@
     function syncTodayRecord(targetDateStr = null) {
         let dStr = targetDateStr || Utils.getLogicalDateString(); 
         let has = false, det = [];
+        
+        let tSecs = 0;
+        targetBlocks.forEach(b => { if(b) tSecs += 1800; });
+        let th = Math.floor(tSecs / 3600); let tm = Math.floor((tSecs % 3600) / 60);
+        let finalTargetTime = `${Utils.pad(th)}h ${Utils.pad(tm)}m`;
+
         for (let i=0; i<48; i++) {
             let n = domCache.notes[i] ? domCache.notes[i].value.trim() : getL(`note_${i}`);
             if(!n || n === "null") n = ""; let s = blockSeconds[i];
-            if (s > 0 || n !== "") { has = true; det.push({ time: timeData[i].time, min: Math.floor(s/60), note: n }); }
+            if (s > 0 || n !== "" || targetBlocks[i]) { has = true; det.push({ time: timeData[i].time, min: Math.floor(s/60), note: n, isTarget: targetBlocks[i] }); }
         }
         
         let existingDiary = (dailyRecords[dStr] && dailyRecords[dStr].diary) ? dailyRecords[dStr].diary.trim() : "";
@@ -968,73 +1133,50 @@
 
         if (has || existingDiary !== "" || existingTodo !== "") { 
             let finalTime = has ? totalStudyString : (dailyRecords[dStr] && dailyRecords[dStr].totalTime ? dailyRecords[dStr].totalTime : "00h 00m");
-            dailyRecords[dStr] = { totalTime: finalTime, details: det, diary: existingDiary, todo: existingTodo };
+            dailyRecords[dStr] = { totalTime: finalTime, targetTime: finalTargetTime, details: det, diary: existingDiary, todo: existingTodo };
         } else { delete dailyRecords[dStr]; }
         try { setL('dailyRecords', JSON.stringify(dailyRecords)); } catch (e) {}
     }
 
-    function openDiaryModal(targetDateStr = null) {
+    function openTextModal(type, targetDateStr = null) {
+        document.body.style.overflow = 'hidden'; 
         let dStr = targetDateStr || Utils.getLogicalDateString();
-        document.getElementById('diary-date-input').value = dStr;
+        document.getElementById(type + '-date-input').value = dStr;
         let titlePrefix = (dStr === Utils.getLogicalDateString()) ? "오늘의" : dStr;
-        document.getElementById('diary-modal-title').innerText = `📝 ${titlePrefix} 일기`;
-        let currentDiary = (dailyRecords[dStr] && dailyRecords[dStr].diary) ? dailyRecords[dStr].diary : "";
-        document.getElementById('diary-input').value = currentDiary;
-        document.getElementById('diary-modal').style.display = 'flex';
+        document.getElementById(type + '-modal-title').innerText = (type==='diary' ? `📝 ` : `✅ `) + `${titlePrefix} ${type==='diary'?'일기':'할 일'}`;
+        document.getElementById(type + '-input').value = (dailyRecords[dStr] && dailyRecords[dStr][type]) ? dailyRecords[dStr][type] : "";
+        document.getElementById(type + '-modal').style.display = 'flex';
     }
 
-    // [v0.5.4 핵심 패치] 줄바꿈 기호를 통일시켜 Dirty Check 오류 방어
-    function saveDiary(silent = false) {
+    function saveTextData(type, silent = false) {
         if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
-        let dStr = document.getElementById('diary-date-input').value || Utils.getLogicalDateString();
-        let text = document.getElementById('diary-input').value.replace(/\r\n/g, '\n').trim();
-        let existingText = (dailyRecords[dStr] && dailyRecords[dStr].diary) ? String(dailyRecords[dStr].diary).replace(/\r\n/g, '\n').trim() : "";
+        let dStr = document.getElementById(type + '-date-input').value || Utils.getLogicalDateString();
+        let text = document.getElementById(type + '-input').value.replace(/\r\n/g, '\n').trim();
+        let exText = (dailyRecords[dStr] && dailyRecords[dStr][type]) ? String(dailyRecords[dStr][type]).replace(/\r\n/g, '\n').trim() : "";
 
-        if (text === existingText) { if(document.getElementById('diary-modal').style.display !== 'none') document.getElementById('diary-modal').style.display = 'none'; return; }
-        if (!dailyRecords[dStr]) dailyRecords[dStr] = { totalTime: "00h 00m", details: [] };
-        dailyRecords[dStr].diary = text;
-        
-        let hasNoStudy = (!dailyRecords[dStr].details || dailyRecords[dStr].details.length === 0) && (!dailyRecords[dStr].totalTime || dailyRecords[dStr].totalTime === "00h 00m" || dailyRecords[dStr].totalTime === "0h 0m");
-        if (!text && hasNoStudy && (!dailyRecords[dStr].todo || dailyRecords[dStr].todo.trim() === "")) delete dailyRecords[dStr];
-        try { setL('dailyRecords', JSON.stringify(dailyRecords)); } catch (e) {}
-        
-        if(document.getElementById('diary-modal').style.display !== 'none') document.getElementById('diary-modal').style.display = 'none';
-        if(!silent) {
-            SFX.play('success'); showToast("📝 일기가 저장되었습니다!");
-            if(document.getElementById('calendar-view').style.display === 'flex') {
-                renderCalendar(); if(document.getElementById('record-modal').style.display === 'flex') showModal(dStr);
+        if (text === exText) { 
+            if(document.getElementById(type + '-modal').style.display !== 'none') {
+                document.getElementById(type + '-modal').style.display = 'none'; 
+                document.body.style.overflow = '';
             }
-            updateDashboardTodoAlert(); triggerAutoSync(); 
+            return; 
         }
-    }
-
-    function openTodoModal(targetDateStr = null) {
-        let dStr = targetDateStr || Utils.getLogicalDateString();
-        document.getElementById('todo-date-input').value = dStr;
-        let titlePrefix = (dStr === Utils.getLogicalDateString()) ? "오늘의" : dStr;
-        document.getElementById('todo-modal-title').innerText = `✅ ${titlePrefix} 할 일`;
-        let currentTodo = (dailyRecords[dStr] && dailyRecords[dStr].todo) ? dailyRecords[dStr].todo : "";
-        document.getElementById('todo-input').value = currentTodo;
-        document.getElementById('todo-modal').style.display = 'flex';
-    }
-
-    function saveTodo(silent = false) {
-        if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
-        let dStr = document.getElementById('todo-date-input').value || Utils.getLogicalDateString();
-        let text = document.getElementById('todo-input').value.replace(/\r\n/g, '\n').trim();
-        let existingText = (dailyRecords[dStr] && dailyRecords[dStr].todo) ? String(dailyRecords[dStr].todo).replace(/\r\n/g, '\n').trim() : "";
-
-        if (text === existingText) { if(document.getElementById('todo-modal').style.display !== 'none') document.getElementById('todo-modal').style.display = 'none'; return; }
-        if (!dailyRecords[dStr]) dailyRecords[dStr] = { totalTime: "00h 00m", details: [] };
-        dailyRecords[dStr].todo = text;
+        
+        if (!dailyRecords[dStr]) dailyRecords[dStr] = { totalTime: "00h 00m", targetTime: "00h 00m", details: [] };
+        dailyRecords[dStr][type] = text;
         
         let hasNoStudy = (!dailyRecords[dStr].details || dailyRecords[dStr].details.length === 0) && (!dailyRecords[dStr].totalTime || dailyRecords[dStr].totalTime === "00h 00m" || dailyRecords[dStr].totalTime === "0h 0m");
-        if (!text && hasNoStudy && (!dailyRecords[dStr].diary || dailyRecords[dStr].diary.trim() === "")) delete dailyRecords[dStr];
+        let otherType = type === 'diary' ? 'todo' : 'diary';
+        if (!text && hasNoStudy && (!dailyRecords[dStr][otherType] || dailyRecords[dStr][otherType].trim() === "")) delete dailyRecords[dStr];
         try { setL('dailyRecords', JSON.stringify(dailyRecords)); } catch (e) {}
         
-        if(document.getElementById('todo-modal').style.display !== 'none') document.getElementById('todo-modal').style.display = 'none';
+        if(document.getElementById(type + '-modal').style.display !== 'none') {
+            document.getElementById(type + '-modal').style.display = 'none';
+            document.body.style.overflow = ''; 
+        }
+        
         if(!silent) {
-            SFX.play('success'); showToast("✅ 할 일이 저장되었습니다!");
+            SFX.play('success'); showToast(`${type==='diary'?'📝 일기':'✅ 할 일'}가 저장되었습니다!`);
             if(document.getElementById('calendar-view').style.display === 'flex') {
                 renderCalendar(); if(document.getElementById('record-modal').style.display === 'flex') showModal(dStr);
             }
@@ -1049,11 +1191,8 @@
             if (passedSecs >= 1) {
                 distributeTime(lastTickTime, passedSecs); 
                 lastTickTime += passedSecs * 1000; 
-                
-                // [v0.5.4] 뻥튀기 버그 완벽 락 (startTime 갱신)
                 let rState = JSON.stringify({ isRunning: true, startTime: lastTickTime });
                 setL('runningState', rState); 
-                
                 saveAndRefresh();
             }
         } catch(e) {}
@@ -1061,11 +1200,22 @@
     }
 
     function distributeTime(startTimeMs, passedSecs) {
-        let startSec = Math.floor(startTimeMs / 1000);
-        for (let s = 0; s < passedSecs; s++) {
-            let d = new Date((startSec + s) * 1000);
-            let kstHour = (d.getUTCHours() + 9) % 24; let kstMin = d.getUTCMinutes();
-            let absMins = Utils.getAbsMins(kstHour, kstMin); let idx = Math.floor((absMins - 300) / 30);
+        if (passedSecs <= 0) return;
+        let maxSecs = Math.min(passedSecs, 57600); 
+        
+        let d = new Date(startTimeMs);
+        let kstTimeMs = d.getTime() + (d.getTimezoneOffset() * 60000) + (9 * 3600000);
+        let kstDate = new Date(kstTimeMs);
+        let h = kstDate.getHours(), m = kstDate.getMinutes(), sec = kstDate.getSeconds();
+
+        for (let s = 0; s < maxSecs; s++) {
+            sec++;
+            if (sec >= 60) { sec = 0; m++; }
+            if (m >= 60) { m = 0; h++; }
+            if (h >= 24) { h = 0; }
+
+            let absMins = (h < 5 ? h + 24 : h) * 60 + m;
+            let idx = Math.floor((absMins - 300) / 30);
             if (idx >= 0 && idx < 48 && blockSeconds[idx] < 1800) {
                 blockSeconds[idx]++;
                 if(blockSeconds[idx] === 1800 && isAlarmOn && !alarmedBlocks[idx]) {
@@ -1078,8 +1228,17 @@
 
     function saveAndRefresh() { setL('blockSeconds', JSON.stringify(blockSeconds)); updateUI(false); syncTodayRecord(); }
 
+    let loadingTimeout = null;
     function showLoading(show, text="처리 중... 🚀") { 
-        document.getElementById('loading-text').innerText = text; document.getElementById('loading-overlay').style.display = show ? 'flex' : 'none'; 
+        const overlay = document.getElementById('loading-overlay');
+        if(loadingTimeout) clearTimeout(loadingTimeout);
+        if(show) {
+            document.getElementById('loading-text').innerText = text; 
+            overlay.style.display = 'flex'; 
+            loadingTimeout = setTimeout(() => { overlay.style.display = 'none'; showToast("⏳ 시스템 안전을 위해 백그라운드 모드로 전환합니다."); }, 15000);
+        } else {
+            overlay.style.display = 'none'; 
+        }
     }
 
     let toastTimeout = null;
@@ -1092,11 +1251,14 @@
     function playChime() { if (!isSoundOn) return; SFX.play('success'); }
 
     function switchView(viewName) {
+        document.body.style.overflow = ''; 
         document.querySelectorAll('.view-layer').forEach(el => el.style.display = 'none');
         if (viewName === 'dashboard') {
             document.getElementById('stopwatch-popup').style.display = 'none'; 
             document.getElementById('dashboard-view').style.display = 'flex';
-            document.getElementById('dash-today-time').innerText = totalStudyString; updateDashboardTodoAlert(); window.scrollTo(0, 0);
+            document.getElementById('dash-today-time').innerText = totalStudyString;
+            document.getElementById('dash-today-target').innerText = targetStudyString;
+            updateDashboardTodoAlert(); window.scrollTo(0, 0); updateDdayUI();
         } else if (viewName === 'calendar') {
             document.getElementById('stopwatch-popup').style.display = 'none'; 
             document.getElementById('calendar-view').style.display = 'flex';
@@ -1131,31 +1293,65 @@
 
     function initListUI() {
         const scheduleList = document.getElementById('schedule-list'); scheduleList.innerHTML = '';
-        domCache.items = []; domCache.timeTexts = []; domCache.checks = []; domCache.notes = [];
+        domCache.items = []; domCache.timeTexts = []; domCache.checks = []; domCache.targets = []; domCache.notes = [];
         
         timeData.forEach((item, i) => {
             const div = document.createElement('div'); div.className = 'list-item'; div.id = `item_${i}`;
             div.dataset.absMins = Utils.getAbsMins(item.time.split(':')[0], item.time.split(':')[1]);
-            div.innerHTML = `<div class="controls"><input type="checkbox" id="check_${i}" onchange="SFX.play('tap'); toggleCheck(${i})"></div>
+            
+            div.innerHTML = `
+                <div class="controls-wrap">
+                    <label class="cb-icon-box target" id="target_box_${i}" title="계획 설정">
+                        <input type="checkbox" id="target_${i}" class="cb-target" onchange="SFX.play('tap'); toggleTarget(${i})"><span>🎯</span>
+                    </label>
+                    <label class="cb-icon-box done" id="check_box_${i}" title="실제 완료">
+                        <input type="checkbox" id="check_${i}" class="cb-actual" onchange="SFX.play('tap'); toggleCheck(${i})"><span>✅</span>
+                    </label>
+                </div>
                 <div class="time-col"><div class="time">${item.time}</div><div class="recorded-time" id="study_time_${i}">00:00</div></div>
                 <div class="text-wrapper"><input type="text" class="note-input" maxlength="100" id="note_${i}" placeholder="메모..." onchange="saveNote(${i}, this.value)"></div>`;
+            
             scheduleList.appendChild(div);
-            domCache.items[i] = div; domCache.timeTexts[i] = document.getElementById(`study_time_${i}`);
-            domCache.checks[i] = document.getElementById(`check_${i}`); domCache.notes[i] = document.getElementById(`note_${i}`);
+            domCache.items[i] = div; 
+            domCache.timeTexts[i] = document.getElementById(`study_time_${i}`);
+            domCache.checks[i] = document.getElementById(`check_${i}`); 
+            domCache.targets[i] = document.getElementById(`target_${i}`); 
+            domCache.notes[i] = document.getElementById(`note_${i}`);
             let savedNote = getL(`note_${i}`); if (savedNote && savedNote !== "null") domCache.notes[i].value = savedNote;
         });
     }
 
     function updateUI(force = false) {
-        let totalSecs = 0;
+        let totalSecs = 0, targetSecs = 0;
         for (let i = 0; i < 48; i++) {
             let s = blockSeconds[i]; totalSecs += s;
             let str = `${Utils.pad(Math.floor(s/60))}:${Utils.pad(s%60)}`;
+            
             if (force || domCache.timeTexts[i].innerText !== str) {
                 domCache.timeTexts[i].innerText = str; domCache.checks[i].checked = (s >= 1800);
                 domCache.timeTexts[i].className = s >= 1800 ? 'recorded-time active full' : s > 0 ? 'recorded-time active' : 'recorded-time';
             }
+            
+            let cbDone = document.getElementById(`check_box_${i}`);
+            if(s >= 1800) cbDone.classList.add('active'); else cbDone.classList.remove('active');
+            
+            domCache.targets[i].checked = targetBlocks[i];
+            let cbTarget = document.getElementById(`target_box_${i}`);
+            if(targetBlocks[i]) {
+                targetSecs += 1800; 
+                domCache.items[i].classList.add('planned');
+                cbTarget.classList.add('active');
+            } else {
+                domCache.items[i].classList.remove('planned');
+                cbTarget.classList.remove('active');
+            }
         }
+        
+        let th = Math.floor(targetSecs / 3600); let tm = Math.floor((targetSecs % 3600) / 60);
+        targetStudyString = `${Utils.pad(th)}h ${Utils.pad(tm)}m`;
+        document.getElementById('popup-target-time').innerText = targetStudyString;
+        document.getElementById('dash-today-target').innerText = targetStudyString;
+        
         let h = Math.floor(totalSecs / 3600); let m = Math.floor((totalSecs % 3600) / 60);
         totalStudyString = `${Utils.pad(h)}h ${Utils.pad(m)}m`;
         document.getElementById('total-study-display').innerText = `${Utils.pad(h)}:${Utils.pad(m)}:${Utils.pad(totalSecs%60)}`;
@@ -1172,6 +1368,13 @@
         if(a) { a.innerText = isAlarmOn ? "켜짐" : "꺼짐"; a.className = isAlarmOn ? "setting-btn" : "setting-btn off"; }
         if(s) { s.innerText = isSoundOn ? "켜짐" : "꺼짐"; s.className = isSoundOn ? "setting-btn" : "setting-btn off"; }
     }
+    
+    function toggleTarget(i) {
+        targetBlocks[i] = domCache.targets[i].checked;
+        setL('targetBlocks', JSON.stringify(targetBlocks));
+        saveAndRefresh(); triggerAutoSync(true); 
+    }
+    
     function toggleCheck(i) { 
         if(domCache.checks[i].checked) { 
             if (blockSeconds[i] < 1800) backupSeconds[i] = blockSeconds[i];
@@ -1181,9 +1384,9 @@
             else { if (blockSeconds[i] >= 1800 && !confirm("이 구간을 0초로 초기화할까요?")) { domCache.checks[i].checked = true; return; } blockSeconds[i] = 0; }
             alarmedBlocks[i] = false; 
         }
-        setL('backupSeconds', JSON.stringify(backupSeconds)); saveAndRefresh(); triggerAutoSync(); 
+        setL('backupSeconds', JSON.stringify(backupSeconds)); saveAndRefresh(); triggerAutoSync(true); 
     }
-    function saveNote(i, val) { if(!val.trim()) removeL(`note_${i}`); else setL(`note_${i}`, val.trim()); triggerAutoSync(); }
+    function saveNote(i, val) { if(!val.trim()) removeL(`note_${i}`); else setL(`note_${i}`, val.trim()); triggerAutoSync(true); }
     
     function startStopwatch() { 
         isRunning = true; lastTickTime = Date.now(); 
@@ -1192,6 +1395,7 @@
         document.getElementById('toggle-timer-btn').innerHTML = '⏸'; document.getElementById('toggle-timer-btn').classList.add('running'); 
         if(tickFrameId) cancelAnimationFrame(tickFrameId); tickFrameId = requestAnimationFrame(tick); 
     }
+    
     function stopStopwatch() { 
         isRunning = false; 
         let rState = JSON.stringify({ isRunning: false, startTime: 0 });
@@ -1199,15 +1403,25 @@
         document.getElementById('toggle-timer-btn').innerHTML = '▶'; document.getElementById('toggle-timer-btn').classList.remove('running'); 
         if(tickFrameId) { cancelAnimationFrame(tickFrameId); tickFrameId = null; }
     }
-    function toggleTimer() { SFX.play('tap'); if (isRunning) { stopStopwatch(); triggerAutoSync(); } else { startStopwatch(); triggerAutoSync(); } }
+    
+    function toggleTimer() { 
+        const btn = document.getElementById('toggle-timer-btn');
+        if (btn.disabled) return;
+        SFX.play('tap'); 
+        btn.disabled = true; 
+        setTimeout(() => { btn.disabled = false; }, 1500); 
+        
+        if (isRunning) { stopStopwatch(); triggerAutoSync(true); } 
+        else { startStopwatch(); triggerAutoSync(true); } 
+    }
     
     function manualClearBoard() { 
-        if (confirm("🚨 주의: 오늘 기록된 집중 시간과 메모가 모두 초기화됩니다.\n(※ 일기와 할 일은 안전하게 유지됩니다)\n\n정말 보드를 비울까요?")) { 
+        if (confirm("🚨 주의: 오늘 기록된 계획, 집중 시간, 메모가 모두 초기화됩니다.\n(※ 디데이, 일기, 할 일은 안전하게 유지됩니다)\n\n정말 보드를 비울까요?")) { 
             if(syncTimer) clearTimeout(syncTimer); 
-            blockSeconds = Array(48).fill(0); backupSeconds = Array(48).fill(0); alarmedBlocks = Array(48).fill(false); 
+            blockSeconds = Array(48).fill(0); targetBlocks = Array(48).fill(false); backupSeconds = Array(48).fill(0); alarmedBlocks = Array(48).fill(false); 
             for(let i=0; i<48; i++) { removeL(`note_${i}`); if(domCache.notes[i]) domCache.notes[i].value = ""; } 
-            setL('backupSeconds', JSON.stringify(backupSeconds)); saveAndRefresh(); triggerAutoSync(); 
-            updateHighlight(); updateUI(true); document.getElementById('settings-modal').style.display = 'none';
+            setL('targetBlocks', JSON.stringify(targetBlocks)); setL('backupSeconds', JSON.stringify(backupSeconds)); saveAndRefresh(); triggerAutoSync(true); 
+            updateHighlight(); updateUI(true); document.getElementById('settings-modal').style.display = 'none'; document.body.style.overflow = '';
             SFX.play('success'); showToast("보드가 초기화되었습니다.");
         } 
     }
@@ -1220,8 +1434,8 @@
         const btn = document.getElementById('btn-manual-save');
         if(btn) { btn.innerText = "저장중..."; btn.style.opacity = 0.7; }
         
-        if(document.getElementById('diary-modal').style.display === 'flex') saveDiary(true);
-        if(document.getElementById('todo-modal').style.display === 'flex') saveTodo(true);
+        if(document.getElementById('diary-modal').style.display === 'flex') saveTextData('diary', true);
+        if(document.getElementById('todo-modal').style.display === 'flex') saveTextData('todo', true);
         
         if(syncTimer) clearTimeout(syncTimer); 
         syncTodayRecord(); 
@@ -1249,6 +1463,7 @@
     function goToToday() { currentRenderDate = new Date(); renderCalendar(); }
     function changeMonth(offset) { currentRenderDate.setDate(1); currentRenderDate.setMonth(currentRenderDate.getMonth() + offset); renderCalendar(); }
     
+    // [v0.5.11] 캘린더 미니멀 배지(텍스트 + 캡슐) 렌더링
     function renderCalendar() {
         const grid = document.getElementById('cal-grid'); grid.innerHTML = ''; 
         const y = currentRenderDate.getFullYear(), m = currentRenderDate.getMonth();
@@ -1262,30 +1477,50 @@
         for (let i=1; i<=dInM; i++) {
             const dStr = `${y}-${Utils.pad(m+1)}-${Utils.pad(i)}`;
             const isToday = dStr === logicTodayStr; const rec = dailyRecords[dStr];
-            let rHtml = ''; let hasTodo = false;
+            let rHtml = ''; let tHtml = ''; let hasTodo = false;
 
             if (rec) { 
                 let hN = parseInt((rec.totalTime || "0h").split('h')[0]); 
-                if(rec.totalTime && rec.totalTime !== "00h 00m") { rHtml = `<div class="cal-record ${hN>=5?'high':''}">🔥 ${rec.totalTime}</div>`; }
+                // 데이터가 00:00 이면 아예 렌더링을 컷하여 깔끔한 빈 칸 유지
+                if(rec.targetTime && rec.targetTime !== "00h 00m" && rec.targetTime !== "0h 0m") { 
+                    let compactTarget = rec.targetTime.replace('h ', ':').replace('m', '');
+                    tHtml = `<div class="cal-badge target" title="목표 시간">${compactTarget}</div>`; 
+                }
+                if(rec.totalTime && rec.totalTime !== "00h 00m" && rec.totalTime !== "0h 0m") { 
+                    let compactTotal = rec.totalTime.replace('h ', ':').replace('m', '');
+                    rHtml = `<div class="cal-badge actual ${hN>=5?'high':''}" title="실제 시간">${compactTotal}</div>`; 
+                }
                 if(rec.todo && rec.todo.trim() !== '') hasTodo = true;
             }
             
-            let todoDot = hasTodo ? `<div style="width:6px; height:6px; background:#0ea5e9; border-radius:50%; position:absolute; top:8px; right:8px;"></div>` : '';
+            let todoDot = hasTodo ? `<div style="width:6px; height:6px; background:#0ea5e9; border-radius:50%; position:absolute; top:6px; right:6px;"></div>` : '';
             let dayClass = "date-num"; let dOfWeek = new Date(y, m, i).getDay();
             if(dOfWeek === 0) dayClass += " sun"; else if(dOfWeek === 6) dayClass += " sat";
-            newHtml += `<div class="cal-day ${isToday?'today':''}" style="position:relative;" onclick="SFX.play('pop'); showModal('${dStr}')"><div class="${dayClass}">${i}</div>${todoDot}${rHtml}</div>`;
+            
+            newHtml += `<div class="cal-day ${isToday?'today':''}" onclick="SFX.play('pop'); document.body.style.overflow='hidden'; showModal('${dStr}')">
+                <div class="${dayClass}">${i}</div>${todoDot}
+                <div class="cal-badge-wrap">
+                    ${tHtml}${rHtml}
+                </div>
+            </div>`;
         }
         grid.innerHTML = newHtml;
     }
     
     function showModal(dStr) {
-        const rec = dailyRecords[dStr] || { totalTime: "00h 00m", details: [], diary: "", todo: "" }; 
+        const rec = dailyRecords[dStr] || { totalTime: "00h 00m", targetTime: "00h 00m", details: [], diary: "", todo: "" }; 
         document.getElementById('modal-title').innerText = `📅 ${dStr}`;
         
         let html = `
             <div class="modal-total-time">
-                <span>총 집중 시간</span>
-                <strong>${rec.totalTime}</strong>
+                <div>
+                    <span>목표 시간</span>
+                    <strong class="target-text">${rec.targetTime || "00h 00m"}</strong>
+                </div>
+                <div>
+                    <span>집중 시간</span>
+                    <strong>${rec.totalTime}</strong>
+                </div>
             </div>
         `;
         
@@ -1293,7 +1528,7 @@
             <div style="background:#f0f9ff; border:1px solid #bae6fd; padding:15px; border-radius:16px; margin-bottom:15px; position:relative;">
                 <div style="font-size:14px; font-weight:800; color:#0284c7; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
                     <span>✅ 할 일 (To-Do)</span>
-                    <button style="background:none; border:none; color:#0ea5e9; font-weight:bold; cursor:pointer; font-size:13px; padding:0;" onclick="SFX.play('pop'); openTodoModal('${dStr}')">✏️ 작성/수정</button>
+                    <button style="background:none; border:none; color:#0ea5e9; font-weight:bold; cursor:pointer; font-size:13px; padding:0;" onclick="SFX.play('pop'); openTextModal('todo', '${dStr}')">✏️ 작성/수정</button>
                 </div>
                 <div style="font-size:13.5px; color:var(--text-muted); line-height:1.6; white-space:pre-wrap; word-break:break-word;">${rec.todo ? Utils.escapeHTML(rec.todo) : '<span style="color:#94a3b8; font-style:italic;">등록된 할 일이 없습니다.</span>'}</div>
             </div>
@@ -1303,13 +1538,13 @@
             <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:16px; margin-bottom:20px;">
                 <div style="font-size:14px; font-weight:800; color:var(--text-main); margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
                     <span>📝 나의 일기</span>
-                    <button style="background:none; border:none; color:#8b5cf6; font-weight:bold; cursor:pointer; font-size:13px; padding:0;" onclick="SFX.play('pop'); openDiaryModal('${dStr}')">✏️ 작성/수정</button>
+                    <button style="background:none; border:none; color:#8b5cf6; font-weight:bold; cursor:pointer; font-size:13px; padding:0;" onclick="SFX.play('pop'); openTextModal('diary', '${dStr}')">✏️ 작성/수정</button>
                 </div>
                 <div style="font-size:13.5px; color:var(--text-muted); line-height:1.6; white-space:pre-wrap; word-break:break-word;">${rec.diary && rec.diary.trim() !== '' ? Utils.escapeHTML(rec.diary) : '<span style="color:#94a3b8; font-style:italic;">등록된 일기가 없습니다.</span>'}</div>
             </div>
         `;
         
-        let valid = rec.details ? rec.details.filter(d => d.min > 0 || (d.note && d.note !== "null" && d.note.trim() !== "")) : [];
+        let valid = rec.details ? rec.details.filter(d => d.min > 0 || d.isTarget || (d.note && d.note !== "null" && d.note.trim() !== "")) : [];
         
         if(valid.length === 0) {
             html += `<div class="tl-empty-state">세부 타임라인 기록이 없습니다.</div>`; 
@@ -1317,14 +1552,20 @@
             html += `<div class="timeline">`;
             valid.forEach(d => {
                 let isFocused = d.min > 0;
+                let isPlanned = d.isTarget && !isFocused; 
                 let n = (d.note && d.note !== "null" && d.note.trim() !== "") ? Utils.escapeHTML(d.note.trim()) : "";
                 let contentInner = "";
-                if (isFocused && n !== "") contentInner = `<div class="tl-badge">🔥 ${d.min}분 몰입</div><div class="tl-note">${n}</div>`;
-                else if (isFocused && n === "") contentInner = `<div class="tl-badge" style="margin-bottom:0;">🔥 ${d.min}분 몰입</div>`;
-                else if (!isFocused && n !== "") contentInner = `<div class="tl-note">${n}</div>`;
+                
+                let badgeStr = "";
+                if(isFocused) badgeStr = `<div class="tl-badge" ${n===''?'style="margin-bottom:0;"':''}>🔥 ${d.min}분 몰입</div>`;
+                else if(isPlanned) badgeStr = `<div class="tl-badge target" ${n===''?'style="margin-bottom:0;"':''}>🎯 목표 구간</div>`;
+                
+                if (badgeStr && n !== "") contentInner = `${badgeStr}<div class="tl-note">${n}</div>`;
+                else if (badgeStr && n === "") contentInner = `${badgeStr}`;
+                else if (!badgeStr && n !== "") contentInner = `<div class="tl-note">${n}</div>`;
 
                 html += `
-                    <div class="timeline-item ${isFocused ? 'focused' : ''}">
+                    <div class="timeline-item ${isFocused ? 'focused' : (isPlanned ? 'planned' : '')}">
                         <div class="tl-time">${d.time}</div>
                         <div class="tl-content" ${n === '' ? 'style="padding: 10px 14px;"' : ''}>${contentInner}</div>
                     </div>
@@ -1345,6 +1586,7 @@
 
     async function generateInstaImage(themeKey) {
         document.getElementById('theme-modal').style.display = 'none';
+        document.body.style.overflow = '';
         saveAndRefresh();
         
         let dStr = Utils.getLogicalDateString(); 
@@ -1372,14 +1614,17 @@
 
         try {
             await document.fonts.ready;
-            
             setTimeout(async () => {
-                const canvas = await html2canvas(card, { scale: 2, useCORS: true, logging: false, backgroundColor: null, width: 1080, height: 1500, windowWidth: 1080, windowHeight: 1500 });
-                document.getElementById('capture-result-img').src = canvas.toDataURL("image/jpeg", 1.0);
-                showLoading(false); document.body.style.overflow = 'auto'; document.getElementById('capture-modal').style.display = 'flex';
+                try {
+                    const canvas = await html2canvas(card, { scale: 2, useCORS: true, logging: false, backgroundColor: null, width: 1080, height: 1500, windowWidth: 1080, windowHeight: 1500 });
+                    document.getElementById('capture-result-img').src = canvas.toDataURL("image/jpeg", 1.0);
+                    showLoading(false); document.body.style.overflow = 'auto'; document.getElementById('capture-modal').style.display = 'flex'; document.body.style.overflow='hidden';
+                } catch(err) {
+                    showLoading(false); document.body.style.overflow = ''; showToast("이미지 렌더링에 실패했습니다.");
+                }
             }, 300);
         } catch (e) {
-            showLoading(false); document.body.style.overflow = 'auto'; alert("이미지 생성에 실패했습니다.");
+            showLoading(false); document.body.style.overflow = ''; showToast("이미지 생성에 실패했습니다.");
         }
     }
 
