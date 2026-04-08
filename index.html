@@ -12,8 +12,8 @@
 <link rel="manifest" href="manifest.json">
 
 <title>24H 전력질주 페이스메이커</title>
-<link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2936/2936886.png">
-<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2936/2936886.png">
+<link rel="icon" href="icon-512.png">
+<link rel="apple-touch-icon" href="icon-512.png">
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -209,7 +209,7 @@
             <div class="action-row">
                 <button class="btn-action" style="background:#8b5cf6; color:white;" onclick="SFX.play('pop'); openDiaryModal(Utils.getLogicalDateString())">📝 일기</button>
                 <button class="btn-action" style="background:#0ea5e9; color:white;" onclick="SFX.play('pop'); openTodoModal(Utils.getLogicalDateString())">✅ 할일</button>
-                <button class="btn-action" style="background:var(--success); color:white; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);" onclick="SFX.play('tap'); manualForceSave()">💾 저장</button>
+                <button id="btn-manual-save" class="btn-action" style="background:var(--success); color:white; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);" onclick="SFX.play('tap'); manualForceSave()">💾 저장</button>
             </div>
         </div>
         
@@ -305,44 +305,35 @@
         </div>
 
         <div style="max-height: 55vh; overflow-y: auto; padding-right: 5px;">
-            <!-- v4.1.0 alpha -->
+            <!-- 신규 패치노트 내역 추가 -->
             <div class="guide-box success">
-                <div class="guide-title">✨ 4.1.0 alpha (최신 업데이트)</div>
+                <div class="guide-title">🚀 0.4.7 Alpha (성능 & 안정성 팩)</div>
                 <div class="guide-desc">
-                    • <b>시스템 안정성 대폭 향상:</b> 백그라운드 날짜 리셋 시 발생하던 기록 증발 현상 방어 및 인터넷 끊김(오프라인) 상태에 대비한 안전망 로직이 추가되었습니다.<br>
-                    • <b>프리미엄 효과음(SFX):</b> 상용 앱 수준의 고급스러운 사운드 탑재!<br>
-                    • <b>UI/UX 개편:</b> 버튼 디자인 세련화 및 더티 체크(Dirty Check) 로직으로 불필요한 저장 알림을 없앴습니다.
+                    • <b>동기화 구조 개편:</b> 데이터 분할(Chunk) 전송 안정성을 극대화하고 이중 저장(연타) 꼬임을 원천 차단했습니다.<br>
+                    • <b>리셋 철벽 방어:</b> 새벽 5시 날짜 변경 시 타임워프 기록이 증발하지 않도록 절대 안전망을 추가했습니다.<br>
+                    • <b>기기 환경 최적화:</b> 폰트 렌더링, 오디오 엔진 휴면 방지, 로컬 스토리지 에러 방어 로직이 적용되었습니다.
                 </div>
             </div>
-
-            <!-- v0.4.0 -->
-            <div class="guide-box purple">
-                <div class="guide-title">📸 v0.4.0</div>
-                <div class="guide-desc">
-                    • <b>인스타 캡처 기능 추가:</b> 캘린더에서 내 공부 기록을 4가지 예쁜 감성 테마(봄/여름/가을/겨울) 이미지로 저장하여 공유할 수 있습니다.
-                </div>
-            </div>
-
-            <!-- v0.3.0 -->
-            <div class="guide-box info">
-                <div class="guide-title">☁️ v0.3.0</div>
-                <div class="guide-desc">
-                    • <b>완벽한 클라우드 동기화:</b> 구글 서버 연동으로 여러 기기(폰, 태블릿, PC)에서 기록이 실시간으로 동기화됩니다.<br>
-                    • <b>타임워프 바통 터치:</b> 한 기기에서 타이머를 켜두고 다른 기기로 접속하면, 끊김 없이 타이머 시간이 이어집니다.
-                </div>
-            </div>
-
-            <!-- v0.2.0 -->
             <div class="guide-box primary">
-                <div class="guide-title">📅 v0.2.0</div>
+                <div class="guide-title">🛡️ 0.4.5 (보안 패치)</div>
                 <div class="guide-desc">
-                    • <b>캘린더 및 할 일/일기 추가:</b> 하루 전체 기록을 관리하고 날짜별 다짐과 회고를 기록할 수 있습니다.<br>
-                    • <b>새벽 5시 리셋 규칙:</b> 밤샘 공부족을 위해 매일 새벽 5시에 하루가 초기화되도록 시스템이 변경되었습니다.
+                    • 비밀번호 암호화(SHA-256) 적용 완료.<br>
+                    • 기기에서 로그아웃 시 타인이 내 기록을 볼 수 없도록 완벽한 데이터 소독 기능 추가.
                 </div>
             </div>
-
+            <div class="guide-box purple">
+                <div class="guide-title">✨ 0.4.1 (시스템 최적화)</div>
+                <div class="guide-desc">
+                    • 인터넷 끊김에 대비한 오프라인 안전망(임시 보관 기능) 추가.
+                </div>
+            </div>
+            <div class="guide-box info">
+                <div class="guide-title">📸 0.4.0 (인스타 캡처)</div>
+                <div class="guide-desc">
+                    • 캘린더에서 내 공부 기록을 4가지 예쁜 감성 테마(봄/여름/가을/겨울) 이미지로 변환하여 캡처하는 기능이 추가되었습니다.
+                </div>
+            </div>
         </div>
-
         <button class="btn-primary" style="margin-top:15px; padding:14px; border-radius:12px; font-size:15px;" onclick="SFX.play('tap'); document.getElementById('patch-note-modal').style.display='none'">확인 완료</button>
     </div>
 </div>
@@ -358,49 +349,25 @@
             <div style="font-size:14.5px; color:var(--text-main); font-weight:700; margin-bottom:20px; line-height:1.6; padding:0 5px;">
                 안녕하세요! 🎉<br>Pacemaker Planner에 오신 것을 환영합니다.<br>복잡하게 생각할 필요 없어요. <b>이 5가지만 순서대로 읽고 바로 시작해 보세요!</b>
             </div>
-            
             <div class="guide-box primary">
                 <div class="guide-title">▶️ 1단계. 그냥 누르세요! (스톱워치)</div>
-                <div class="guide-desc">
-                    공부를 시작할 때 맨 아래 파란색 <b>[▶ 재생]</b> 버튼을 꾹 누르세요. 끝입니다!<br>
-                    딴짓을 하러 다른 앱을 켜거나 카톡을 보러 가도, 우리의 든든한 타이머는 뒤에서 묵묵히 돌아갑니다. 시간이 지날수록 현재 시간에 맞춰 예쁜 색깔이 칠해지는 걸 구경해 보세요. 🎨
-                </div>
+                <div class="guide-desc">공부를 시작할 때 맨 아래 파란색 <b>[▶ 재생]</b> 버튼을 꾹 누르세요. 끝입니다!</div>
             </div>
-            
             <div class="guide-box success">
                 <div class="guide-title">📝 2단계. 메모와 일기 (저장은 자동!)</div>
-                <div class="guide-desc">
-                    • <b>블록 메모:</b> 색칠된 시간 옆 빈칸에 방금 무슨 과목을 공부했는지 가볍게 적어주세요.<br>
-                    • <b>[✅ 할일]:</b> 아침에 일어나서 오늘 부술(?) 목표들을 적습니다.<br>
-                    • <b>[📝 일기]:</b> 자기 전, 오늘 하루 고생한 나에게 칭찬 한마디를 남겨보세요.<br>
-                    👉 <b>걱정 마세요!</b> 창을 그냥 닫아버려도 인공지능(?)이 알아서 서버에 안전하게 자동 저장해 줍니다. 💾
-                </div>
+                <div class="guide-desc">블록 메모, 할일, 일기를 남겨보세요. 창을 닫아도 알아서 서버에 자동 저장해 줍니다.</div>
             </div>
-
             <div class="guide-box orange">
                 <div class="guide-title">📅 3단계. 내 기록 자랑하기 (캘린더)</div>
-                <div class="guide-desc">
-                    홈 화면에서 <b>[📅 전체 기록 보기]</b>를 누르면 그동안 달렸던 내 기록들이 달력에 모여 있습니다. 날짜를 콕 누르면 그날의 일기가 튀어나옵니다.<br><br>
-                    특히 <b>[📸 인스타 캡처]</b> 버튼을 꼭 눌러보세요! 오늘의 치열했던 기록이 4가지 계절 테마의 예쁜 감성 이미지로 변신합니다. 인스타 스토리에 올리기 딱 좋아요! ✨
-                </div>
+                <div class="guide-desc">홈 화면에서 전체 기록 보기를 누르고, <b>[📸 인스타 캡처]</b>로 예쁜 감성 이미지를 만들어보세요.</div>
             </div>
-
             <div class="guide-box info">
-                <div class="guide-title">☁️ 4단계. 아이패드와 폰 왔다 갔다 하기</div>
-                <div class="guide-desc">
-                    이 플래너는 '구글 서버'랑 찰떡같이 연결되어 있어요.<br>
-                    만약 태블릿에서 타이머를 켜두고 폰으로 로그인하잖아요? 놀랍게도 <b>타이머 시간이 그대로 이어져서 돌아가고 있을 겁니다 (이른바 타임워프 기능!).</b> ⏳<br>
-                    가끔 인터넷이 끊기면 상단에 <b>[📴 기기에 임시 저장됨]</b>이라고 뜨는데, 인터넷이 연결되면 다시 알아서 <b>[☁️ 갱신 중]</b>으로 바뀝니다. (정 불안하면 위에 있는 <b>[💾 저장]</b> 버튼을 꾹 눌러주세요!)
-                </div>
+                <div class="guide-title">☁️ 4단계. 기기 연동 (타임워프)</div>
+                <div class="guide-desc">태블릿에서 타이머를 켜두고 폰으로 로그인해도 <b>타이머 시간이 끊김없이 그대로 이어집니다.</b></div>
             </div>
-
             <div class="guide-box purple">
                 <div class="guide-title">🛡️ 5단계. 절대 안전망 (새벽 5시 리셋)</div>
-                <div class="guide-desc">
-                    밤샘 공부 하시는 분들 소리 질러! 🗣️<br>
-                    우리의 하루는 밤 12시가 아니라 <b>매일 새벽 5시에 리셋</b>됩니다. 4시 59분까지는 온전히 어제의 공부로 기록되니 안심하고 달리세요.<br>
-                    혹시 폰 배터리가 나가서 폰이 꺼져도 걱정 마세요. 켜는 순간 잃어버린 시간만큼 알아서 계산해서 복구해 주는 <b>절대 안전망</b>이 가동 중입니다.
-                </div>
+                <div class="guide-desc">우리의 하루는 밤 12시가 아니라 <b>매일 새벽 5시에 리셋</b>됩니다. 안심하고 달리세요!</div>
             </div>
         </div>
         
@@ -481,8 +448,8 @@
 </div>
 
 <script>
-    const APP_VERSION = "4.1.0 alpha"; 
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvMq7exZA_h3A2BExHjReBCMgJYlXRCc85u38YNBpnAOEk1Fd7wBnDtM89Hu9rO4dn/exec";
+    const APP_VERSION = "0.4.7 Alpha"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzF_y0GQbKSW_sTE0Fp8SifBYvx0TCWyQ--EuR_o15RtKNkxnwK70Vw2lEdCyMF4NIJ/exec";
     
     const Utils = {
         pad: (num) => String(num).padStart(2, '0'),
@@ -505,56 +472,43 @@
         getLogicalDateString: () => Utils.getRelativeDateString(0)
     };
 
+    async function hashSHA256(str) {
+        const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+        return Array.prototype.map.call(new Uint8Array(buf), x=>(('00'+x.toString(16)).slice(-2))).join('');
+    }
+
     const SFX = {
         ctx: null,
         init: function() {
-            if(!this.ctx) {
-                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if(this.ctx.state === 'suspended') this.ctx.resume(); // iOS 방어 코드 1
+            if(!this.ctx) { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+            if(this.ctx.state === 'suspended') this.ctx.resume(); 
         },
         play: function(type) {
             if(!isSoundOn) return;
             this.init();
-            if(this.ctx.state === 'suspended') this.ctx.resume(); // iOS 방어 코드 2 (확실하게 깨우기)
+            if(this.ctx.state === 'suspended') this.ctx.resume(); 
             try {
                 const t = this.ctx.currentTime;
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-
+                osc.connect(gain); gain.connect(this.ctx.destination);
                 if (type === 'tap') { 
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(600, t);
-                    osc.frequency.exponentialRampToValueAtTime(300, t + 0.05);
-                    gain.gain.setValueAtTime(0.1, t);
-                    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.05);
-                    osc.start(t);
-                    osc.stop(t + 0.05);
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(600, t); osc.frequency.exponentialRampToValueAtTime(300, t + 0.05);
+                    gain.gain.setValueAtTime(0.1, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.05); osc.start(t); osc.stop(t + 0.05);
                 } else if (type === 'success') { 
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(400, t);
-                    osc.frequency.setValueAtTime(600, t + 0.1);
-                    gain.gain.setValueAtTime(0, t);
-                    gain.gain.linearRampToValueAtTime(0.1, t + 0.05);
-                    gain.gain.linearRampToValueAtTime(0, t + 0.3);
-                    osc.start(t);
-                    osc.stop(t + 0.3);
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(400, t); osc.frequency.setValueAtTime(600, t + 0.1);
+                    gain.gain.setValueAtTime(0, t); gain.gain.linearRampToValueAtTime(0.1, t + 0.05); gain.gain.linearRampToValueAtTime(0, t + 0.3); osc.start(t); osc.stop(t + 0.3);
                 } else if (type === 'pop') { 
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(300, t);
-                    osc.frequency.exponentialRampToValueAtTime(500, t + 0.1);
-                    gain.gain.setValueAtTime(0.05, t);
-                    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
-                    osc.start(t);
-                    osc.stop(t + 0.1);
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(300, t); osc.frequency.exponentialRampToValueAtTime(500, t + 0.1);
+                    gain.gain.setValueAtTime(0.05, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1); osc.start(t); osc.stop(t + 0.1);
                 }
             } catch(e) {}
         }
     };
+    
+    // [보안/버그 방어] iOS 및 모바일 환경에서 오디오 엔진(Suspend) 강제 기상 보강
     document.body.addEventListener('click', () => SFX.init(), { once: true });
-    document.body.addEventListener('touchstart', () => SFX.init(), { once: true });
+    document.body.addEventListener('touchstart', () => { SFX.init(); if(SFX.ctx && SFX.ctx.state === 'suspended') SFX.ctx.resume(); }, { passive: true });
 
     const DBEngine = {
         db: null,
@@ -574,10 +528,7 @@
                 if(!this.db) return resolve([]);
                 let tx = this.db.transaction(["store"], "readonly");
                 let req = tx.objectStore("store").getAll();
-                req.onsuccess = () => {
-                    let res = req.result || [];
-                    resolve(res.filter(item => item.id.startsWith(prefix)));
-                };
+                req.onsuccess = () => { resolve((req.result || []).filter(item => item.id.startsWith(prefix))); };
                 req.onerror = () => resolve([]);
             });
         },
@@ -589,11 +540,15 @@
             } catch(e) {}
         },
         remove: function(id) {
-            if(!this.db) return;
-            try {
-                let tx = this.db.transaction(["store"], "readwrite");
-                tx.objectStore("store").delete(id);
-            } catch(e) {}
+            return new Promise((resolve) => {
+                if(!this.db) return resolve(false);
+                try {
+                    let tx = this.db.transaction(["store"], "readwrite");
+                    let req = tx.objectStore("store").delete(id);
+                    req.onsuccess = () => resolve(true);
+                    req.onerror = () => resolve(false);
+                } catch(e) { resolve(false); }
+            });
         }
     };
 
@@ -613,140 +568,103 @@
     let currentRenderDate = new Date();
 
     const timeData = Array.from({ length: 48 }, (_, i) => {
-        let h = (5 + Math.floor(i * 30 / 60)) % 24;
-        let m = (i * 30) % 60;
+        let h = (5 + Math.floor(i * 30 / 60)) % 24; let m = (i * 30) % 60;
         return { time: `${Utils.pad(h)}:${Utils.pad(m)}` };
     });
 
     window.addEventListener('beforeunload', (e) => { if (isRunning) { e.preventDefault(); e.returnValue = ''; } });
     
     window.addEventListener('online', () => { 
-        if (activeUser) {
-            showToast("🌐 네트워크가 복구되었습니다. 동기화를 재개합니다.");
-            triggerAutoSync(); 
-        }
+        if (activeUser) { showToast("🌐 네트워크가 복구되었습니다."); triggerAutoSync(true); }
     });
 
     function updateSpacers() {
-        const h1 = document.getElementById('main-header');
-        const s1 = document.getElementById('study-spacer');
+        const h1 = document.getElementById('main-header'); const s1 = document.getElementById('study-spacer');
         if(h1 && s1) s1.style.height = h1.offsetHeight + 'px';
-
-        const h2 = document.getElementById('cal-main-header');
-        const s2 = document.getElementById('cal-spacer');
+        const h2 = document.getElementById('cal-main-header'); const s2 = document.getElementById('cal-spacer');
         if(h2 && s2) s2.style.height = h2.offsetHeight + 'px';
     }
     window.addEventListener('resize', updateSpacers);
 
-    window.addEventListener('click', (e) => {
-        if(e.target.classList.contains('overlay-base') && e.target.id !== 'loading-overlay' && e.target.id !== 'capture-modal') {
-            SFX.play('tap');
-            if(e.target.id === 'diary-modal') { saveDiary(); return; }
-            if(e.target.id === 'todo-modal') { saveTodo(); return; }
-            e.target.style.display = 'none';
-        }
-    });
-    
     document.addEventListener("visibilitychange", async () => {
+        // [버그 방어] 화면 켜질 때 사운드 엔진 강제 깨우기 추가
+        if (document.visibilityState === "visible" && SFX.ctx && SFX.ctx.state === 'suspended') SFX.ctx.resume();
+
         if (document.visibilityState === "hidden") {
             const activeEl = document.activeElement;
             if (activeEl && activeEl.classList.contains('note-input')) {
-                const idx = parseInt(activeEl.id.split('_')[1]);
-                if(!isNaN(idx)) saveNote(idx, activeEl.value);
-            } 
-            else if (activeEl && activeEl.id === 'diary-input') saveDiary(true);
+                const idx = parseInt(activeEl.id.split('_')[1]); if(!isNaN(idx)) saveNote(idx, activeEl.value);
+            } else if (activeEl && activeEl.id === 'diary-input') saveDiary(true);
             else if (activeEl && activeEl.id === 'todo-input') saveTodo(true);
+            
+            if(activeUser && navigator.onLine) triggerAutoSync(true); 
         } 
         else if (document.visibilityState === "visible") {
             if (isRunning) {
-                const now = Date.now();
-                const passedSecs = Math.floor((now - lastTickTime) / 1000);
-                if (passedSecs >= 2) { 
-                    distributeTime(lastTickTime, passedSecs);
-                    lastTickTime += passedSecs * 1000; 
-                    saveAndRefresh();
-                }
+                const now = Date.now(); const passedSecs = Math.floor((now - lastTickTime) / 1000);
+                if (passedSecs >= 2) { distributeTime(lastTickTime, passedSecs); lastTickTime += passedSecs * 1000; saveAndRefresh(); }
             } else if (activeUser && activePw && navigator.onLine && !isSyncing) {
                 const ind = document.getElementById('sync-indicator');
                 if(ind) ind.innerText = "☁️ 갱신 중...";
                 const res = await loadAllDataFromServer();
-                if(res.success && res.data && res.data !== "{}") {
-                    applyCloudData(JSON.parse(res.data), true);
-                }
+                if(res.success && res.data && res.data !== "{}") { applyCloudData(JSON.parse(res.data), true); }
                 if(ind) ind.innerText = "";
             }
-            checkNewDay();
-            updateDashboardTodoAlert(); 
+            checkNewDay(); updateDashboardTodoAlert(); 
         }
     });
 
     window.onload = async function() {
         document.querySelectorAll('.app-version-display').forEach(el => el.innerText = APP_VERSION);
-        
         await DBEngine.init();
 
         if (activeUser && activePw) {
+            if (activePw.length !== 64) {
+                showLoading(true, "보안 시스템 업그레이드 중... 🛡️");
+                activePw = await hashSHA256(activePw); localStorage.setItem('activePw', activePw); showLoading(false);
+            }
             let dbData = await DBEngine.getAll(activeUser + '_');
             dbData.forEach(item => memCache[item.id] = item.value);
-
-            let lsDaily = localStorage.getItem(activeUser + '_dailyRecords');
-            if (lsDaily && !memCache[activeUser + '_dailyRecords']) {
-                for (let i = 0; i < localStorage.length; i++) {
-                    let k = localStorage.key(i);
-                    if (k && k.startsWith(activeUser + '_')) {
-                        let v = localStorage.getItem(k);
-                        memCache[k] = v;
-                        DBEngine.set(k, v);
-                    }
-                }
-                localStorage.removeItem(activeUser + '_dailyRecords');
-                for(let i=0; i<48; i++) localStorage.removeItem(activeUser + `_note_${i}`);
-            }
 
             document.getElementById('login-view').style.display = 'none';
             document.getElementById('loading-text').innerText = "클라우드 대조 중... 🛰️";
             const res = await loadAllDataFromServer();
             document.getElementById('loading-overlay').style.display = 'none';
 
-            if(res.success && res.data && res.data !== "{}") applyCloudData(JSON.parse(res.data), true);
-            else initLocalState(); 
-            startDashboard();
-        } else {
-            document.getElementById('loading-overlay').style.display = 'none';
-            document.getElementById('login-view').style.display = 'flex';
-        }
+            if(res.success) {
+                if(res.data && res.data !== "{}") applyCloudData(JSON.parse(res.data), true);
+                else initLocalState(); 
+                startDashboard();
+            } else {
+                document.getElementById('login-view').style.display = 'flex';
+                document.getElementById('login-status').innerText = res.message || "세션이 만료되었습니다. 다시 로그인해주세요.";
+                localStorage.removeItem('activeUser'); localStorage.removeItem('activePw'); activeUser = null; activePw = null;
+            }
+        } else { document.getElementById('loading-overlay').style.display = 'none'; document.getElementById('login-view').style.display = 'flex'; }
     }
 
-    // 용량 초과 에러 방어(Try-Catch) 보강
-    function getL(k) { return memCache[activeUser + '_' + k] || null; }
+    // [버그 방어] 로컬 스토리지 한계(QuotaExceeded) 부드러운 핸들링
     function setL(k, v) { 
         try {
             memCache[activeUser + '_' + k] = v; 
             DBEngine.set(activeUser + '_' + k, v); 
+            if(k !== 'dailyRecords') localStorage.setItem(activeUser + '_' + k, v); 
         } catch(e) {
-            console.error("Local Storage Save Error", e);
+            console.error("Local Save Error", e);
+            showToast("🚨 기기 저장 공간이 부족할 수 있습니다.");
         }
     }
-    function removeL(k) { 
-        try {
-            delete memCache[activeUser + '_' + k]; 
-            DBEngine.remove(activeUser + '_' + k); 
-        } catch(e) {}
-    }
+    function getL(k) { return memCache[activeUser + '_' + k] || localStorage.getItem(activeUser + '_' + k) || null; }
+    function removeL(k) { try { delete memCache[activeUser + '_' + k]; DBEngine.remove(activeUser + '_' + k); localStorage.removeItem(activeUser + '_' + k); } catch(e) {} }
 
     function saveUserLocalData(d) {
         ['blockSeconds', 'backupSeconds', 'alarmedBlocks', 'settings'].forEach(k => { if (d[k]) setL(k, d[k]); });
-        
         if (d['dailyRecords']) {
             try {
-                let localRec = JSON.parse(getL('dailyRecords') || '{}');
-                let cloudRec = JSON.parse(d['dailyRecords'] || '{}');
-                let mergedRec = {};
-                let allDates = new Set([...Object.keys(localRec), ...Object.keys(cloudRec)]);
-
+                let localRec = JSON.parse(getL('dailyRecords') || '{}'); let cloudRec = JSON.parse(d['dailyRecords'] || '{}');
+                let mergedRec = {}; let allDates = new Set([...Object.keys(localRec), ...Object.keys(cloudRec)]);
                 allDates.forEach(date => {
-                    let l = localRec[date] || {};
-                    let c = cloudRec[date] || {};
+                    let l = localRec[date] || {}; let c = cloudRec[date] || {};
                     mergedRec[date] = {
                         totalTime: (c.totalTime && c.totalTime !== "00h 00m") ? c.totalTime : (l.totalTime || "00h 00m"),
                         details: (c.details && c.details.length > 0) ? c.details : (l.details || []),
@@ -757,7 +675,6 @@
                 setL('dailyRecords', JSON.stringify(mergedRec));
             } catch(e) {}
         }
-        
         for (let i=0; i<48; i++) { let n = d[`note_${i}`]; if (n && n !== "null" && n.trim() !== "") setL(`note_${i}`, n); else removeL(`note_${i}`); }
     }
 
@@ -774,28 +691,19 @@
         try {
             const uid = customId || activeUser;
             const body = { userId: uid, password: activePw, action: action, data: dataObj };
-            const res = await fetch(SCRIPT_URL, { 
-                redirect: "follow", method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, 
-                body: JSON.stringify(body), signal: controller.signal
-            });
-            clearTimeout(timeoutId);
-            return await res.json();
-        } catch(e) { 
-            clearTimeout(timeoutId);
-            return { success: false, message: "네트워크 불안정" }; 
-        }
+            const res = await fetch(SCRIPT_URL, { redirect: "follow", method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body), signal: controller.signal });
+            clearTimeout(timeoutId); return await res.json();
+        } catch(e) { clearTimeout(timeoutId); return { success: false, message: "네트워크 불안정" }; }
     }
 
     async function saveAllDataToServer() {
         let fullStr = JSON.stringify(getUserLocalData());
         const CHUNK_SIZE = 40000; 
-
         if (fullStr.length <= CHUNK_SIZE) {
             return await fetchServer("save", { type: "single", content: fullStr });
         } else {
             let chunks = [];
             for (let i = 0; i < fullStr.length; i += CHUNK_SIZE) chunks.push(fullStr.substring(i, i + CHUNK_SIZE));
-            
             for (let i = 0; i < chunks.length; i++) {
                 let res = await fetchServer("save", { type: "chunk", index: i, content: chunks[i] }, activeUser + "_p" + i);
                 if (!res.success) return res;
@@ -807,92 +715,74 @@
     async function loadAllDataFromServer() {
         let res = await fetchServer("login_load");
         if (!res.success || !res.data) return res;
-
         let parsed;
         try { parsed = JSON.parse(res.data); } catch(e) { return { success: true, data: res.data }; }
-
-        if (parsed && parsed.type === "single") {
-            return { success: true, data: parsed.content };
-        } else if (parsed && parsed.type === "master") {
-            let count = parsed.chunkCount;
-            let fullStr = "";
+        if (parsed && parsed.type === "single") { return { success: true, data: parsed.content }; } 
+        else if (parsed && parsed.type === "master") {
+            let count = parsed.chunkCount; let fullStr = "";
             for (let i = 0; i < count; i++) {
                 let cRes = await fetchServer("login_load", null, activeUser + "_p" + i);
-                if (cRes.success && cRes.data) {
-                    let cParsed = JSON.parse(cRes.data);
-                    fullStr += cParsed.content;
-                } else return { success: false, message: "분할 데이터 로드 실패" };
+                if (cRes.success && cRes.data) { let cParsed = JSON.parse(cRes.data); fullStr += cParsed.content; } 
+                else return { success: false, message: "분할 데이터 로드 실패" };
             }
             return { success: true, data: fullStr };
-        } else {
-            return { success: true, data: res.data };
-        }
+        } else { return { success: true, data: res.data }; }
     }
 
     async function loadFromCloud(silent = false) {
-        // 인터넷 오프라인 감지 시 빠른 차단 (무한 로딩 방어)
         if(!navigator.onLine) return showToast("📴 인터넷 연결을 확인해주세요.");
-
         if (isSyncing) return showToast("⏳ 이미 동기화가 진행 중입니다.");
-        isSyncing = true;
-        const ind = document.getElementById('sync-indicator');
-        if(ind) ind.innerText = "☁️ 불러오는 중...";
-        
+        isSyncing = true; const ind = document.getElementById('sync-indicator'); if(ind) ind.innerText = "☁️ 불러오는 중...";
         showLoading(true, "클라우드 데이터 대조 중... ☁️");
-        
         try {
             const res = await loadAllDataFromServer();
-            if (res.success && res.data && res.data !== "{}") {
-                applyCloudData(JSON.parse(res.data), silent);
-                if (!silent) { SFX.play('success'); showToast("✅ 클라우드 동기화 완료!"); }
-            } else {
-                if (!silent) { SFX.play('tap'); showToast("❌ 최신 데이터를 불러오지 못했습니다."); }
-            }
-        } catch(e) {
-            if (!silent) showToast("❌ 통신 상태가 원활하지 않습니다.");
-        } finally {
-            showLoading(false);
-            if(ind) ind.innerText = "";
-            isSyncing = false;
-        }
+            if (res.success && res.data && res.data !== "{}") { applyCloudData(JSON.parse(res.data), silent); if (!silent) { SFX.play('success'); showToast("✅ 클라우드 동기화 완료!"); } } 
+            else { if (!silent) { SFX.play('tap'); showToast("❌ 최신 데이터를 불러오지 못했습니다."); } }
+        } catch(e) { if (!silent) showToast("❌ 통신 상태가 원활하지 않습니다."); } 
+        finally { showLoading(false); if(ind) ind.innerText = ""; isSyncing = false; }
     }
 
     async function performSync() {
         if (isSyncing) { pendingSync = true; return; }
-        isSyncing = true;
-        const ind = document.getElementById('sync-indicator');
+        isSyncing = true; const ind = document.getElementById('sync-indicator');
         try {
             if(ind) ind.innerText = "☁️ 동기화 중...";
             syncTodayRecord(); 
             const res = await saveAllDataToServer();
             if(ind) {
                 ind.innerText = res.success ? "✅ 완료" : "❌ 실패"; 
-                setTimeout(() => { if(ind.innerText.includes("완료") || ind.innerText.includes("실패")) ind.innerText = ""; }, 2000);
+                setTimeout(() => { if(ind && (ind.innerText.includes("완료") || ind.innerText.includes("실패"))) ind.innerText = ""; }, 2000);
             }
         } finally {
             isSyncing = false;
-            if (pendingSync) { pendingSync = false; performSync(); }
+            if (pendingSync) { pendingSync = false; setTimeout(() => performSync(), 2000); }
         }
     }
 
-    function triggerAutoSync() {
+    function triggerAutoSync(immediate = false) {
         const ind = document.getElementById('sync-indicator');
         if (!navigator.onLine) {
             if(ind) ind.innerText = "📴 기기에 임시 저장됨";
-            setTimeout(() => { if(ind) ind.innerText = ""; }, 3000);
+            setTimeout(() => { if(ind && ind.innerText.includes("임시")) ind.innerText = ""; }, 3000);
             return;
         }
         if(syncTimer) clearTimeout(syncTimer); 
-        syncTimer = setTimeout(() => { performSync(); }, 2000);
+        
+        if (immediate) {
+            performSync();
+        } else {
+            syncTimer = setTimeout(() => { performSync(); }, 2000); 
+        }
     }
 
     async function handleAuth() {
         activeUser = document.getElementById('login-id').value.trim();
-        activePw = document.getElementById('login-pw').value.trim();
+        let rawPw = document.getElementById('login-pw').value.trim();
         const statusEl = document.getElementById('login-status');
-        if(!activeUser || !activePw) { statusEl.innerText = "정보를 입력해주세요."; return; }
+        if(!activeUser || !rawPw) { statusEl.innerText = "정보를 입력해주세요."; return; }
         
-        showLoading(true, "로그인 중... ⏳"); 
+        showLoading(true, "보안 인증 및 로그인 중... 🔐"); 
+        activePw = await hashSHA256(rawPw);
         
         memCache = {};
         let dbData = await DBEngine.getAll(activeUser + '_');
@@ -902,62 +792,42 @@
         showLoading(false);
         
         if(res.success) {
-            localStorage.setItem('activeUser', activeUser); localStorage.setItem('activePw', activePw);
+            localStorage.setItem('activeUser', activeUser); localStorage.setItem('activePw', activePw); 
             document.getElementById('login-view').style.display = 'none';
             if(res.data && res.data !== "{}") applyCloudData(JSON.parse(res.data), true);
             else initLocalState(); 
             startDashboard();
         } else { 
-            statusEl.innerText = res.message; activeUser = null; activePw = null; 
+            statusEl.innerText = res.message || "로그인 실패"; activeUser = null; activePw = null; SFX.play('tap');
         }
     }
 
     function teleportToTodo(targetDStr) {
-        switchView('calendar'); 
-        currentRenderDate = new Date(targetDStr); 
-        renderCalendar();
-        showModal(targetDStr); 
+        switchView('calendar'); currentRenderDate = new Date(targetDStr); renderCalendar(); showModal(targetDStr); 
     }
 
     function updateDashboardTodoAlert() {
         let alertEl = document.getElementById('todo-alert-banner');
         let textEl = document.getElementById('todo-alert-text');
-        let foundTodo = null;
-        let dateLabel = "";
-        let targetDStr = "";
+        let foundTodo = null; let dateLabel = ""; let targetDStr = "";
 
         for(let i=0; i<=2; i++) { 
             let dStr = Utils.getRelativeDateString(i);
             if (dailyRecords[dStr] && dailyRecords[dStr].todo && dailyRecords[dStr].todo.trim() !== "") {
-                foundTodo = dailyRecords[dStr].todo.trim();
-                targetDStr = dStr;
-                if (i === 0) dateLabel = "오늘";
-                else if (i === 1) dateLabel = "내일";
-                else dateLabel = dStr.slice(5).replace('-', '/'); 
+                foundTodo = dailyRecords[dStr].todo.trim(); targetDStr = dStr;
+                if (i === 0) dateLabel = "오늘"; else if (i === 1) dateLabel = "내일"; else dateLabel = dStr.slice(5).replace('-', '/'); 
                 break;
             }
         }
-
-        if (foundTodo) {
-            alertEl.style.display = 'block';
-            textEl.innerText = `${dateLabel}: ${foundTodo}`;
-            alertEl.dataset.targetDStr = targetDStr; 
-        } else {
-            alertEl.style.display = 'none';
-        }
+        if (foundTodo) { alertEl.style.display = 'block'; textEl.innerText = `${dateLabel}: ${foundTodo}`; alertEl.dataset.targetDStr = targetDStr; } 
+        else { alertEl.style.display = 'none'; }
     }
 
     function startDashboard() {
-        updateHighlight(); 
-        setInterval(() => { updateHighlight(); checkNewDay(); }, 10000); 
+        updateHighlight(); setInterval(() => { updateHighlight(); checkNewDay(); }, 10000); 
         document.getElementById('dash-user-name').innerText = activeUser; 
-        
-        const setUid = document.getElementById('settings-userid');
-        if(setUid) setUid.innerText = activeUser;
-        
-        checkNewDay(); 
-        updateDashboardTodoAlert(); 
-        switchView('dashboard');
+        const setUid = document.getElementById('settings-userid'); if(setUid) setUid.innerText = activeUser;
+        checkNewDay(); updateDashboardTodoAlert(); switchView('dashboard');
     }
 
     function initLocalState() {
@@ -974,9 +844,7 @@
                 let r = JSON.parse(rStateLocal);
                 if (r.isRunning && r.startTime > 0) {
                     const passedSecs = Math.floor((Date.now() - r.startTime) / 1000);
-                    if (passedSecs > 0 && passedSecs < 86400) {
-                        distributeTime(r.startTime, passedSecs);
-                    }
+                    if (passedSecs > 0 && passedSecs < 86400) { distributeTime(r.startTime, passedSecs); }
                     startStopwatch();
                 }
             } catch(e){}
@@ -998,22 +866,15 @@
     }
 
     function applyCloudData(parsedData, silent) {
-        saveUserLocalData(parsedData); initLocalState();
-        let batonTaken = false;
-        
+        saveUserLocalData(parsedData); initLocalState(); let batonTaken = false;
         if (parsedData.runningState) {
             const rState = JSON.parse(parsedData.runningState);
             if (rState.isRunning && rState.startTime > 0) {
                 const passedSecs = Math.floor((Date.now() - rState.startTime) / 1000);
-                if (passedSecs > 0 && passedSecs < 86400) { 
-                    distributeTime(rState.startTime, passedSecs); batonTaken = true;
-                }
+                if (passedSecs > 0 && passedSecs < 86400) { distributeTime(rState.startTime, passedSecs); batonTaken = true; }
                 if (!isRunning) startStopwatch();
-            } else {
-                if (isRunning) stopStopwatch();
-            }
+            } else { if (isRunning) stopStopwatch(); }
         }
-        
         updateUI(true); renderCalendar(); updateHighlight(); updateDashboardTodoAlert();
         setL('lastLogicalDate', Utils.getLogicalDateString());
         if (batonTaken) { triggerAutoSync(); if(!silent) showToast("🔥 타임워프! 바통을 이어받았습니다."); } 
@@ -1027,36 +888,22 @@
         
         if (currentLogicDate !== lastLogicDate) {
             const wasRunning = isRunning;
-            // 타이머 기록 증발 방어 로직: 리셋 직전에 현재까지의 초를 모두 정산해서 어제 날짜에 박아버림
             if(wasRunning) {
-                const now = Date.now();
-                const passedSecs = Math.floor((now - lastTickTime) / 1000);
-                if (passedSecs > 0) {
-                    distributeTime(lastTickTime, passedSecs);
-                    lastTickTime += passedSecs * 1000;
-                    setL('blockSeconds', JSON.stringify(blockSeconds));
-                }
+                const now = Date.now(); const passedSecs = Math.floor((now - lastTickTime) / 1000);
+                if (passedSecs > 0) { distributeTime(lastTickTime, passedSecs); setL('blockSeconds', JSON.stringify(blockSeconds)); }
                 stopStopwatch();
             }
 
-            // 어제까지의 기록을 완벽하게 동기화 저장
             syncTodayRecord(lastLogicDate); 
+            triggerAutoSync(true); 
             
-            // 오늘 보드 초기화
-            blockSeconds = Array(48).fill(0); 
-            backupSeconds = Array(48).fill(0); 
-            alarmedBlocks = Array(48).fill(false); 
+            blockSeconds = Array(48).fill(0); backupSeconds = Array(48).fill(0); alarmedBlocks = Array(48).fill(false); 
             for(let i=0; i<48; i++) { removeL(`note_${i}`); if(domCache.notes[i]) domCache.notes[i].value = ""; }
             
-            setL('backupSeconds', JSON.stringify(backupSeconds)); 
-            setL('alarmedBlocks', JSON.stringify(alarmedBlocks));
-            setL('blockSeconds', JSON.stringify(blockSeconds));
-            setL('lastLogicalDate', currentLogicDate); 
+            setL('backupSeconds', JSON.stringify(backupSeconds)); setL('alarmedBlocks', JSON.stringify(alarmedBlocks));
+            setL('blockSeconds', JSON.stringify(blockSeconds)); setL('lastLogicalDate', currentLogicDate); 
             
             updateUI(true); updateHighlight(); renderCalendar(); updateDashboardTodoAlert();
-            triggerAutoSync();
-            
-            // 오늘자 타이머 재시동
             if(wasRunning) startStopwatch();
             showToast("🌅 새로운 하루가 시작되었습니다! 보드가 리셋되었습니다."); 
         }
@@ -1076,30 +923,17 @@
 
         if (has || existingDiary !== "" || existingTodo !== "") { 
             let finalTime = has ? totalStudyString : (dailyRecords[dStr] && dailyRecords[dStr].totalTime ? dailyRecords[dStr].totalTime : "00h 00m");
-            dailyRecords[dStr] = { 
-                totalTime: finalTime, 
-                details: det, 
-                diary: existingDiary,
-                todo: existingTodo
-            };
-        } else {
-            delete dailyRecords[dStr];
-        }
-        
+            dailyRecords[dStr] = { totalTime: finalTime, details: det, diary: existingDiary, todo: existingTodo };
+        } else { delete dailyRecords[dStr]; }
         try { setL('dailyRecords', JSON.stringify(dailyRecords)); } catch (e) {}
     }
 
     function openDiaryModal(targetDateStr = null) {
         let dStr = targetDateStr || Utils.getLogicalDateString();
         document.getElementById('diary-date-input').value = dStr;
-        
         let titlePrefix = (dStr === Utils.getLogicalDateString()) ? "오늘의" : dStr;
         document.getElementById('diary-modal-title').innerText = `📝 ${titlePrefix} 일기`;
-        
-        let currentDiary = "";
-        if (dailyRecords[dStr] && dailyRecords[dStr].diary) {
-            currentDiary = dailyRecords[dStr].diary;
-        }
+        let currentDiary = (dailyRecords[dStr] && dailyRecords[dStr].diary) ? dailyRecords[dStr].diary : "";
         document.getElementById('diary-input').value = currentDiary;
         document.getElementById('diary-modal').style.display = 'flex';
     }
@@ -1109,53 +943,30 @@
         let text = document.getElementById('diary-input').value.trim();
         let existingText = (dailyRecords[dStr] && dailyRecords[dStr].diary) ? dailyRecords[dStr].diary.trim() : "";
 
-        if (text === existingText) {
-            if(document.getElementById('diary-modal').style.display !== 'none') {
-                document.getElementById('diary-modal').style.display = 'none';
-            }
-            return;
-        }
-
+        if (text === existingText) { if(document.getElementById('diary-modal').style.display !== 'none') document.getElementById('diary-modal').style.display = 'none'; return; }
         if (!dailyRecords[dStr]) dailyRecords[dStr] = { totalTime: "00h 00m", details: [] };
         dailyRecords[dStr].diary = text;
         
         let hasNoStudy = (!dailyRecords[dStr].details || dailyRecords[dStr].details.length === 0) && (!dailyRecords[dStr].totalTime || dailyRecords[dStr].totalTime === "00h 00m" || dailyRecords[dStr].totalTime === "0h 0m");
-        
-        if (!text && hasNoStudy && (!dailyRecords[dStr].todo || dailyRecords[dStr].todo.trim() === "")) {
-            delete dailyRecords[dStr];
-        }
-        
+        if (!text && hasNoStudy && (!dailyRecords[dStr].todo || dailyRecords[dStr].todo.trim() === "")) delete dailyRecords[dStr];
         try { setL('dailyRecords', JSON.stringify(dailyRecords)); } catch (e) {}
         
-        if(document.getElementById('diary-modal').style.display !== 'none') {
-            document.getElementById('diary-modal').style.display = 'none';
-        }
-        
+        if(document.getElementById('diary-modal').style.display !== 'none') document.getElementById('diary-modal').style.display = 'none';
         if(!silent) {
-            SFX.play('success');
-            showToast("📝 일기가 저장되었습니다!");
+            SFX.play('success'); showToast("📝 일기가 저장되었습니다!");
             if(document.getElementById('calendar-view').style.display === 'flex') {
-                renderCalendar();
-                if(document.getElementById('record-modal').style.display === 'flex') {
-                    showModal(dStr);
-                }
+                renderCalendar(); if(document.getElementById('record-modal').style.display === 'flex') showModal(dStr);
             }
-            updateDashboardTodoAlert(); 
-            triggerAutoSync(); 
+            updateDashboardTodoAlert(); triggerAutoSync(); 
         }
     }
 
     function openTodoModal(targetDateStr = null) {
         let dStr = targetDateStr || Utils.getLogicalDateString();
         document.getElementById('todo-date-input').value = dStr;
-        
         let titlePrefix = (dStr === Utils.getLogicalDateString()) ? "오늘의" : dStr;
         document.getElementById('todo-modal-title').innerText = `✅ ${titlePrefix} 할 일`;
-        
-        let currentTodo = "";
-        if (dailyRecords[dStr] && dailyRecords[dStr].todo) {
-            currentTodo = dailyRecords[dStr].todo;
-        }
+        let currentTodo = (dailyRecords[dStr] && dailyRecords[dStr].todo) ? dailyRecords[dStr].todo : "";
         document.getElementById('todo-input').value = currentTodo;
         document.getElementById('todo-modal').style.display = 'flex';
     }
@@ -1165,39 +976,21 @@
         let text = document.getElementById('todo-input').value.trim();
         let existingText = (dailyRecords[dStr] && dailyRecords[dStr].todo) ? dailyRecords[dStr].todo.trim() : "";
 
-        if (text === existingText) {
-            if(document.getElementById('todo-modal').style.display !== 'none') {
-                document.getElementById('todo-modal').style.display = 'none';
-            }
-            return;
-        }
-
+        if (text === existingText) { if(document.getElementById('todo-modal').style.display !== 'none') document.getElementById('todo-modal').style.display = 'none'; return; }
         if (!dailyRecords[dStr]) dailyRecords[dStr] = { totalTime: "00h 00m", details: [] };
         dailyRecords[dStr].todo = text;
         
         let hasNoStudy = (!dailyRecords[dStr].details || dailyRecords[dStr].details.length === 0) && (!dailyRecords[dStr].totalTime || dailyRecords[dStr].totalTime === "00h 00m" || dailyRecords[dStr].totalTime === "0h 0m");
-        
-        if (!text && hasNoStudy && (!dailyRecords[dStr].diary || dailyRecords[dStr].diary.trim() === "")) {
-            delete dailyRecords[dStr];
-        }
-        
+        if (!text && hasNoStudy && (!dailyRecords[dStr].diary || dailyRecords[dStr].diary.trim() === "")) delete dailyRecords[dStr];
         try { setL('dailyRecords', JSON.stringify(dailyRecords)); } catch (e) {}
         
-        if(document.getElementById('todo-modal').style.display !== 'none') {
-            document.getElementById('todo-modal').style.display = 'none';
-        }
-        
+        if(document.getElementById('todo-modal').style.display !== 'none') document.getElementById('todo-modal').style.display = 'none';
         if(!silent) {
-            SFX.play('success');
-            showToast("✅ 할 일이 저장되었습니다!");
+            SFX.play('success'); showToast("✅ 할 일이 저장되었습니다!");
             if(document.getElementById('calendar-view').style.display === 'flex') {
-                renderCalendar();
-                if(document.getElementById('record-modal').style.display === 'flex') {
-                    showModal(dStr);
-                }
+                renderCalendar(); if(document.getElementById('record-modal').style.display === 'flex') showModal(dStr);
             }
-            updateDashboardTodoAlert(); 
-            triggerAutoSync(); 
+            updateDashboardTodoAlert(); triggerAutoSync(); 
         }
     }
 
@@ -1206,9 +999,7 @@
         try {
             const now = Date.now(); const passedSecs = Math.floor((now - lastTickTime) / 1000); 
             if (passedSecs >= 1) {
-                distributeTime(lastTickTime, passedSecs);
-                lastTickTime += passedSecs * 1000; 
-                saveAndRefresh();
+                distributeTime(lastTickTime, passedSecs); lastTickTime += passedSecs * 1000; saveAndRefresh();
             }
         } catch(e) { console.error("Timer tick error", e); }
         tickFrameId = requestAnimationFrame(tick);
@@ -1218,11 +1009,8 @@
         let startSec = Math.floor(startTimeMs / 1000);
         for (let s = 0; s < passedSecs; s++) {
             let d = new Date((startSec + s) * 1000);
-            let kstHour = (d.getUTCHours() + 9) % 24; 
-            let kstMin = d.getUTCMinutes();
-            
-            let absMins = Utils.getAbsMins(kstHour, kstMin);
-            let idx = Math.floor((absMins - 300) / 30);
+            let kstHour = (d.getUTCHours() + 9) % 24; let kstMin = d.getUTCMinutes();
+            let absMins = Utils.getAbsMins(kstHour, kstMin); let idx = Math.floor((absMins - 300) / 30);
             if (idx >= 0 && idx < 48 && blockSeconds[idx] < 1800) {
                 blockSeconds[idx]++;
                 if(blockSeconds[idx] === 1800 && isAlarmOn && !alarmedBlocks[idx]) {
@@ -1236,53 +1024,38 @@
     function saveAndRefresh() { setL('blockSeconds', JSON.stringify(blockSeconds)); updateUI(false); syncTodayRecord(); }
 
     function showLoading(show, text="처리 중... 🚀") { 
-        document.getElementById('loading-text').innerText = text;
-        document.getElementById('loading-overlay').style.display = show ? 'flex' : 'none'; 
+        document.getElementById('loading-text').innerText = text; document.getElementById('loading-overlay').style.display = show ? 'flex' : 'none'; 
     }
 
     let toastTimeout = null;
     function showToast(msg, isTimerAlarm = false) {
         if(isTimerAlarm && !isAlarmOn) return; 
-        const toast = document.getElementById('toast-notification');
-        document.getElementById('toast-msg').innerText = msg;
-        toast.classList.add('show');
-        
-        if(toastTimeout) clearTimeout(toastTimeout);
-        toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
+        const toast = document.getElementById('toast-notification'); document.getElementById('toast-msg').innerText = msg; toast.classList.add('show');
+        if(toastTimeout) clearTimeout(toastTimeout); toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
-    function playChime() {
-        if (!isSoundOn) return;
-        SFX.play('success'); 
-    }
+    function playChime() { if (!isSoundOn) return; SFX.play('success'); }
 
     function switchView(viewName) {
         document.querySelectorAll('.view-layer').forEach(el => el.style.display = 'none');
         if (viewName === 'dashboard') {
             document.getElementById('stopwatch-popup').style.display = 'none'; 
             document.getElementById('dashboard-view').style.display = 'flex';
-            document.getElementById('dash-today-time').innerText = totalStudyString; 
-            updateDashboardTodoAlert(); 
-            window.scrollTo(0, 0);
+            document.getElementById('dash-today-time').innerText = totalStudyString; updateDashboardTodoAlert(); window.scrollTo(0, 0);
         } else if (viewName === 'calendar') {
             document.getElementById('stopwatch-popup').style.display = 'none'; 
             document.getElementById('calendar-view').style.display = 'flex';
-            syncTodayRecord(); renderCalendar(); 
-            setTimeout(updateSpacers, 50); 
-            window.scrollTo(0, 0);
+            syncTodayRecord(); renderCalendar(); setTimeout(updateSpacers, 50); window.scrollTo(0, 0);
         } else if (viewName === 'study') {
             document.getElementById('stopwatch-popup').style.display = 'flex'; 
             document.getElementById('study-view').style.display = 'flex';
-            setTimeout(updateSpacers, 50); 
-            setTimeout(scrollToCurrent, 150);
+            setTimeout(updateSpacers, 50); setTimeout(scrollToCurrent, 150);
         }
     }
 
     function scrollToCurrent() {
         updateHighlight(); 
-        const targetElement = document.querySelector('.list-item.current');
-        const headerElement = document.getElementById('main-header');
-
+        const targetElement = document.querySelector('.list-item.current'); const headerElement = document.getElementById('main-header');
         if (targetElement && headerElement) {
             requestAnimationFrame(() => {
                 const dynamicOffset = headerElement.offsetHeight + 15; 
@@ -1293,8 +1066,7 @@
     }
 
     function updateHighlight() {
-        const n = Utils.getKoreaDate(); 
-        const cur = Utils.getAbsMins(n.getHours(), n.getMinutes());
+        const n = Utils.getKoreaDate(); const cur = Utils.getAbsMins(n.getHours(), n.getMinutes());
         document.getElementById('clock-display').innerText = `현재 시각 ${Utils.pad(n.getHours())}:${Utils.pad(n.getMinutes())}`;
         domCache.items.forEach((item) => {
             let s = parseInt(item.dataset.absMins);
@@ -1313,7 +1085,6 @@
                 <div class="time-col"><div class="time">${item.time}</div><div class="recorded-time" id="study_time_${i}">00:00</div></div>
                 <div class="text-wrapper"><input type="text" class="note-input" maxlength="100" id="note_${i}" placeholder="메모..." onchange="saveNote(${i}, this.value)"></div>`;
             scheduleList.appendChild(div);
-            
             domCache.items[i] = div; domCache.timeTexts[i] = document.getElementById(`study_time_${i}`);
             domCache.checks[i] = document.getElementById(`check_${i}`); domCache.notes[i] = document.getElementById(`note_${i}`);
             let savedNote = getL(`note_${i}`); if (savedNote && savedNote !== "null") domCache.notes[i].value = savedNote;
@@ -1326,8 +1097,7 @@
             let s = blockSeconds[i]; totalSecs += s;
             let str = `${Utils.pad(Math.floor(s/60))}:${Utils.pad(s%60)}`;
             if (force || domCache.timeTexts[i].innerText !== str) {
-                domCache.timeTexts[i].innerText = str;
-                domCache.checks[i].checked = (s >= 1800);
+                domCache.timeTexts[i].innerText = str; domCache.checks[i].checked = (s >= 1800);
                 domCache.timeTexts[i].className = s >= 1800 ? 'recorded-time active full' : s > 0 ? 'recorded-time active' : 'recorded-time';
             }
         }
@@ -1361,61 +1131,38 @@
     function saveNote(i, val) { if(!val.trim()) removeL(`note_${i}`); else setL(`note_${i}`, val.trim()); triggerAutoSync(); }
     
     function startStopwatch() { 
-        isRunning = true; 
-        lastTickTime = Date.now(); 
+        isRunning = true; lastTickTime = Date.now(); 
         let rState = JSON.stringify({ isRunning: true, startTime: lastTickTime });
-        setL('runningState', rState);
-        localStorage.setItem(activeUser + '_runningState', rState); 
-        
-        document.getElementById('toggle-timer-btn').innerHTML = '⏸'; 
-        document.getElementById('toggle-timer-btn').classList.add('running'); 
-        
-        if(tickFrameId) cancelAnimationFrame(tickFrameId);
-        tickFrameId = requestAnimationFrame(tick); 
+        setL('runningState', rState); localStorage.setItem(activeUser + '_runningState', rState); 
+        document.getElementById('toggle-timer-btn').innerHTML = '⏸'; document.getElementById('toggle-timer-btn').classList.add('running'); 
+        if(tickFrameId) cancelAnimationFrame(tickFrameId); tickFrameId = requestAnimationFrame(tick); 
     }
     function stopStopwatch() { 
         isRunning = false; 
         let rState = JSON.stringify({ isRunning: false, startTime: 0 });
-        setL('runningState', rState);
-        localStorage.setItem(activeUser + '_runningState', rState); 
-        
-        document.getElementById('toggle-timer-btn').innerHTML = '▶'; 
-        document.getElementById('toggle-timer-btn').classList.remove('running'); 
-        
+        setL('runningState', rState); localStorage.setItem(activeUser + '_runningState', rState); 
+        document.getElementById('toggle-timer-btn').innerHTML = '▶'; document.getElementById('toggle-timer-btn').classList.remove('running'); 
         if(tickFrameId) { cancelAnimationFrame(tickFrameId); tickFrameId = null; }
     }
-    function toggleTimer() { 
-        SFX.play('tap'); 
-        if (isRunning) { stopStopwatch(); triggerAutoSync(); } else { startStopwatch(); triggerAutoSync(); } 
-    }
+    function toggleTimer() { SFX.play('tap'); if (isRunning) { stopStopwatch(); triggerAutoSync(); } else { startStopwatch(); triggerAutoSync(); } }
     
     function manualClearBoard() { 
         if (confirm("🚨 주의: 오늘 기록된 집중 시간과 메모가 모두 초기화됩니다.\n(※ 일기와 할 일은 안전하게 유지됩니다)\n\n정말 보드를 비울까요?")) { 
             if(syncTimer) clearTimeout(syncTimer); 
-            blockSeconds = Array(48).fill(0); 
-            backupSeconds = Array(48).fill(0); 
-            alarmedBlocks = Array(48).fill(false); 
-            for(let i=0; i<48; i++) { 
-                removeL(`note_${i}`); 
-                if(domCache.notes[i]) domCache.notes[i].value = ""; 
-            } 
-            setL('backupSeconds', JSON.stringify(backupSeconds)); 
-            saveAndRefresh(); 
-            triggerAutoSync(); 
-            
-            updateHighlight();
-            updateUI(true);
-            document.getElementById('settings-modal').style.display = 'none';
-            SFX.play('success');
-            showToast("보드가 초기화되었습니다.");
+            blockSeconds = Array(48).fill(0); backupSeconds = Array(48).fill(0); alarmedBlocks = Array(48).fill(false); 
+            for(let i=0; i<48; i++) { removeL(`note_${i}`); if(domCache.notes[i]) domCache.notes[i].value = ""; } 
+            setL('backupSeconds', JSON.stringify(backupSeconds)); saveAndRefresh(); triggerAutoSync(); 
+            updateHighlight(); updateUI(true); document.getElementById('settings-modal').style.display = 'none';
+            SFX.play('success'); showToast("보드가 초기화되었습니다.");
         } 
     }
 
     async function manualForceSave() { 
-        // 오프라인 방어 로직 추가
         if(!navigator.onLine) return showToast("📴 인터넷 연결을 확인해주세요.");
-
-        if(isSyncing) return showToast("⏳ 이미 동기화가 진행 중입니다.");
+        if(isSyncing) return showToast("⏳ 이미 동기화가 진행 중입니다. 잠시만 기다려주세요.");
+        
+        const btn = document.getElementById('btn-manual-save');
+        if(btn) { btn.innerText = "저장중..."; btn.style.opacity = 0.7; }
         
         if(document.getElementById('diary-modal').style.display === 'flex') saveDiary(true);
         if(document.getElementById('todo-modal').style.display === 'flex') saveTodo(true);
@@ -1428,34 +1175,26 @@
             const res = await saveAllDataToServer(); 
             if(res.success) { SFX.play('success'); showToast("✅ 안전하게 저장되었습니다."); }
             else showToast("❌ 저장 실패. 통신 상태를 확인해주세요."); 
-        } catch(e) {
-            showToast("❌ 저장 중 오류가 발생했습니다."); 
-        } finally {
-            showLoading(false); 
-            isSyncing = false; 
+        } catch(e) { showToast("❌ 저장 중 오류가 발생했습니다."); } 
+        finally {
+            showLoading(false); isSyncing = false; 
+            if(btn) { btn.innerText = "💾 저장"; btn.style.opacity = 1; }
         }
     }
     
-    function handleLogout() { 
-        if(confirm("로그아웃 하시겠습니까?")) { 
-            localStorage.clear(); 
-            memCache = {}; 
-            location.reload(); 
+    async function handleLogout() { 
+        if(confirm("로그아웃 하시겠습니까?\n(기기에 임시 저장된 내 데이터가 안전하게 삭제됩니다)")) { 
+            showLoading(true, "캐시 데이터 소독 중... 🧹");
+            if (activeUser) { let dbData = await DBEngine.getAll(activeUser + '_'); for (const item of dbData) { await DBEngine.remove(item.id); } }
+            localStorage.clear(); memCache = {}; location.reload(); 
         } 
     }
 
     function goToToday() { currentRenderDate = new Date(); renderCalendar(); }
-    
-    function changeMonth(offset) { 
-        currentRenderDate.setDate(1); 
-        currentRenderDate.setMonth(currentRenderDate.getMonth() + offset); 
-        renderCalendar(); 
-    }
+    function changeMonth(offset) { currentRenderDate.setDate(1); currentRenderDate.setMonth(currentRenderDate.getMonth() + offset); renderCalendar(); }
     
     function renderCalendar() {
-        const grid = document.getElementById('cal-grid'); 
-        grid.innerHTML = ''; 
-        
+        const grid = document.getElementById('cal-grid'); grid.innerHTML = ''; 
         const y = currentRenderDate.getFullYear(), m = currentRenderDate.getMonth();
         document.getElementById('cal-month-year').innerText = `${y}년 ${m + 1}월`;
         const fDay = new Date(y, m, 1).getDay(), dInM = new Date(y, m + 1, 0).getDate();
@@ -1467,14 +1206,11 @@
         for (let i=1; i<=dInM; i++) {
             const dStr = `${y}-${Utils.pad(m+1)}-${Utils.pad(i)}`;
             const isToday = dStr === logicTodayStr; const rec = dailyRecords[dStr];
-            let rHtml = ''; 
-            let hasTodo = false;
+            let rHtml = ''; let hasTodo = false;
 
             if (rec) { 
                 let hN = parseInt((rec.totalTime || "0h").split('h')[0]); 
-                if(rec.totalTime && rec.totalTime !== "00h 00m") {
-                    rHtml = `<div class="cal-record ${hN>=5?'high':''}">🔥 ${rec.totalTime}</div>`; 
-                }
+                if(rec.totalTime && rec.totalTime !== "00h 00m") { rHtml = `<div class="cal-record ${hN>=5?'high':''}">🔥 ${rec.totalTime}</div>`; }
                 if(rec.todo && rec.todo.trim() !== '') hasTodo = true;
             }
             
@@ -1526,22 +1262,15 @@
             valid.forEach(d => {
                 let isFocused = d.min > 0;
                 let n = (d.note && d.note !== "null" && d.note.trim() !== "") ? Utils.escapeHTML(d.note.trim()) : "";
-                
                 let contentInner = "";
-                if (isFocused && n !== "") {
-                    contentInner = `<div class="tl-badge">🔥 ${d.min}분 몰입</div><div class="tl-note">${n}</div>`;
-                } else if (isFocused && n === "") {
-                    contentInner = `<div class="tl-badge" style="margin-bottom:0;">🔥 ${d.min}분 몰입</div>`;
-                } else if (!isFocused && n !== "") {
-                    contentInner = `<div class="tl-note">${n}</div>`;
-                }
+                if (isFocused && n !== "") contentInner = `<div class="tl-badge">🔥 ${d.min}분 몰입</div><div class="tl-note">${n}</div>`;
+                else if (isFocused && n === "") contentInner = `<div class="tl-badge" style="margin-bottom:0;">🔥 ${d.min}분 몰입</div>`;
+                else if (!isFocused && n !== "") contentInner = `<div class="tl-note">${n}</div>`;
 
                 html += `
                     <div class="timeline-item ${isFocused ? 'focused' : ''}">
                         <div class="tl-time">${d.time}</div>
-                        <div class="tl-content" ${n === '' ? 'style="padding: 10px 14px;"' : ''}>
-                            ${contentInner}
-                        </div>
+                        <div class="tl-content" ${n === '' ? 'style="padding: 10px 14px;"' : ''}>${contentInner}</div>
                     </div>
                 `;
             });
@@ -1558,24 +1287,19 @@
         winter: { bg: 'linear-gradient(135deg, #f0f9ff, #e0f2fe, #7dd3fc)', color: '#0c4a6e', title: '❄️ 차가운 겨울의 몰입', totalColor: '#0369a1', r: 2, g: 132, b: 199 }
     };
 
+    // [버그 방어] 인스타 캡처 시 폰트 미로드 깨짐 방지 대기 로직 추가
     async function generateInstaImage(themeKey) {
         document.getElementById('theme-modal').style.display = 'none';
-        
         saveAndRefresh();
         
         let dStr = Utils.getLogicalDateString(); 
         const rec = dailyRecords[dStr];
-
         if (!rec || !rec.details || rec.details.length === 0) return alert("오늘 저장된 공부 기록이 없습니다!");
 
-        document.body.style.overflow = 'hidden';
-        showLoading(true, "📸 고해상도 렌더링 중...");
+        document.body.style.overflow = 'hidden'; showLoading(true, "📸 고해상도 렌더링 중...");
         
-        const card = document.getElementById('insta-card');
-        const theme = THEMES[themeKey];
-
-        card.style.background = theme.bg;
-        card.style.color = theme.color;
+        const card = document.getElementById('insta-card'); const theme = THEMES[themeKey];
+        card.style.background = theme.bg; card.style.color = theme.color;
         document.getElementById('ic-title').innerText = theme.title;
         document.getElementById('ic-total').style.color = theme.totalColor;
 
@@ -1583,40 +1307,31 @@
         document.getElementById('ic-total').innerText = rec.totalTime; 
         document.getElementById('ic-user').innerText = activeUser;
 
-        const grid = document.getElementById('ic-heatmap-grid'); 
-        grid.innerHTML = ''; 
+        const grid = document.getElementById('ic-heatmap-grid'); grid.innerHTML = ''; 
 
         for (let i = 0; i < 48; i++) {
-            let sec = blockSeconds[i] || 0;
-            let p = Math.min(1, sec / 1800); 
+            let sec = blockSeconds[i] || 0; let p = Math.min(1, sec / 1800); 
             let rgbaColor = `rgba(${theme.r}, ${theme.g}, ${theme.b}, ${0.15 + p * 0.85})`;
-            
             grid.innerHTML += `<div style="width: 72px; height: 72px; border-radius: 14px; background-color: ${rgbaColor}; border: 2px solid rgba(255,255,255,0.4); box-shadow: 0 4px 8px rgba(0,0,0,0.06); flex-shrink: 0;"></div>`;
         }
 
         try {
+            // 폰트가 완벽히 로드될 때까지 기다림 (폰트 깨짐 완벽 방어)
+            await document.fonts.ready;
+            
             setTimeout(async () => {
-                const canvas = await html2canvas(card, { 
-                    scale: 2, useCORS: true, logging: false, backgroundColor: null,
-                    width: 1080, height: 1500, windowWidth: 1080, windowHeight: 1500
-                });
+                const canvas = await html2canvas(card, { scale: 2, useCORS: true, logging: false, backgroundColor: null, width: 1080, height: 1500, windowWidth: 1080, windowHeight: 1500 });
                 document.getElementById('capture-result-img').src = canvas.toDataURL("image/jpeg", 1.0);
-                showLoading(false);
-                document.body.style.overflow = 'auto';
-                document.getElementById('capture-modal').style.display = 'flex';
+                showLoading(false); document.body.style.overflow = 'auto'; document.getElementById('capture-modal').style.display = 'flex';
             }, 300);
         } catch (e) {
-            showLoading(false); 
-            document.body.style.overflow = 'auto'; 
-            alert("이미지 생성에 실패했습니다.");
+            showLoading(false); document.body.style.overflow = 'auto'; alert("이미지 생성에 실패했습니다.");
         }
     }
 
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js')
-            .then(reg => console.log('Service Worker 등록 완료!'))
-            .catch(err => console.log('Service Worker 등록 실패:', err));
+            navigator.serviceWorker.register('./sw.js').then(reg => console.log('Service Worker 등록 완료!')).catch(err => console.log('Service Worker 등록 실패:', err));
         });
     }
 </script>
