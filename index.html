@@ -19,6 +19,7 @@
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <style>
+    /* 기존 CSS 스타일 유지 (변경 없음) */
     :root { 
         --primary: #3b82f6; --primary-dark: #2563eb; --bg: #f8fafc; 
         --surface: #ffffff; --text-main: #1e293b; --text-muted: #64748b; 
@@ -86,7 +87,7 @@
     .recorded-time.full { background: var(--success); box-shadow: 0 2px 6px rgba(16,185,129,0.3); } 
     
     .text-wrapper { flex-grow: 1; min-width: 0; }
-    .note-input { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1.5px solid transparent; border-radius: 10px; font-size: 13.5px; background: transparent; -webkit-user-select: auto; font-family: inherit; transition: border-color 0.2s, background 0.2s; }
+    .note-input { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1.5px transparent; border-radius: 10px; font-size: 13.5px; background: transparent; -webkit-user-select: auto; font-family: inherit; transition: border-color 0.2s, background 0.2s; }
     .note-input:focus { outline: none; border-color: var(--primary); background: var(--surface); }
     .note-input::placeholder { color: #94a3b8; }
 
@@ -211,22 +212,17 @@
 
 <div id="dashboard-view" class="view-layer">
     <div class="dash-card" style="margin-top:20px; padding-top: 20px;">
-        
         <div style="display:flex; justify-content:space-between; align-items:flex-start; width:100%; margin-bottom: 10px;">
-             <div id="dday-badge" onclick="SFX.play('pop'); openDdayModal()" class="dday-badge">
-                 ⏳ 디데이 설정 +
-             </div>
+             <div id="dday-badge" onclick="SFX.play('pop'); openDdayModal()" class="dday-badge">⏳ 디데이 설정 +</div>
              <div style="display:flex; gap:8px;">
                  <button style="background:#eff6ff; color:#3b82f6; border:none; padding:8px; border-radius:10px; font-size:16px; cursor:pointer;" onclick="SFX.play('pop'); document.getElementById('patch-note-modal').style.display='flex'; document.body.style.overflow='hidden';">📢</button>
                  <button style="background:#f1f5f9; color:#475569; border:none; padding:8px; border-radius:10px; font-size:16px; cursor:pointer;" onclick="SFX.play('pop'); document.getElementById('settings-modal').style.display='flex'; document.body.style.overflow='hidden';">⚙️</button>
              </div>
         </div>
-        
         <div style="display:flex; flex-direction:column; align-items:center; text-align:center;">
             <div style="font-size: 40px; margin-bottom: 5px;">👋</div>
             <h2 style="margin-bottom:25px; margin-top:0;">반갑습니다,<br><span id="dash-user-name" style="color:var(--primary);">User</span>님!</h2>
         </div>
-        
         <div id="todo-alert-banner" style="display:none;" onclick="SFX.play('tap'); teleportToTodo(this.dataset.targetDStr)">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
                 <span style="font-size: 13px; font-weight: 800; color: #2563eb;">🔔 다가오는 일정</span>
@@ -234,7 +230,6 @@
             </div>
             <div id="todo-alert-text" style="font-size: 15px; color: #1e3a8a; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
         </div>
-
         <div class="dash-today-summary">
             <div style="display:flex; flex-direction:column; gap:4px;">
                 <span style="font-size:13px; color:var(--target); font-weight:800;">🎯 오늘의 목표 시간</span>
@@ -245,19 +240,11 @@
                 <strong id="dash-today-time">00h 00m</strong>
             </div>
         </div>
-        
         <button class="dash-btn" style="background:var(--primary); color:white; box-shadow: 0 8px 20px rgba(59,130,246,0.3);" onclick="SFX.play('tap'); switchView('study')">🔥 오늘의 달리기 시작</button>
         <button class="dash-btn" style="background:var(--warning); color:var(--warning-text); box-shadow: 0 8px 20px rgba(254,240,138,0.5);" onclick="SFX.play('tap'); switchView('calendar')">📅 내 전체 기록 보기</button>
-        
-        <button class="dash-btn-outline" style="border-color: #8b5cf6; color: #7c3aed; margin-top: 25px; background: #fdfcff;" onclick="SFX.play('pop'); openPasswordModal();">
-            🧠 극비 시나리오 (이미지 트레이닝)
-        </button>
-
+        <button class="dash-btn-outline" style="border-color: #8b5cf6; color: #7c3aed; margin-top: 25px; background: #fdfcff;" onclick="SFX.play('pop'); openPasswordModal();">🧠 극비 시나리오 (이미지 트레이닝)</button>
         <button class="dash-btn-outline" onclick="SFX.play('pop'); document.getElementById('guide-modal').style.display='flex'; document.body.style.overflow='hidden';">📖 페이스메이커 사용 설명서</button>
-        
-        <div style="margin-top: 25px; font-size: 12px; color: #94a3b8; font-weight: 700; letter-spacing: 0.5px;">
-            Pacemaker Planner ver <span class="app-version-display"></span>
-        </div>
+        <div style="margin-top: 25px; font-size: 12px; color: #94a3b8; font-weight: 700; letter-spacing: 0.5px;">Pacemaker Planner ver <span class="app-version-display"></span></div>
     </div>
 </div>
 
@@ -276,7 +263,6 @@
                 <button id="btn-manual-save" class="btn-action" style="background:var(--success); color:white; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);" onclick="SFX.play('tap'); manualForceSave()">💾 저장</button>
             </div>
         </div>
-        
         <div id="clock-display" style="padding: 15px; text-align: center; color: var(--text-muted); font-weight: 800; font-size: 14px; background:var(--surface);">로딩 중...</div>
         <div class="list-wrapper" id="schedule-list"></div>
     </div>
@@ -318,7 +304,6 @@
                 </div>
                 <button style="background:rgba(255,255,255,0.15); border:none; color:white; padding:8px 12px; border-radius:10px; font-size:14px; font-weight:bold; cursor:pointer;" onclick="SFX.play('pop'); document.getElementById('settings-modal').style.display='flex'; document.body.style.overflow='hidden';">⚙️ 설정</button>
             </div>
-            
             <div class="cal-sub-header">
                 <button class="action-pill action-pill-gray" onclick="SFX.play('tap'); goToToday()">오늘로 이동</button>
                 <div style="display:flex; gap:8px;">
@@ -334,19 +319,16 @@
     </div>
 </div>
 
-<div id="dday-modal" class="overlay-base" onclick="if(event.target===this) { SFX.play('tap'); document.getElementById('dday-modal').style.display='none'; document.body.style.overflow=''; }">
+<div id="dday-modal" class="overlay-base">
     <div class="modal-box">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
             <h3 style="margin:0; font-size:22px; font-weight:800; color:var(--text-main);">⏳ 디데이 설정</h3>
             <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); document.getElementById('dday-modal').style.display='none'; document.body.style.overflow='';">✖</button>
         </div>
-        
         <div style="font-size:13px; color:var(--text-muted); margin-bottom:6px; font-weight:700;">목표 시험/일정 이름</div>
         <input type="text" id="dday-title-input" class="input-field" placeholder="예: 2차 경찰 채용 시험" maxlength="20" style="margin-bottom:15px;">
-        
         <div style="font-size:13px; color:var(--text-muted); margin-bottom:6px; font-weight:700;">목표 날짜</div>
         <input type="date" id="dday-date-input" class="input-field">
-        
         <button class="btn-primary" style="margin-top:15px; background:linear-gradient(135deg, #6366f1, #8b5cf6); box-shadow: 0 4px 12px rgba(139,92,246,0.3);" onclick="SFX.play('tap'); saveDday()">💾 디데이 저장 및 동기화</button>
         <button class="btn-action" style="margin-top:10px; background:#f1f5f9; color:#ef4444; width:100%; box-shadow:none; font-weight:bold;" onclick="SFX.play('tap'); clearDday()">🗑️ 설정 지우기</button>
     </div>
@@ -358,12 +340,10 @@
             <h3 style="margin:0; font-size:22px; font-weight:900; color:var(--text-main);">⚙️ 시스템 설정</h3>
             <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); document.getElementById('settings-modal').style.display='none'; document.body.style.overflow='';">✖</button>
         </div>
-        
         <div style="text-align:center; padding:15px; background:#eff6ff; border-radius:16px; margin-bottom:20px;">
             <div style="font-size:12px; color:#2563eb; font-weight:800; margin-bottom:4px;">현재 접속 중인 아이디</div>
             <div style="font-size:18px; font-weight:900; color:var(--text-main);" id="settings-userid">User</div>
         </div>
-
         <div class="setting-item">
             <span>⏰ 목표 달성 팝업 알림</span>
             <button id="set-btn-alarm" class="setting-btn" onclick="SFX.play('tap'); toggleSetting('alarm')">켜짐</button>
@@ -389,19 +369,18 @@
             <h3 style="margin:0; font-size:20px; font-weight:800; color:var(--text-main);">📢 업데이트 히스토리</h3>
             <button style="background:var(--surface); color:#64748b; border:1px solid #e2e8f0; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; transition: background 0.2s;" onclick="SFX.play('tap'); document.getElementById('patch-note-modal').style.display='none'; document.body.style.overflow='';">✖</button>
         </div>
-
         <div style="max-height: 55vh; overflow-y: auto; padding-right: 5px;">
             <div class="guide-box success">
+                <div class="guide-title">🛡️ 0.6.1 데이터 무손실 패치</div>
+                <div class="guide-desc">• 서버 접속 실패 시 강제 초기화 방지 및 오프라인 구동 지원.<br>• 자정(새벽 5시) 전환 시 타이머 중복 계산 버그 수정.</div>
+            </div>
+            <div class="guide-box success">
                 <div class="guide-title">🚀 0.6.0 훈련 엔진 탑재</div>
-                <div class="guide-desc">
-                    • 심층 과학/심리학 기반의 40가지 이미지 트레이닝 기능이 추가되었습니다. 무작위 돌발상황 방어를 통해 멘탈을 강화하세요.
-                </div>
+                <div class="guide-desc">• 심층 과학/심리학 기반의 40가지 이미지 트레이닝 기능 추가.</div>
             </div>
             <div class="guide-box purple">
                 <div class="guide-title">🎯 0.5.11 D-Day Edition</div>
-                <div class="guide-desc">
-                    • 디데이 기능 추가 및 캘린더 렌더링 최적화.
-                </div>
+                <div class="guide-desc">• 디데이 기능 추가 및 캘린더 렌더링 최적화.</div>
             </div>
         </div>
         <button class="btn-primary" style="margin-top:15px; padding:14px; border-radius:12px; font-size:15px;" onclick="SFX.play('tap'); document.getElementById('patch-note-modal').style.display='none'; document.body.style.overflow='';">확인 완료</button>
@@ -414,43 +393,35 @@
             <h3 style="margin:0; font-size:22px; font-weight:900; color:var(--text-main);">🙋‍♀️ 무작정 따라하는 초보 가이드</h3>
             <button style="background:var(--surface); color:#64748b; border:1px solid #e2e8f0; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); document.getElementById('guide-modal').style.display='none'; document.body.style.overflow='';">✖</button>
         </div>
-
         <div style="max-height: 60vh; overflow-y: auto; padding-right: 5px;">
             <div style="font-size:14.5px; color:var(--text-main); font-weight:700; margin-bottom:20px; line-height:1.6; padding:0 5px;">
                 안녕하세요! 🎉<br>Pacemaker Planner에 오신 것을 환영합니다.<br>복잡하게 생각할 필요 없어요. <b>이 6가지만 순서대로 읽고 바로 시작해 보세요!</b>
             </div>
-            
             <div class="guide-box" style="border-left: 5px solid #6366f1;">
                 <div class="guide-title">⏳ 1단계. 디데이(D-Day) 설정</div>
                 <div class="guide-desc">홈 화면 좌측 상단의 <b>[⏳ 디데이 설정 +]</b> 버튼을 눌러 목표 시험일을 등록하세요. 매일 스톱워치 창에서 D-Day를 확인하며 전력 질주할 수 있습니다!</div>
             </div>
-            
             <div class="guide-box purple">
                 <div class="guide-title">🎯 2단계. 오늘의 코스 계획하기</div>
                 <div class="guide-desc">공부 시작 전, 회색 캡슐 안의 <b>[🎯 계획]</b> 아이콘을 눌러보세요. 해당 구간이 보라색으로 변하며 오늘 달려야 할 목표 시간이 스톱워치 위에 표시됩니다.</div>
             </div>
-
             <div class="guide-box primary">
                 <div class="guide-title">▶️ 3단계. 그냥 누르세요! (스톱워치)</div>
                 <div class="guide-desc">공부를 시작할 때 맨 아래 파란색 <b>[▶ 재생]</b> 버튼을 꾹 누르세요. 30분을 채우면 자동으로 파란색 불과 함께 알람이 울립니다!</div>
             </div>
-            
             <div class="guide-box orange">
                 <div class="guide-title">✅ 4단계. 구간 마스터 (수동 체크)</div>
                 <div class="guide-desc">스톱워치를 깜빡 잊었거나 오프라인에서 공부했나요? 시간표의 <b>[✅ 완료]</b> 아이콘을 직접 누르세요. 해당 구간이 즉시 꽉 채워진 것으로 보정됩니다!</div>
             </div>
-            
             <div class="guide-box success">
                 <div class="guide-title">📝 5단계. 메모와 일기 (저장은 자동!)</div>
                 <div class="guide-desc">메모장, 할일, 일기를 남겨보세요. 창을 닫거나 배경을 누르기만 해도 안전하게 <b>클라우드에 자동 저장</b>됩니다.</div>
             </div>
-            
             <div class="guide-box info">
                 <div class="guide-title">🛡️ 6단계. 절대 안전망 (새벽 5시 리셋)</div>
                 <div class="guide-desc">우리의 하루는 밤 12시가 아니라 <b>매일 새벽 5시에 리셋</b>됩니다. 안심하고 새벽까지 달리세요!</div>
             </div>
         </div>
-        
         <button class="btn-primary" style="margin-top:20px; padding:16px; border-radius:12px; font-size:16px;" onclick="SFX.play('success'); document.getElementById('guide-modal').style.display='none'; document.body.style.overflow='';">와, 진짜 쉽네요! 이제 시작할게요 🔥</button>
     </div>
 </div>
@@ -573,9 +544,32 @@
 </div>
 
 <script>
-    const APP_VERSION = "0.6.0 훈련 엔진 탑재"; 
+    // ==========================================
+    // 📦 1. 시스템 설정 및 전역 변수
+    // ==========================================
+    const APP_VERSION = "0.6.1 데이터 무손실 패치"; 
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWentq5xmJFB_UL4EWPL7KEknxY9Em9eIYX5CoWfDMh_WooUKk1n63-8gbLFpcu8Oe/exec";
     
+    let activeUser = localStorage.getItem('activeUser');
+    let activePw = localStorage.getItem('activePw');
+    let memCache = {}; 
+    
+    let isAlarmOn = true, isSoundOn = true, isRunning = false;
+    let lastTickTime = 0, syncTimer = null;
+    let isSyncing = false, pendingSync = false;
+    let tickFrameId = null; 
+    
+    let blockSeconds = [], targetBlocks = [], backupSeconds = [], dailyRecords = {}, alarmedBlocks = [];
+    let ddayConfig = { title: "", date: "" }; 
+    
+    const domCache = { items: [], timeTexts: [], checks: [], targets: [], notes: [] };
+    let totalStudyString = "00h 00m";
+    let targetStudyString = "00h 00m";
+    let currentRenderDate = new Date();
+
+    // ==========================================
+    // 🛠️ 2. 유틸리티 및 시스템 함수 (순서 수정됨!)
+    // ==========================================
     const Utils = {
         pad: (num) => String(num).padStart(2, '0'),
         escapeHTML: (str) => typeof str !== 'string' ? str : str.replace(/[&<>'"]/g, match => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[match])),
@@ -593,6 +587,12 @@
         getLogicalDateString: () => Utils.getRelativeDateString(0)
     };
 
+    // 🚨 Utils 도구가 준비된 후 시간을 계산하도록 위치 변경
+    const timeData = Array.from({ length: 48 }, (_, i) => {
+        let h = (5 + Math.floor(i * 30 / 60)) % 24; let m = (i * 30) % 60;
+        return { time: `${Utils.pad(h)}:${Utils.pad(m)}` };
+    });
+
     async function hashSHA256(str) {
         const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
         return Array.prototype.map.call(new Uint8Array(buf), x=>(('00'+x.toString(16)).slice(-2))).join('');
@@ -607,7 +607,6 @@
         play: function(type) {
             if(!isSoundOn) return;
             this.init();
-            if(this.ctx.state === 'suspended') this.ctx.resume(); 
             try {
                 const t = this.ctx.currentTime;
                 const osc = this.ctx.createOscillator();
@@ -639,6 +638,31 @@
         }
     });
 
+    let loadingTimeout = null;
+    function showLoading(show, text="처리 중... 🚀") { 
+        const overlay = document.getElementById('loading-overlay');
+        if(loadingTimeout) clearTimeout(loadingTimeout);
+        if(show) {
+            document.getElementById('loading-text').innerText = text; 
+            overlay.style.display = 'flex'; 
+            loadingTimeout = setTimeout(() => { overlay.style.display = 'none'; showToast("⏳ 지연되어 백그라운드 모드로 전환합니다."); }, 15000);
+        } else {
+            overlay.style.display = 'none'; 
+        }
+    }
+
+    let toastTimeout = null;
+    function showToast(msg, isTimerAlarm = false) {
+        if(isTimerAlarm && !isAlarmOn) return; 
+        const toast = document.getElementById('toast-notification'); document.getElementById('toast-msg').innerText = msg; toast.classList.add('show');
+        if(toastTimeout) clearTimeout(toastTimeout); toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function playChime() { if (!isSoundOn) return; SFX.play('success'); }
+
+    // ==========================================
+    // 💾 3. 로컬 DB 엔진
+    // ==========================================
     const DBEngine = {
         db: null,
         init: function() {
@@ -681,104 +705,6 @@
         }
     };
 
-    let activeUser = localStorage.getItem('activeUser');
-    let activePw = localStorage.getItem('activePw');
-    let memCache = {}; 
-    
-    let isAlarmOn = true, isSoundOn = true, isRunning = false;
-    let lastTickTime = 0, syncTimer = null;
-    let isSyncing = false, pendingSync = false;
-    let tickFrameId = null; 
-    
-    let blockSeconds = [], targetBlocks = [], backupSeconds = [], dailyRecords = {}, alarmedBlocks = [];
-    let ddayConfig = { title: "", date: "" }; 
-    
-    const domCache = { items: [], timeTexts: [], checks: [], targets: [], notes: [] };
-    let totalStudyString = "00h 00m";
-    let targetStudyString = "00h 00m";
-    let currentRenderDate = new Date();
-
-    const timeData = Array.from({ length: 48 }, (_, i) => {
-        let h = (5 + Math.floor(i * 30 / 60)) % 24; let m = (i * 30) % 60;
-        return { time: `${Utils.pad(h)}:${Utils.pad(m)}` };
-    });
-
-    window.addEventListener('beforeunload', (e) => { if (isRunning) { e.preventDefault(); e.returnValue = ''; } });
-    
-    window.addEventListener('online', () => { 
-        if (activeUser) { showToast("🌐 네트워크가 복구되었습니다."); triggerAutoSync(true); }
-    });
-
-    function updateSpacers() {
-        const h1 = document.getElementById('main-header'); const s1 = document.getElementById('study-spacer');
-        if(h1 && s1) s1.style.height = h1.offsetHeight + 'px';
-        const h2 = document.getElementById('cal-main-header'); const s2 = document.getElementById('cal-spacer');
-        if(h2 && s2) s2.style.height = h2.offsetHeight + 'px';
-    }
-    window.addEventListener('resize', updateSpacers);
-
-    document.addEventListener("visibilitychange", async () => {
-        if (document.visibilityState === "visible" && SFX.ctx && SFX.ctx.state === 'suspended') SFX.ctx.resume();
-
-        if (document.visibilityState === "hidden") {
-            const activeEl = document.activeElement;
-            if (activeEl && activeEl.classList.contains('note-input')) {
-                const idx = parseInt(activeEl.id.split('_')[1]); if(!isNaN(idx)) saveNote(idx, activeEl.value);
-            } else if (activeEl && activeEl.id === 'diary-input') saveTextData('diary', true);
-            else if (activeEl && activeEl.id === 'todo-input') saveTextData('todo', true);
-            
-            if(activeUser && navigator.onLine) triggerAutoSync(true); 
-        } 
-        else if (document.visibilityState === "visible") {
-            if (isRunning) {
-                const now = Date.now(); const passedSecs = Math.floor((now - lastTickTime) / 1000);
-                if (passedSecs >= 1) { 
-                    distributeTime(lastTickTime, passedSecs); 
-                    lastTickTime += passedSecs * 1000; 
-                    let rState = JSON.stringify({ isRunning: true, startTime: lastTickTime });
-                    setL('runningState', rState);
-                    saveAndRefresh(); 
-                }
-            } else if (activeUser && activePw && navigator.onLine && !isSyncing) {
-                const ind = document.getElementById('sync-indicator');
-                if(ind) ind.innerText = "☁️ 갱신 중...";
-                const res = await loadAllDataFromServer();
-                if(res.success && res.data && res.data !== "{}") { applyCloudData(JSON.parse(res.data), true); }
-                if(ind) ind.innerText = "";
-            }
-            checkNewDay(); updateDashboardTodoAlert(); 
-        }
-    });
-
-    window.onload = async function() {
-        document.querySelectorAll('.app-version-display').forEach(el => el.innerText = APP_VERSION);
-        await DBEngine.init();
-
-        if (activeUser && activePw) {
-            if (activePw.length !== 64) {
-                showLoading(true, "보안 시스템 업그레이드 중... 🛡️");
-                activePw = await hashSHA256(activePw); localStorage.setItem('activePw', activePw); showLoading(false);
-            }
-            let dbData = await DBEngine.getAll(activeUser + '_');
-            dbData.forEach(item => memCache[item.id] = item.value);
-
-            document.getElementById('login-view').style.display = 'none';
-            showLoading(true, "데이터 불러오는 중... 🛰️");
-            const res = await loadAllDataFromServer();
-            showLoading(false);
-
-            if(res.success) {
-                if(res.data && res.data !== "{}") applyCloudData(JSON.parse(res.data), true);
-                else initLocalState(); 
-                startDashboard();
-            } else {
-                document.getElementById('login-view').style.display = 'flex';
-                document.getElementById('login-status').innerText = res.message || "세션이 만료되었습니다. 다시 로그인해주세요.";
-                localStorage.removeItem('activeUser'); localStorage.removeItem('activePw'); activeUser = null; activePw = null;
-            }
-        } else { document.getElementById('loading-overlay').style.display = 'none'; document.getElementById('login-view').style.display = 'flex'; }
-    }
-
     function setL(k, v) { 
         try {
             memCache[activeUser + '_' + k] = v; DBEngine.set(activeUser + '_' + k, v); 
@@ -790,7 +716,6 @@
 
     function saveUserLocalData(d) {
         if(d['ddayConfig']) setL('ddayConfig', d['ddayConfig']);
-        
         ['blockSeconds', 'targetBlocks', 'backupSeconds', 'alarmedBlocks', 'settings', 'lastLogicalDate'].forEach(k => { 
             if (d[k] !== undefined && d[k] !== "") setL(k, d[k]); 
         });
@@ -817,39 +742,35 @@
     function getUserLocalData() {
         const backup = { runningState: JSON.stringify({ isRunning: isRunning, startTime: isRunning ? lastTickTime : 0 }) };
         backup['ddayConfig'] = getL('ddayConfig') || "";
-        
         ['blockSeconds', 'targetBlocks', 'backupSeconds', 'dailyRecords', 'alarmedBlocks', 'settings', 'lastLogicalDate'].forEach(k => { backup[k] = getL(k) || ""; });
         for (let i=0; i<48; i++) { let n = getL(`note_${i}`); backup[`note_${i}`] = (!n || n === "null" || n.trim() === "") ? "" : n; }
         return backup;
     }
 
+    // ==========================================
+    // ☁️ 4. 서버 동기화 및 오프라인 방어 로직
+    // ==========================================
     async function fetchServer(action, dataObj = null, customId = null, retries = 3) {
         const uid = customId || activeUser;
         const body = { userId: uid, password: activePw, action: action, data: dataObj };
         
         for (let i = 0; i < retries; i++) {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000); 
+            const timeoutId = setTimeout(() => controller.abort(), 8000); 
             try {
                 const res = await fetch(SCRIPT_URL, { 
                     redirect: "follow", method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, 
                     body: JSON.stringify(body), signal: controller.signal
                 });
                 clearTimeout(timeoutId);
-                const jsonRes = await res.json();
-                
-                if (!jsonRes.success && jsonRes.message && jsonRes.message.includes("혼잡")) {
-                    await new Promise(r => setTimeout(r, 1000 * (i + 1))); 
-                    continue;
-                }
-                return jsonRes;
+                return await res.json();
             } catch(e) { 
                 clearTimeout(timeoutId);
                 if (i === retries - 1) return { success: false, message: "네트워크 불안정" };
                 await new Promise(r => setTimeout(r, 1000 * (i + 1)));
             }
         }
-        return { success: false, message: "서버 혼잡으로 연결 실패" };
+        return { success: false, message: "서버 혼잡" };
     }
 
     async function saveAllDataToServer() {
@@ -882,7 +803,8 @@
                 else return { success: false, message: "분할 데이터 로드 실패" };
             }
             return { success: true, data: fullStr };
-        } else { return { success: true, data: res.data }; }
+        } 
+        return { success: true, data: res.data };
     }
 
     async function loadFromCloud(silent = false) {
@@ -890,35 +812,27 @@
         if(!navigator.onLine) return showToast("📴 인터넷 연결을 확인해주세요.");
         if (isSyncing) return showToast("⏳ 이미 동기화가 진행 중입니다.");
         
-        isSyncing = true; 
-        if(syncTimer) clearTimeout(syncTimer); 
-        
+        isSyncing = true; if(syncTimer) clearTimeout(syncTimer); 
         const ind = document.getElementById('sync-indicator'); if(ind) ind.innerText = "☁️ 불러오는 중...";
         showLoading(true, "데이터 최신화 중... ☁️");
         try {
             const res = await loadAllDataFromServer();
-            if (res.success && res.data && res.data !== "{}") { 
-                applyCloudData(JSON.parse(res.data), silent, true); 
-            } else { 
-                if (!silent) { SFX.play('tap'); showToast("❌ 최신 데이터를 불러오지 못했습니다."); } 
-            }
-        } catch(e) { 
-            if (!silent) showToast("❌ 통신 상태가 원활하지 않습니다."); 
-        } finally { 
-            showLoading(false); if(ind) ind.innerText = ""; isSyncing = false; 
-        }
+            if (res.success && res.data && res.data !== "{}") { applyCloudData(JSON.parse(res.data), silent, true); } 
+            else { if (!silent) { SFX.play('tap'); showToast("❌ 최신 데이터를 불러오지 못했습니다."); } }
+        } catch(e) { if (!silent) showToast("❌ 통신 상태가 원활하지 않습니다."); } 
+        finally { showLoading(false); if(ind) ind.innerText = ""; isSyncing = false; }
     }
 
     async function performSync() {
         if (isSyncing) { pendingSync = true; return; }
         isSyncing = true; const ind = document.getElementById('sync-indicator');
         try {
-            if(ind) ind.innerText = "☁️ 저장 중...";
+            if(ind) ind.innerText = "☁️ 갱신 중...";
             syncTodayRecord(); 
             const res = await saveAllDataToServer();
             if(ind) {
-                ind.innerText = res.success ? "✅ 완료" : "❌ 실패"; 
-                setTimeout(() => { if(ind && (ind.innerText.includes("완료") || ind.innerText.includes("실패"))) ind.innerText = ""; }, 1500);
+                ind.innerText = res.success ? "✅ 완료" : "❌ 대기중"; 
+                setTimeout(() => { if(ind && (ind.innerText.includes("완료") || ind.innerText.includes("대기"))) ind.innerText = ""; }, 1500);
             }
         } finally {
             isSyncing = false;
@@ -929,13 +843,13 @@
     function triggerAutoSync(immediate = false) {
         const ind = document.getElementById('sync-indicator');
         if (!navigator.onLine) {
-            if(ind) ind.innerText = "📴 기기에 임시 저장됨";
+            if(ind) ind.innerText = "📴 기기 임시 저장됨";
             setTimeout(() => { if(ind && ind.innerText.includes("임시")) ind.innerText = ""; }, 3000);
             return;
         }
         if(syncTimer) clearTimeout(syncTimer); 
         if (immediate) performSync();
-        else syncTimer = setTimeout(() => { performSync(); }, 3000); 
+        else syncTimer = setTimeout(() => performSync(), 3000); 
     }
 
     async function handleAuth() {
@@ -953,24 +867,155 @@
         const res = await loadAllDataFromServer();
         showLoading(false);
         
-        if(res.success) {
+        // 데이터 무손실 패치 적용 구역
+        if(res.success && res.data && res.data !== "{}") {
             localStorage.setItem('activeUser', activeUser); localStorage.setItem('activePw', activePw); 
             document.getElementById('login-view').style.display = 'none';
-            if(res.data && res.data !== "{}") applyCloudData(JSON.parse(res.data), true);
-            else initLocalState(); 
+            applyCloudData(JSON.parse(res.data), true);
             startDashboard();
-        } else { 
-            statusEl.innerText = res.message || "로그인 실패"; activeUser = null; activePw = null; SFX.play('tap');
+        } else if (!res.success && dbData.length > 0) {
+            // 통신 실패 + 기기 내 로컬 데이터 존재 = 오프라인 구동
+            localStorage.setItem('activeUser', activeUser); localStorage.setItem('activePw', activePw); 
+            document.getElementById('login-view').style.display = 'none';
+            showToast("🌐 통신 지연. 안전한 오프라인 모드로 실행됩니다.");
+            initLocalState();
+            startDashboard();
+        } else if (!res.success && dbData.length === 0) {
+            // 첫 로그인인데 통신 실패
+            statusEl.innerText = res.message || "서버 통신에 실패했습니다."; SFX.play('tap');
+            activeUser = null; activePw = null; 
+        } else {
+            // 서버 연결 완료, 새 계정 시작
+            localStorage.setItem('activeUser', activeUser); localStorage.setItem('activePw', activePw); 
+            document.getElementById('login-view').style.display = 'none';
+            initLocalState(); 
+            startDashboard();
         }
     }
+
+    // ==========================================
+    // ⏰ 5. 생명주기 및 시간 관리
+    // ==========================================
+    window.addEventListener('beforeunload', (e) => { 
+        if (isRunning) { e.preventDefault(); e.returnValue = ''; }
+        if (activeUser && activePw) {
+            syncTodayRecord();
+            let payload = JSON.stringify({ userId: activeUser, password: activePw, action: "save", data: { type: "single", content: JSON.stringify(getUserLocalData()) } });
+            navigator.sendBeacon(SCRIPT_URL, payload);
+        }
+    });
+
+    document.addEventListener("visibilitychange", async () => {
+        if (document.visibilityState === "visible" && SFX.ctx && SFX.ctx.state === 'suspended') SFX.ctx.resume();
+        if (document.visibilityState === "hidden") {
+            const activeEl = document.activeElement;
+            if (activeEl && activeEl.classList.contains('note-input')) {
+                const idx = parseInt(activeEl.id.split('_')[1]); if(!isNaN(idx)) saveNote(idx, activeEl.value);
+            } else if (activeEl && activeEl.id === 'diary-input') saveTextData('diary', true);
+            else if (activeEl && activeEl.id === 'todo-input') saveTextData('todo', true);
+            
+            if(activeUser && navigator.onLine) triggerAutoSync(true); 
+        } 
+        else if (document.visibilityState === "visible") {
+            if (isRunning) {
+                const now = Date.now(); const passedSecs = Math.floor((now - lastTickTime) / 1000);
+                if (passedSecs >= 1) { 
+                    distributeTime(lastTickTime, passedSecs); 
+                    lastTickTime += passedSecs * 1000; 
+                    setL('runningState', JSON.stringify({ isRunning: true, startTime: lastTickTime }));
+                    saveAndRefresh(); 
+                }
+            } else if (activeUser && activePw && navigator.onLine && !isSyncing) {
+                triggerAutoSync(); // 복귀 시 가벼운 동기화 체크
+            }
+            checkNewDay(); updateDashboardTodoAlert(); 
+        }
+    });
+
+    window.onload = async function() {
+        document.querySelectorAll('.app-version-display').forEach(el => el.innerText = APP_VERSION);
+        await DBEngine.init();
+
+        if (activeUser && activePw) {
+            if (activePw.length !== 64) {
+                showLoading(true, "보안 시스템 업그레이드 중... 🛡️");
+                activePw = await hashSHA256(activePw); localStorage.setItem('activePw', activePw); showLoading(false);
+            }
+            let dbData = await DBEngine.getAll(activeUser + '_');
+            dbData.forEach(item => memCache[item.id] = item.value);
+
+            document.getElementById('login-view').style.display = 'none';
+            showLoading(true, "데이터 불러오는 중... 🛰️");
+            const res = await loadAllDataFromServer();
+            showLoading(false);
+
+            if(res.success && res.data && res.data !== "{}") {
+                applyCloudData(JSON.parse(res.data), true);
+                startDashboard();
+            } else if (!res.success && dbData.length > 0) {
+                showToast("🌐 통신 지연. 안전한 오프라인 모드로 실행됩니다.");
+                initLocalState();
+                startDashboard();
+            } else if (!res.success && dbData.length === 0) {
+                document.getElementById('login-view').style.display = 'flex';
+                document.getElementById('login-status').innerText = "통신 실패. 네트워크 연결 후 로그인해주세요.";
+                activeUser = null; activePw = null;
+            } else {
+                initLocalState(); 
+                startDashboard();
+            }
+        } else { document.getElementById('loading-overlay').style.display = 'none'; document.getElementById('login-view').style.display = 'flex'; }
+    }
+
+    window.addEventListener('online', () => { 
+        if (activeUser) { showToast("🌐 네트워크가 복구되었습니다."); triggerAutoSync(true); }
+    });
+
+    function checkNewDay() {
+        const currentLogicDate = Utils.getLogicalDateString(); 
+        const lastLogicDate = getL('lastLogicalDate');
+        if (!lastLogicDate) { setL('lastLogicalDate', currentLogicDate); return; }
+        
+        if (currentLogicDate !== lastLogicDate) {
+            const wasRunning = isRunning;
+            if(wasRunning) {
+                const now = Date.now(); const passedSecs = Math.floor((now - lastTickTime) / 1000);
+                if (passedSecs > 0) { distributeTime(lastTickTime, passedSecs); setL('blockSeconds', JSON.stringify(blockSeconds)); }
+                stopStopwatch(); // 날짜 변경 시 타이머 중복 방지를 위한 셧다운
+                showToast("📅 새벽 5시 리셋으로 타이머가 일시 정지되었습니다.");
+            }
+
+            syncTodayRecord(lastLogicDate); 
+            
+            blockSeconds = Array(48).fill(0); targetBlocks = Array(48).fill(false); backupSeconds = Array(48).fill(0); alarmedBlocks = Array(48).fill(false); 
+            for(let i=0; i<48; i++) { removeL(`note_${i}`); if(domCache.notes[i]) domCache.notes[i].value = ""; }
+            
+            setL('targetBlocks', JSON.stringify(targetBlocks)); setL('backupSeconds', JSON.stringify(backupSeconds)); setL('alarmedBlocks', JSON.stringify(alarmedBlocks));
+            setL('blockSeconds', JSON.stringify(blockSeconds)); setL('lastLogicalDate', currentLogicDate); 
+            
+            updateUI(true); updateHighlight(); renderCalendar(); updateDashboardTodoAlert(); updateDdayUI();
+            triggerAutoSync(true); 
+            showToast("🌅 새로운 하루가 시작되었습니다! 보드가 리셋되었습니다."); 
+        }
+    }
+
+    // ==========================================
+    // 🎨 6. UI 업데이트 및 렌더링 함수들
+    // ==========================================
+    function updateSpacers() {
+        const h1 = document.getElementById('main-header'); const s1 = document.getElementById('study-spacer');
+        if(h1 && s1) s1.style.height = h1.offsetHeight + 'px';
+        const h2 = document.getElementById('cal-main-header'); const s2 = document.getElementById('cal-spacer');
+        if(h2 && s2) s2.style.height = h2.offsetHeight + 'px';
+    }
+    window.addEventListener('resize', updateSpacers);
 
     function teleportToTodo(targetDStr) {
         switchView('calendar'); currentRenderDate = new Date(targetDStr); renderCalendar(); showModal(targetDStr); 
     }
 
     function updateDashboardTodoAlert() {
-        let alertEl = document.getElementById('todo-alert-banner');
-        let textEl = document.getElementById('todo-alert-text');
+        let alertEl = document.getElementById('todo-alert-banner'); let textEl = document.getElementById('todo-alert-text');
         let foundTodo = null; let dateLabel = ""; let targetDStr = "";
 
         for(let i=0; i<=2; i++) { 
@@ -986,65 +1031,31 @@
     }
     
     function updateDdayUI() {
-        const badge = document.getElementById('dday-badge');
-        const popupBadge = document.getElementById('popup-dday');
+        const badge = document.getElementById('dday-badge'); const popupBadge = document.getElementById('popup-dday');
+        if (!ddayConfig || !ddayConfig.date) { badge.innerHTML = `⏳ 디데이 설정 +`; popupBadge.style.display = 'none'; return; }
         
-        if (!ddayConfig || !ddayConfig.date) {
-            badge.innerHTML = `⏳ 디데이 설정 +`;
-            popupBadge.style.display = 'none';
-            return;
-        }
+        const todayDate = new Date(Utils.getLogicalDateString() + "T00:00:00");
+        const targetDate = new Date(ddayConfig.date + "T00:00:00");
+        const diffDays = Math.round((targetDate - todayDate) / (1000 * 60 * 60 * 24));
         
-        const todayStr = Utils.getLogicalDateString();
-        const targetStr = ddayConfig.date;
-        
-        const todayDate = new Date(todayStr + "T00:00:00");
-        const targetDate = new Date(targetStr + "T00:00:00");
-        const diffTime = targetDate - todayDate;
-        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-        
-        let dString = "";
-        if (diffDays > 0) dString = `D-${diffDays}`;
-        else if (diffDays === 0) dString = `D-Day`;
-        else dString = `D+${Math.abs(diffDays)}`;
-        
+        let dString = diffDays > 0 ? `D-${diffDays}` : (diffDays === 0 ? `D-Day` : `D+${Math.abs(diffDays)}`);
         let titleText = ddayConfig.title ? ddayConfig.title + " " : "";
         badge.innerHTML = `<span style="opacity:0.8; font-size:11px;">${Utils.escapeHTML(titleText)}</span><span style="font-size:16px;">${dString}</span>`;
-        
-        popupBadge.innerText = dString;
-        popupBadge.style.display = 'inline-block';
+        popupBadge.innerText = dString; popupBadge.style.display = 'inline-block';
     }
 
-    function openDdayModal() {
-        document.body.style.overflow = 'hidden';
-        document.getElementById('dday-title-input').value = ddayConfig.title || "";
-        document.getElementById('dday-date-input').value = ddayConfig.date || "";
-        document.getElementById('dday-modal').style.display = 'flex';
-    }
-
+    function openDdayModal() { document.body.style.overflow = 'hidden'; document.getElementById('dday-title-input').value = ddayConfig.title || ""; document.getElementById('dday-date-input').value = ddayConfig.date || ""; document.getElementById('dday-modal').style.display = 'flex'; }
     function saveDday() {
-        const t = document.getElementById('dday-title-input').value.trim();
-        const d = document.getElementById('dday-date-input').value;
+        const t = document.getElementById('dday-title-input').value.trim(); const d = document.getElementById('dday-date-input').value;
         if(!d) { showToast("날짜를 선택해주세요."); return; }
-        
-        ddayConfig = { title: t, date: d };
-        setL('ddayConfig', JSON.stringify(ddayConfig));
-        updateDdayUI();
-        
-        document.getElementById('dday-modal').style.display = 'none';
-        document.body.style.overflow = '';
-        showToast("디데이가 설정되었습니다.");
-        triggerAutoSync(true); 
+        ddayConfig = { title: t, date: d }; setL('ddayConfig', JSON.stringify(ddayConfig)); updateDdayUI();
+        document.getElementById('dday-modal').style.display = 'none'; document.body.style.overflow = '';
+        showToast("디데이가 설정되었습니다."); triggerAutoSync(true); 
     }
-
     function clearDday() {
-        ddayConfig = { title: "", date: "" };
-        removeL('ddayConfig');
-        updateDdayUI();
-        document.getElementById('dday-modal').style.display = 'none';
-        document.body.style.overflow = '';
-        showToast("디데이가 초기화되었습니다.");
-        triggerAutoSync(true);
+        ddayConfig = { title: "", date: "" }; removeL('ddayConfig'); updateDdayUI();
+        document.getElementById('dday-modal').style.display = 'none'; document.body.style.overflow = '';
+        showToast("디데이가 초기화되었습니다."); triggerAutoSync(true);
     }
 
     function startDashboard() {
@@ -1064,8 +1075,7 @@
         const settings = JSON.parse(getL('settings') || '{"isAlarmOn":true, "isSoundOn":true}');
         isAlarmOn = settings.isAlarmOn ?? true; isSoundOn = settings.isSoundOn ?? true; updateSettingsUI();
         
-        try { ddayConfig = JSON.parse(getL('ddayConfig')) || {title:"", date:""}; } 
-        catch(e) { ddayConfig = {title:"", date:""}; }
+        try { ddayConfig = JSON.parse(getL('ddayConfig')) || {title:"", date:""}; } catch(e) { ddayConfig = {title:"", date:""}; }
         
         let rStateLocal = localStorage.getItem(activeUser + '_runningState') || getL('runningState');
         if (rStateLocal && !isRunning) {
@@ -1086,9 +1096,7 @@
     function updateNotesFromLocal() {
         for(let i=0; i<48; i++) {
             let savedNote = getL(`note_${i}`);
-            if (domCache.notes[i] && document.activeElement !== domCache.notes[i]) {
-                domCache.notes[i].value = (savedNote && savedNote !== "null") ? savedNote : "";
-            }
+            if (domCache.notes[i] && document.activeElement !== domCache.notes[i]) domCache.notes[i].value = (savedNote && savedNote !== "null") ? savedNote : "";
         }
     }
 
@@ -1119,9 +1127,7 @@
             setL('blockSeconds', JSON.stringify(blockSeconds)); setL('lastLogicalDate', currentLogicalDate); 
             if (isRunning) stopStopwatch();
             showToast("📅 어제 기록을 백업하고 보드를 초기화했습니다.");
-        } else {
-            setL('lastLogicalDate', currentLogicalDate);
-        }
+        } else { setL('lastLogicalDate', currentLogicalDate); }
 
         updateUI(true); renderCalendar(); updateHighlight(); updateDashboardTodoAlert(); updateDdayUI();
         
@@ -1129,39 +1135,9 @@
         else if(!silent && !skipSync) { SFX.play('success'); showToast("✅ 동기화 완료!"); }
     }
 
-    function checkNewDay() {
-        const currentLogicDate = Utils.getLogicalDateString(); 
-        const lastLogicDate = getL('lastLogicalDate');
-        if (!lastLogicDate) { setL('lastLogicalDate', currentLogicDate); return; }
-        
-        if (currentLogicDate !== lastLogicDate) {
-            const wasRunning = isRunning;
-            if(wasRunning) {
-                const now = Date.now(); const passedSecs = Math.floor((now - lastTickTime) / 1000);
-                if (passedSecs > 0) { distributeTime(lastTickTime, passedSecs); setL('blockSeconds', JSON.stringify(blockSeconds)); }
-                stopStopwatch();
-            }
-
-            syncTodayRecord(lastLogicDate); 
-            
-            blockSeconds = Array(48).fill(0); targetBlocks = Array(48).fill(false); backupSeconds = Array(48).fill(0); alarmedBlocks = Array(48).fill(false); 
-            for(let i=0; i<48; i++) { removeL(`note_${i}`); if(domCache.notes[i]) domCache.notes[i].value = ""; }
-            
-            setL('targetBlocks', JSON.stringify(targetBlocks)); setL('backupSeconds', JSON.stringify(backupSeconds)); setL('alarmedBlocks', JSON.stringify(alarmedBlocks));
-            setL('blockSeconds', JSON.stringify(blockSeconds)); setL('lastLogicalDate', currentLogicDate); 
-            
-            updateUI(true); updateHighlight(); renderCalendar(); updateDashboardTodoAlert(); updateDdayUI();
-            triggerAutoSync(true); 
-            showToast("🌅 새로운 하루가 시작되었습니다! 보드가 리셋되었습니다."); 
-        }
-    }
-
     function syncTodayRecord(targetDateStr = null) {
-        let dStr = targetDateStr || Utils.getLogicalDateString(); 
-        let has = false, det = [];
-        
-        let tSecs = 0;
-        targetBlocks.forEach(b => { if(b) tSecs += 1800; });
+        let dStr = targetDateStr || Utils.getLogicalDateString(); let has = false, det = [];
+        let tSecs = 0; targetBlocks.forEach(b => { if(b) tSecs += 1800; });
         let th = Math.floor(tSecs / 3600); let tm = Math.floor((tSecs % 3600) / 60);
         let finalTargetTime = `${Utils.pad(th)}h ${Utils.pad(tm)}m`;
 
@@ -1199,8 +1175,7 @@
 
         if (text === exText) { 
             if(document.getElementById(type + '-modal').style.display !== 'none') {
-                document.getElementById(type + '-modal').style.display = 'none'; 
-                document.body.style.overflow = '';
+                document.getElementById(type + '-modal').style.display = 'none'; document.body.style.overflow = '';
             }
             return; 
         }
@@ -1214,8 +1189,7 @@
         try { setL('dailyRecords', JSON.stringify(dailyRecords)); } catch (e) {}
         
         if(document.getElementById(type + '-modal').style.display !== 'none') {
-            document.getElementById(type + '-modal').style.display = 'none';
-            document.body.style.overflow = ''; 
+            document.getElementById(type + '-modal').style.display = 'none'; document.body.style.overflow = ''; 
         }
         
         if(!silent) {
@@ -1232,10 +1206,8 @@
         try {
             const now = Date.now(); const passedSecs = Math.floor((now - lastTickTime) / 1000); 
             if (passedSecs >= 1) {
-                distributeTime(lastTickTime, passedSecs); 
-                lastTickTime += passedSecs * 1000; 
-                let rState = JSON.stringify({ isRunning: true, startTime: lastTickTime });
-                setL('runningState', rState); 
+                distributeTime(lastTickTime, passedSecs); lastTickTime += passedSecs * 1000; 
+                setL('runningState', JSON.stringify({ isRunning: true, startTime: lastTickTime })); 
                 saveAndRefresh();
             }
         } catch(e) {}
@@ -1270,28 +1242,6 @@
     }
 
     function saveAndRefresh() { setL('blockSeconds', JSON.stringify(blockSeconds)); updateUI(false); syncTodayRecord(); }
-
-    let loadingTimeout = null;
-    function showLoading(show, text="처리 중... 🚀") { 
-        const overlay = document.getElementById('loading-overlay');
-        if(loadingTimeout) clearTimeout(loadingTimeout);
-        if(show) {
-            document.getElementById('loading-text').innerText = text; 
-            overlay.style.display = 'flex'; 
-            loadingTimeout = setTimeout(() => { overlay.style.display = 'none'; showToast("⏳ 시스템 안전을 위해 백그라운드 모드로 전환합니다."); }, 15000);
-        } else {
-            overlay.style.display = 'none'; 
-        }
-    }
-
-    let toastTimeout = null;
-    function showToast(msg, isTimerAlarm = false) {
-        if(isTimerAlarm && !isAlarmOn) return; 
-        const toast = document.getElementById('toast-notification'); document.getElementById('toast-msg').innerText = msg; toast.classList.add('show');
-        if(toastTimeout) clearTimeout(toastTimeout); toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
-    }
-
-    function playChime() { if (!isSoundOn) return; SFX.play('success'); }
 
     function switchView(viewName) {
         document.body.style.overflow = ''; 
@@ -1341,24 +1291,17 @@
         timeData.forEach((item, i) => {
             const div = document.createElement('div'); div.className = 'list-item'; div.id = `item_${i}`;
             div.dataset.absMins = Utils.getAbsMins(item.time.split(':')[0], item.time.split(':')[1]);
-            
             div.innerHTML = `
                 <div class="controls-wrap">
-                    <label class="cb-icon-box target" id="target_box_${i}" title="계획 설정">
-                        <input type="checkbox" id="target_${i}" class="cb-target" onchange="SFX.play('tap'); toggleTarget(${i})"><span>🎯</span>
-                    </label>
-                    <label class="cb-icon-box done" id="check_box_${i}" title="실제 완료">
-                        <input type="checkbox" id="check_${i}" class="cb-actual" onchange="SFX.play('tap'); toggleCheck(${i})"><span>✅</span>
-                    </label>
+                    <label class="cb-icon-box target" id="target_box_${i}" title="계획 설정"><input type="checkbox" id="target_${i}" class="cb-target" onchange="SFX.play('tap'); toggleTarget(${i})"><span>🎯</span></label>
+                    <label class="cb-icon-box done" id="check_box_${i}" title="실제 완료"><input type="checkbox" id="check_${i}" class="cb-actual" onchange="SFX.play('tap'); toggleCheck(${i})"><span>✅</span></label>
                 </div>
                 <div class="time-col"><div class="time">${item.time}</div><div class="recorded-time" id="study_time_${i}">00:00</div></div>
                 <div class="text-wrapper"><input type="text" class="note-input" maxlength="100" id="note_${i}" placeholder="메모..." onchange="saveNote(${i}, this.value)"></div>`;
             
             scheduleList.appendChild(div);
-            domCache.items[i] = div; 
-            domCache.timeTexts[i] = document.getElementById(`study_time_${i}`);
-            domCache.checks[i] = document.getElementById(`check_${i}`); 
-            domCache.targets[i] = document.getElementById(`target_${i}`); 
+            domCache.items[i] = div; domCache.timeTexts[i] = document.getElementById(`study_time_${i}`);
+            domCache.checks[i] = document.getElementById(`check_${i}`); domCache.targets[i] = document.getElementById(`target_${i}`); 
             domCache.notes[i] = document.getElementById(`note_${i}`);
             let savedNote = getL(`note_${i}`); if (savedNote && savedNote !== "null") domCache.notes[i].value = savedNote;
         });
@@ -1369,31 +1312,21 @@
         for (let i = 0; i < 48; i++) {
             let s = blockSeconds[i]; totalSecs += s;
             let str = `${Utils.pad(Math.floor(s/60))}:${Utils.pad(s%60)}`;
-            
             if (force || domCache.timeTexts[i].innerText !== str) {
                 domCache.timeTexts[i].innerText = str; domCache.checks[i].checked = (s >= 1800);
                 domCache.timeTexts[i].className = s >= 1800 ? 'recorded-time active full' : s > 0 ? 'recorded-time active' : 'recorded-time';
             }
-            
             let cbDone = document.getElementById(`check_box_${i}`);
             if(s >= 1800) cbDone.classList.add('active'); else cbDone.classList.remove('active');
             
-            domCache.targets[i].checked = targetBlocks[i];
-            let cbTarget = document.getElementById(`target_box_${i}`);
-            if(targetBlocks[i]) {
-                targetSecs += 1800; 
-                domCache.items[i].classList.add('planned');
-                cbTarget.classList.add('active');
-            } else {
-                domCache.items[i].classList.remove('planned');
-                cbTarget.classList.remove('active');
-            }
+            domCache.targets[i].checked = targetBlocks[i]; let cbTarget = document.getElementById(`target_box_${i}`);
+            if(targetBlocks[i]) { targetSecs += 1800; domCache.items[i].classList.add('planned'); cbTarget.classList.add('active'); } 
+            else { domCache.items[i].classList.remove('planned'); cbTarget.classList.remove('active'); }
         }
         
         let th = Math.floor(targetSecs / 3600); let tm = Math.floor((targetSecs % 3600) / 60);
         targetStudyString = `${Utils.pad(th)}h ${Utils.pad(tm)}m`;
-        document.getElementById('popup-target-time').innerText = targetStudyString;
-        document.getElementById('dash-today-target').innerText = targetStudyString;
+        document.getElementById('popup-target-time').innerText = targetStudyString; document.getElementById('dash-today-target').innerText = targetStudyString;
         
         let h = Math.floor(totalSecs / 3600); let m = Math.floor((totalSecs % 3600) / 60);
         totalStudyString = `${Utils.pad(h)}h ${Utils.pad(m)}m`;
@@ -1412,12 +1345,7 @@
         if(s) { s.innerText = isSoundOn ? "켜짐" : "꺼짐"; s.className = isSoundOn ? "setting-btn" : "setting-btn off"; }
     }
     
-    function toggleTarget(i) {
-        targetBlocks[i] = domCache.targets[i].checked;
-        setL('targetBlocks', JSON.stringify(targetBlocks));
-        saveAndRefresh(); triggerAutoSync(true); 
-    }
-    
+    function toggleTarget(i) { targetBlocks[i] = domCache.targets[i].checked; setL('targetBlocks', JSON.stringify(targetBlocks)); saveAndRefresh(); triggerAutoSync(true); }
     function toggleCheck(i) { 
         if(domCache.checks[i].checked) { 
             if (blockSeconds[i] < 1800) backupSeconds[i] = blockSeconds[i];
@@ -1433,29 +1361,19 @@
     
     function startStopwatch() { 
         isRunning = true; lastTickTime = Date.now(); 
-        let rState = JSON.stringify({ isRunning: true, startTime: lastTickTime });
-        setL('runningState', rState); localStorage.setItem(activeUser + '_runningState', rState); 
+        setL('runningState', JSON.stringify({ isRunning: true, startTime: lastTickTime })); 
         document.getElementById('toggle-timer-btn').innerHTML = '⏸'; document.getElementById('toggle-timer-btn').classList.add('running'); 
         if(tickFrameId) cancelAnimationFrame(tickFrameId); tickFrameId = requestAnimationFrame(tick); 
     }
-    
     function stopStopwatch() { 
-        isRunning = false; 
-        let rState = JSON.stringify({ isRunning: false, startTime: 0 });
-        setL('runningState', rState); localStorage.setItem(activeUser + '_runningState', rState); 
+        isRunning = false; setL('runningState', JSON.stringify({ isRunning: false, startTime: 0 })); 
         document.getElementById('toggle-timer-btn').innerHTML = '▶'; document.getElementById('toggle-timer-btn').classList.remove('running'); 
         if(tickFrameId) { cancelAnimationFrame(tickFrameId); tickFrameId = null; }
     }
-    
     function toggleTimer() { 
-        const btn = document.getElementById('toggle-timer-btn');
-        if (btn.disabled) return;
-        SFX.play('tap'); 
-        btn.disabled = true; 
-        setTimeout(() => { btn.disabled = false; }, 1500); 
-        
-        if (isRunning) { stopStopwatch(); triggerAutoSync(true); } 
-        else { startStopwatch(); triggerAutoSync(true); } 
+        const btn = document.getElementById('toggle-timer-btn'); if (btn.disabled) return;
+        SFX.play('tap'); btn.disabled = true; setTimeout(() => { btn.disabled = false; }, 1500); 
+        if (isRunning) { stopStopwatch(); triggerAutoSync(true); } else { startStopwatch(); triggerAutoSync(true); } 
     }
     
     function manualClearBoard() { 
@@ -1480,19 +1398,12 @@
         if(document.getElementById('diary-modal').style.display === 'flex') saveTextData('diary', true);
         if(document.getElementById('todo-modal').style.display === 'flex') saveTextData('todo', true);
         
-        if(syncTimer) clearTimeout(syncTimer); 
-        syncTodayRecord(); 
-        showLoading(true, "서버에 강제 저장 중..."); 
-        
+        if(syncTimer) clearTimeout(syncTimer); syncTodayRecord(); showLoading(true, "서버에 강제 저장 중..."); 
         try {
             const res = await saveAllDataToServer(); 
-            if(res.success) { SFX.play('success'); showToast("✅ 안전하게 저장되었습니다."); }
-            else showToast("❌ 저장 실패. 통신 상태를 확인해주세요."); 
+            if(res.success) { SFX.play('success'); showToast("✅ 안전하게 저장되었습니다."); } else showToast("❌ 저장 실패. 통신 상태를 확인해주세요."); 
         } catch(e) { showToast("❌ 저장 중 오류가 발생했습니다."); } 
-        finally {
-            showLoading(false); isSyncing = false; 
-            if(btn) { btn.innerText = "💾 저장"; btn.style.opacity = 1; }
-        }
+        finally { showLoading(false); isSyncing = false; if(btn) { btn.innerText = "💾 저장"; btn.style.opacity = 1; } }
     }
     
     async function handleLogout() { 
@@ -1515,35 +1426,24 @@
         
         let newHtml = '';
         for (let i=0; i<fDay; i++) newHtml += `<div class="cal-day empty"></div>`;
-        
         for (let i=1; i<=dInM; i++) {
-            const dStr = `${y}-${Utils.pad(m+1)}-${Utils.pad(i)}`;
-            const isToday = dStr === logicTodayStr; const rec = dailyRecords[dStr];
+            const dStr = `${y}-${Utils.pad(m+1)}-${Utils.pad(i)}`; const isToday = dStr === logicTodayStr; const rec = dailyRecords[dStr];
             let rHtml = ''; let tHtml = ''; let hasTodo = false;
-
             if (rec) { 
                 let hN = parseInt((rec.totalTime || "0h").split('h')[0]); 
                 if(rec.targetTime && rec.targetTime !== "00h 00m" && rec.targetTime !== "0h 0m") { 
-                    let compactTarget = rec.targetTime.replace('h ', ':').replace('m', '');
-                    tHtml = `<div class="cal-badge target" title="목표 시간">${compactTarget}</div>`; 
+                    tHtml = `<div class="cal-badge target" title="목표 시간">${rec.targetTime.replace('h ', ':').replace('m', '')}</div>`; 
                 }
                 if(rec.totalTime && rec.totalTime !== "00h 00m" && rec.totalTime !== "0h 0m") { 
-                    let compactTotal = rec.totalTime.replace('h ', ':').replace('m', '');
-                    rHtml = `<div class="cal-badge actual ${hN>=5?'high':''}" title="실제 시간">${compactTotal}</div>`; 
+                    rHtml = `<div class="cal-badge actual ${hN>=5?'high':''}" title="실제 시간">${rec.totalTime.replace('h ', ':').replace('m', '')}</div>`; 
                 }
                 if(rec.todo && rec.todo.trim() !== '') hasTodo = true;
             }
-            
             let todoDot = hasTodo ? `<div style="width:6px; height:6px; background:#0ea5e9; border-radius:50%; position:absolute; top:6px; right:6px;"></div>` : '';
             let dayClass = "date-num"; let dOfWeek = new Date(y, m, i).getDay();
             if(dOfWeek === 0) dayClass += " sun"; else if(dOfWeek === 6) dayClass += " sat";
-            
             newHtml += `<div class="cal-day ${isToday?'today':''}" onclick="SFX.play('pop'); document.body.style.overflow='hidden'; showModal('${dStr}')">
-                <div class="${dayClass}">${i}</div>${todoDot}
-                <div class="cal-badge-wrap">
-                    ${tHtml}${rHtml}
-                </div>
-            </div>`;
+                <div class="${dayClass}">${i}</div>${todoDot}<div class="cal-badge-wrap">${tHtml}${rHtml}</div></div>`;
         }
         grid.innerHTML = newHtml;
     }
@@ -1551,71 +1451,34 @@
     function showModal(dStr) {
         const rec = dailyRecords[dStr] || { totalTime: "00h 00m", targetTime: "00h 00m", details: [], diary: "", todo: "" }; 
         document.getElementById('modal-title').innerText = `📅 ${dStr}`;
+        let html = `<div class="modal-total-time"><div><span>목표 시간</span><strong class="target-text">${rec.targetTime || "00h 00m"}</strong></div><div><span>집중 시간</span><strong>${rec.totalTime}</strong></div></div>`;
         
-        let html = `
-            <div class="modal-total-time">
-                <div>
-                    <span>목표 시간</span>
-                    <strong class="target-text">${rec.targetTime || "00h 00m"}</strong>
-                </div>
-                <div>
-                    <span>집중 시간</span>
-                    <strong>${rec.totalTime}</strong>
-                </div>
-            </div>
-        `;
-        
-        html += `
-            <div style="background:#f0f9ff; border:1px solid #bae6fd; padding:15px; border-radius:16px; margin-bottom:15px; position:relative;">
+        html += `<div style="background:#f0f9ff; border:1px solid #bae6fd; padding:15px; border-radius:16px; margin-bottom:15px; position:relative;">
                 <div style="font-size:14px; font-weight:800; color:#0284c7; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
-                    <span>✅ 할 일 (To-Do)</span>
-                    <button style="background:none; border:none; color:#0ea5e9; font-weight:bold; cursor:pointer; font-size:13px; padding:0;" onclick="SFX.play('pop'); openTextModal('todo', '${dStr}')">✏️ 작성/수정</button>
-                </div>
-                <div style="font-size:13.5px; color:var(--text-muted); line-height:1.6; white-space:pre-wrap; word-break:break-word;">${rec.todo ? Utils.escapeHTML(rec.todo) : '<span style="color:#94a3b8; font-style:italic;">등록된 할 일이 없습니다.</span>'}</div>
-            </div>
-        `;
+                    <span>✅ 할 일 (To-Do)</span><button style="background:none; border:none; color:#0ea5e9; font-weight:bold; cursor:pointer; font-size:13px; padding:0;" onclick="SFX.play('pop'); openTextModal('todo', '${dStr}')">✏️ 작성/수정</button>
+                </div><div style="font-size:13.5px; color:var(--text-muted); line-height:1.6; white-space:pre-wrap; word-break:break-word;">${rec.todo ? Utils.escapeHTML(rec.todo) : '<span style="color:#94a3b8; font-style:italic;">등록된 할 일이 없습니다.</span>'}</div></div>`;
 
-        html += `
-            <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:16px; margin-bottom:20px;">
+        html += `<div style="background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:16px; margin-bottom:20px;">
                 <div style="font-size:14px; font-weight:800; color:var(--text-main); margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
-                    <span>📝 나의 일기</span>
-                    <button style="background:none; border:none; color:#8b5cf6; font-weight:bold; cursor:pointer; font-size:13px; padding:0;" onclick="SFX.play('pop'); openTextModal('diary', '${dStr}')">✏️ 작성/수정</button>
-                </div>
-                <div style="font-size:13.5px; color:var(--text-muted); line-height:1.6; white-space:pre-wrap; word-break:break-word;">${rec.diary && rec.diary.trim() !== '' ? Utils.escapeHTML(rec.diary) : '<span style="color:#94a3b8; font-style:italic;">등록된 일기가 없습니다.</span>'}</div>
-            </div>
-        `;
+                    <span>📝 나의 일기</span><button style="background:none; border:none; color:#8b5cf6; font-weight:bold; cursor:pointer; font-size:13px; padding:0;" onclick="SFX.play('pop'); openTextModal('diary', '${dStr}')">✏️ 작성/수정</button>
+                </div><div style="font-size:13.5px; color:var(--text-muted); line-height:1.6; white-space:pre-wrap; word-break:break-word;">${rec.diary && rec.diary.trim() !== '' ? Utils.escapeHTML(rec.diary) : '<span style="color:#94a3b8; font-style:italic;">등록된 일기가 없습니다.</span>'}</div></div>`;
         
         let valid = rec.details ? rec.details.filter(d => d.min > 0 || d.isTarget || (d.note && d.note !== "null" && d.note.trim() !== "")) : [];
-        
-        if(valid.length === 0) {
-            html += `<div class="tl-empty-state">세부 타임라인 기록이 없습니다.</div>`; 
-        } else {
+        if(valid.length === 0) { html += `<div class="tl-empty-state">세부 타임라인 기록이 없습니다.</div>`; } 
+        else {
             html += `<div class="timeline">`;
             valid.forEach(d => {
-                let isFocused = d.min > 0;
-                let isPlanned = d.isTarget && !isFocused; 
+                let isFocused = d.min > 0; let isPlanned = d.isTarget && !isFocused; 
                 let n = (d.note && d.note !== "null" && d.note.trim() !== "") ? Utils.escapeHTML(d.note.trim()) : "";
                 let contentInner = "";
-                
-                let badgeStr = "";
-                if(isFocused) badgeStr = `<div class="tl-badge" ${n===''?'style="margin-bottom:0;"':''}>🔥 ${d.min}분 몰입</div>`;
-                else if(isPlanned) badgeStr = `<div class="tl-badge target" ${n===''?'style="margin-bottom:0;"':''}>🎯 목표 구간</div>`;
-                
+                let badgeStr = isFocused ? `<div class="tl-badge" ${n===''?'style="margin-bottom:0;"':''}>🔥 ${d.min}분 몰입</div>` : (isPlanned ? `<div class="tl-badge target" ${n===''?'style="margin-bottom:0;"':''}>🎯 목표 구간</div>` : "");
                 if (badgeStr && n !== "") contentInner = `${badgeStr}<div class="tl-note">${n}</div>`;
-                else if (badgeStr && n === "") contentInner = `${badgeStr}`;
-                else if (!badgeStr && n !== "") contentInner = `<div class="tl-note">${n}</div>`;
-
-                html += `
-                    <div class="timeline-item ${isFocused ? 'focused' : (isPlanned ? 'planned' : '')}">
-                        <div class="tl-time">${d.time}</div>
-                        <div class="tl-content" ${n === '' ? 'style="padding: 10px 14px;"' : ''}>${contentInner}</div>
-                    </div>
-                `;
+                else if (badgeStr && n === "") contentInner = `${badgeStr}`; else if (!badgeStr && n !== "") contentInner = `<div class="tl-note">${n}</div>`;
+                html += `<div class="timeline-item ${isFocused ? 'focused' : (isPlanned ? 'planned' : '')}"><div class="tl-time">${d.time}</div><div class="tl-content" ${n === '' ? 'style="padding: 10px 14px;"' : ''}>${contentInner}</div></div>`;
             });
             html += `</div>`;
         }
-        document.getElementById('modal-body').innerHTML = html; 
-        document.getElementById('record-modal').style.display = 'flex';
+        document.getElementById('modal-body').innerHTML = html; document.getElementById('record-modal').style.display = 'flex';
     }
 
     const THEMES = {
@@ -1626,27 +1489,17 @@
     };
 
     async function generateInstaImage(themeKey) {
-        document.getElementById('theme-modal').style.display = 'none';
-        document.body.style.overflow = '';
-        saveAndRefresh();
-        
-        let dStr = Utils.getLogicalDateString(); 
-        const rec = dailyRecords[dStr];
+        document.getElementById('theme-modal').style.display = 'none'; document.body.style.overflow = ''; saveAndRefresh();
+        let dStr = Utils.getLogicalDateString(); const rec = dailyRecords[dStr];
         if (!rec || !rec.details || rec.details.length === 0) return alert("오늘 저장된 공부 기록이 없습니다!");
 
         document.body.style.overflow = 'hidden'; showLoading(true, "📸 고해상도 렌더링 중...");
-        
         const card = document.getElementById('insta-card'); const theme = THEMES[themeKey];
         card.style.background = theme.bg; card.style.color = theme.color;
-        document.getElementById('ic-title').innerText = theme.title;
-        document.getElementById('ic-total').style.color = theme.totalColor;
-
-        document.getElementById('ic-date').innerText = dStr.replace(/-/g, '.');
-        document.getElementById('ic-total').innerText = rec.totalTime; 
-        document.getElementById('ic-user').innerText = activeUser;
+        document.getElementById('ic-title').innerText = theme.title; document.getElementById('ic-total').style.color = theme.totalColor;
+        document.getElementById('ic-date').innerText = dStr.replace(/-/g, '.'); document.getElementById('ic-total').innerText = rec.totalTime; document.getElementById('ic-user').innerText = activeUser;
 
         const grid = document.getElementById('ic-heatmap-grid'); grid.innerHTML = ''; 
-
         for (let i = 0; i < 48; i++) {
             let sec = blockSeconds[i] || 0; let p = Math.min(1, sec / 1800); 
             let rgbaColor = `rgba(${theme.r}, ${theme.g}, ${theme.b}, ${0.15 + p * 0.85})`;
@@ -1660,426 +1513,47 @@
                     const canvas = await html2canvas(card, { scale: 2, useCORS: true, logging: false, backgroundColor: null, width: 1080, height: 1500, windowWidth: 1080, windowHeight: 1500 });
                     document.getElementById('capture-result-img').src = canvas.toDataURL("image/jpeg", 1.0);
                     showLoading(false); document.body.style.overflow = 'auto'; document.getElementById('capture-modal').style.display = 'flex'; document.body.style.overflow='hidden';
-                } catch(err) {
-                    showLoading(false); document.body.style.overflow = ''; showToast("이미지 렌더링에 실패했습니다.");
-                }
+                } catch(err) { showLoading(false); document.body.style.overflow = ''; showToast("이미지 렌더링에 실패했습니다."); }
             }, 300);
-        } catch (e) {
-            showLoading(false); document.body.style.overflow = ''; showToast("이미지 생성에 실패했습니다.");
-        }
+        } catch (e) { showLoading(false); document.body.style.overflow = ''; showToast("이미지 생성에 실패했습니다."); }
     }
 
     if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js').then(reg => console.log('Service Worker 등록 완료!')).catch(err => console.log('Service Worker 등록 실패:', err));
-        });
+        window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(reg => console.log('SW Ready!')).catch(err => console.log('SW Fail:', err)); });
     }
 
     // ==========================================
-    // 🧠 인터랙티브 시뮬레이터 (이미지 트레이닝) 코어 V2 - 심층 과학/심리 에디션
+    // 🧠 7. 시뮬레이터 로직 및 깨끗한 데이터(SCENARIOS) 
     // ==========================================
-
     window.SCENARIO_PASSWORD = "036003";
 
     function shuffleArray(array) {
         let newArr = [...array];
-        for (let i = newArr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
-        }
+        for (let i = newArr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [newArr[i], newArr[j]] = [newArr[j], newArr[i]]; }
         return newArr;
     }
 
-// 📜 [심층 과학 기반] 8월 경찰 합격 맞춤형 & 퐁당퐁당 방어 시나리오 DB
-const SCENARIOS = [
-    {
-        id: 0,
-        btnColor: "#10b981", 
-        title: "🟢 비운동일 (13.5H 완주)",
-        subtitle: "화, 수, 금, 토 극한의 몰입 스케줄",
-        isRandom: false,
-        summary: "🔥 [비운동일 13.5H 요약]\n1. 침대 공부로 마찰력 제로 시동\n2. 빵/맥모닝으로 식곤증 방어\n3. 17시 고비 눈팩+커피 냅 리부팅",
-        steps: [
-            { time: "07:00", situation: "아침 7시. 침대 밖으로 나가기엔 몸이 너무 무겁습니다.", choices: [
-                { label: "세수부터 하고 책상에 앉으려 노력한다.", isCorrect: false, result: "💀 [오답 노트]\n'침대에서 책상으로 이동'하는 물리적 마찰력이 너무 커서 포기할 확률이 80%입니다.\n\n✅ [정답 해설] (신뢰도 98%)\n[작업 흥분 이론] 일단 눈뜨자마자 누운 채로 탭을 켜서 가장 쉬운 암기 과목을 보세요. 뇌의 측좌핵이 예열되어 스스로 일어나게 만듭니다." },
-                { label: "🛏️ 누운 상태로 탭을 켜서 가장 쉬운 암기 과목을 본다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 98%)\n[실행 마찰력 최소화] 누워서 공부하는 것은 죄가 아닙니다. 가장 저항이 적은 행동으로 뇌를 깨우는 최고 효율의 시동법입니다.\n\n❌ [오답 노트]\n완벽한 세팅(샤워, 책상 정리)을 고집하면 시작 자체가 지연됩니다." }
-            ]},
-            { time: "13:30", situation: "점심시간, 든든한 한식을 먹을지 가벼운 빵을 먹을지 고민됩니다.", choices: [
-                { label: "국밥이나 찌개류로 배를 든든하게 채운다.", isCorrect: false, result: "💀 [오답 노트]\n탄수화물과 나트륨의 과다 결합은 오후 내내 극심한 식곤증(브레인 포그)을 유발합니다.\n\n✅ [정답 해설] (신뢰도 94%)\n[혈당 스파이크 방어] 가벼운 빵(정제 탄수화물)으로 뇌에 필요한 당만 빠르게 공급하고 포만감을 낮추는 것이 오후 4시간 집중의 비결입니다." },
-                { label: "🥐 가벼운 빵을 먹고 즉시 온열안대 20분 휴식을 취한다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 94%)\n[NASA식 피로 리셋] 소식을 통한 혈당 방어 + 시각 정보 차단(눈팩)은 오후 집중력을 오전 수준으로 끌어올리는 치트키입니다.\n\n❌ [오답 노트]\n배부른 한식은 소화 기관으로 혈류를 쏠리게 해 뇌를 멍하게 만듭니다." }
-            ]},
-            { time: "17:00", situation: "가장 고비인 17시. 체력이 바닥나고 집중력이 박살 났습니다.", choices: [
-                { label: "초인적인 의지력으로 참고 야간 스퍼트를 준비한다.", isCorrect: false, result: "💀 [오답 노트]\n의지력은 이미 소진되었습니다. 이대로 버티면 19시쯤 완전히 붕괴되어 조기 퇴근하게 됩니다.\n\n✅ [정답 해설] (신뢰도 99%)\n[아데노신 클리어] 커피 1잔을 마시고 눈팩과 함께 20분 자는 '커피 냅'만이 야간 5시간을 버티게 할 유일한 생물학적 동력입니다." },
-                { label: "☕ 커피 1잔 + 눈팩 2회차 + 20분 수면(커피 냅)을 실행한다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 99%)\n[커피 냅 프로토콜] 카페인이 뇌에 도달하는 20분 동안 가수면을 취해 피로 물질을 비워내면, 각성 효과가 200% 증폭됩니다.\n\n❌ [오답 노트]\n무작정 버티는 것은 활자만 쳐다보는 가짜 공부를 유발합니다." }
-            ]},
-            { time: "18:00", situation: "야간 5.5시간 스퍼트를 시작합니다. 뇌가 지루해합니다.", choices: [
-                { label: "완전한 적막 속에서 법학 이론을 깊게 판다.", isCorrect: false, result: "💀 [오답 노트]\n야간에 인지 부하가 높은 새로운 이론을 파면 뇌가 거부 반응을 일으켜 딴짓을 찾습니다.\n\n✅ [정답 해설] (신뢰도 92%)\n[맥락 전환 기법] 프리렌 BGM 같은 백색소음을 켜고, 이미 아는 것을 뱉어내는 '오답 정리/인출'을 해야 텐션이 유지됩니다." },
-                { label: "🎧 프리렌 BGM을 켜고 오답 정리 및 출력 학습을 한다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 92%)\n[상태 조절 효과] 지루한 야간에는 적절한 청각적 자극(가사 없는 BGM)과 '아웃풋(출력)' 중심의 공부가 뇌의 도파민을 유지시킵니다.\n\n❌ [오답 노트]\n조용한 곳에서의 인풋(이론 읽기)은 수면제와 같습니다." }
-            ]}
-        ]
-    },
-    {
-        id: 1,
-        btnColor: "#3b82f6", 
-        title: "🏃‍♂️ 운동일 (10H 에너지 세이브)",
-        subtitle: "운동 전 목표 완수 및 수면 최적화",
-        isRandom: false,
-        summary: "🏃‍♂️ [운동일 요약]\n1. 19시 30분 전까지 10H 달성\n2. 운동 가는 마찰력 완벽 제거\n3. 즉시 샤워 후 칼취침",
-        steps: [
-            { time: "18:30", situation: "야간 마무리 1시간 전, 뇌가 완전히 지쳤습니다.", choices: [
-                { label: "어려운 판례나 복잡한 계산 문제를 푼다.", isCorrect: false, result: "💀 [오답 노트]\n에너지가 고갈된 상태에서 고난도 작업은 좌절감을 유발해 내일의 공부 동기까지 꺾어버립니다.\n\n✅ [정답 해설] (신뢰도 95%)\n[마무리 엔도르핀] 가벼운 두문자 암기나 쉬운 OX 문제로 '오늘 다 해냈다'는 성취감을 뇌에 각인시키며 끝내야 합니다." },
-                { label: "📖 가볍고 쉬운 두문자 암기나 OX 문제를 풀며 성취감을 챙긴다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 95%)\n[피크-엔드 법칙] 뇌는 경험의 '마지막 순간'을 강렬하게 기억합니다. 쉬운 걸로 기분 좋게 끝내야 내일 책상에 앉기 싫은 마음이 사라집니다.\n\n❌ [오답 노트]\n마지막에 어려운 걸 풀다 틀리면 스트레스 호르몬 상태로 퇴실하게 됩니다." }
-            ]},
-            { time: "21:00", situation: "운동 갈 시간입니다. 오늘 하루 10시간이나 해서 너무 피곤합니다.", choices: [
-                { label: "침대에 누워서 갈까 말까 5분만 고민해 본다.", isCorrect: false, result: "💀 [오답 노트]\n인간의 뇌는 피곤할 때 무조건 '안 하는 쪽'으로 합리화의 천재가 됩니다. 고민하는 순간 지는 겁니다.\n\n✅ [정답 해설] (신뢰도 97%)\n[실행 의도 설계] 생각할 틈을 주지 마세요. 아침에 미리 세팅해 둔 수건과 옷을 들고 바로 화장실로 직행해야 합니다." },
-                { label: "🏋️ 생각 스위치를 끄고, 미리 세팅해 둔 옷을 입고 나간다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 97%)\n[마찰력 제거의 법칙] 환경을 미리 세팅해 두면 행동 개시 에너지가 1/10로 줄어듭니다. 운동은 신체 피로를 푸는 '적극적 휴식'입니다.\n\n❌ [오답 노트]\n누워서 고민하는 에너지가 운동하는 에너지보다 큽니다." }
-            ]}
-        ]
-    },
-    {
-        id: 4,
-        btnColor: "#8b5cf6", 
-        title: "🚨 돌발/퐁당퐁당 (무작위 훈련)",
-        subtitle: "8시간-3시간 패턴(자아고갈) 완벽 방어",
-        isRandom: true,
-        pickCount: 5,
-        steps: [
-            { time: "돌발", situation: "어제 9시간을 넘겼더니, 오늘 아침엔 1분도 책상에 앉기가 싫습니다. (퐁당퐁당 패턴)", choices: [
-                { label: "어제 많이 했으니 오늘은 스카에 가지 않고 집에서 쉰다.", isCorrect: false, result: "💀 [오답 노트]\n공부 리듬이 끊어지는 전형적인 패배 루트입니다. 내일은 스카 가기가 3배 더 힘들어집니다.\n\n✅ [정답 해설] (신뢰도 98%)\n[관성 유지의 법칙] 공부 시간은 줄이더라도 '스카에 출석하는 행위' 자체는 유지해야 뇌의 관성이 깨지지 않습니다." },
-                { label: "🚶 일단 무조건 스카에 가서 딱 2시간만 제일 좋아하는 과목을 한다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 98%)\n[최소 정체성 방어] '나는 매일 스카에 가는 사람'이라는 정체성을 지키는 게 핵심입니다. 가서 2시간만 쉬운 걸 하고 오면 내일 리듬이 복구됩니다.\n\n❌ [오답 노트]\n집에서 쉬면 뇌는 이를 '보상'으로 인식해 계속 늘어집니다." }
-            ]},
-            { time: "돌발", situation: "점심 먹고 스카에 돌아왔는데, 폰으로 유튜브를 켜버렸습니다.", choices: [
-                { label: "이왕 켠 거, 딱 10분만 보고 끈다.", isCorrect: false, result: "💀 [오답 노트]\n도파민 알고리즘 앞에서 인간의 자제력은 무용지물입니다. 10분이 2시간이 되는 마법을 겪게 됩니다.\n\n✅ [정답 해설] (신뢰도 96%)\n[물리적 격리] 스스로를 믿지 마세요. 폰 전원을 끄고 사물함이나 카운터에 강제로 격리해야 합니다." },
-                { label: "📱 즉시 폰 전원을 끄고 사물함 깊숙한 곳에 던져 넣는다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 96%)\n[환경 통제 이론] 의지력은 소모품입니다. 유혹을 '참는 데' 에너지를 쓰지 말고, 유혹 자체를 눈앞에서 물리적으로 치워버리세요.\n\n❌ [오답 노트]\n'딱 영상 하나만'은 도파민 폭포의 밸브를 여는 행위입니다." }
-            ]},
-            { time: "돌발", situation: "8월 시험이 다가오는데 모의고사 점수가 안 올라 불안감에 심장이 뜁니다.", choices: [
-                { label: "불안감을 잊기 위해 잠을 줄이고 문제풀이 양을 2배로 늘린다.", isCorrect: false, result: "💀 [오답 노트]\n수면 부족 + 스트레스는 코르티솔 수치를 급증시켜 해마(기억저장소)를 마비시킵니다. 밑빠진 독에 물 붓기입니다.\n\n✅ [정답 해설] (신뢰도 94%)\n[표현적 글쓰기] 백지에 지금 나의 불안한 상태와 모르는 약점을 솔직하게 적어 내려가면 전두엽이 이성을 되찾습니다." },
-                { label: "✍️ 백지를 꺼내 내 감정과 약점을 5분간 객관적으로 쏟아내 적는다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 94%)\n[제임스 페네베이커 연구] 억눌린 감정을 글로 시각화하면, 뇌는 이를 '통제 가능한 문제'로 인식하여 즉각적으로 편도체(불안 센터)를 진정시킵니다.\n\n❌ [오답 노트]\n공포에 질린 상태에서의 양치기(무지성 문제풀기)는 기억에 남지 않습니다." }
-            ]}
-        ]
-    },
-    {
-        id: 5,
-        btnColor: "#0ea5e9", 
-        title: "📚 칼럼 퀴즈 (심화 학습)",
-        subtitle: "전 세계 석학들의 뇌 과학 & 장기 고시생 데이터",
-        isRandom: true,
-        pickCount: 8,
-        steps: [
-            { time: "칼럼", situation: "경찰 시험 준비생 중 '퐁당퐁당(8시간→2시간)' 패턴을 겪는 사람들의 가장 흔한 착각은?", choices: [
-                { label: "자신이 단순히 '의지력이 부족한 사람'이라고 자책하는 것", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 99%)\n[자아 고갈 이론] 의지력은 핸드폰 배터리와 같습니다. 전날 8시간을 오버페이스로 달려서 배터리가 0%가 된 것뿐입니다. 당신의 멘탈 문제가 아니라 '시스템의 부재' 때문입니다.\n\n❌ [오답 노트]\n매일 일정한 시간(예: 7시간)을 꾸준히 유지하는 것이 퐁당퐁당 10시간보다 압도적으로 유리합니다." },
-                { label: "영양제를 덜 챙겨 먹어서 체력이 떨어졌다고 믿는 것", isCorrect: false, result: "💀 [오답 노트]\n체력 문제 이전에 '도파민과 인지 에너지의 과소비'가 주원인입니다.\n\n✅ [정답 해설] (신뢰도 99%)\n자신의 한계치를 모른 채 기분 좋을 때 무리하게 달리면 뇌가 항상성을 맞추기 위해 다음 날 강제 셧다운을 시킵니다." }
-            ]},
-            { time: "칼럼", situation: "NASA 조종사들에게도 적용되는 '17시 20분 커피 냅(Coffee Nap)'의 가장 정확한 과학적 원리는?", choices: [
-                { label: "단순히 20분 자는 동안 피로 물질인 '아데노신'이 수용체에서 씻겨 나가기 때문", isCorrect: false, result: "💀 [오답 노트]\n절반만 맞습니다. 그냥 자는 것보다 '커피'와 결합했을 때 마법이 일어납니다.\n\n✅ [정답 해설] (신뢰도 98%)\n수면이 아데노신을 비워낸 그 빈자리를, 20분 뒤 각성한 카페인이 완벽하게 꿰차고 들어가기 때문입니다." },
-                { label: "수면이 피로 물질(아데노신)을 비워낸 빈자리를 카페인이 완벽히 차지하기 때문", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 98%)\n[NASA 수면 과학] 뇌의 피로물질과 카페인은 열쇠구멍(수용체)을 두고 싸웁니다. 20분의 수면이 피로물질을 청소해 주면, 카페인이 100% 흡수되어 야간 5시간을 버틸 무적의 텐션이 생깁니다.\n\n❌ [오답 노트]\n수면 없이 커피만 들이부으면 찌꺼기 위에 코팅을 하는 격입니다." }
-            ]},
-            { time: "칼럼", situation: "8월 시험 합격이라는 거대한 목표 앞에서 멘탈이 무너질 때, 신경과학자 앤드류 휴버먼이 제안하는 뇌 리셋법은?", choices: [
-                { label: "유튜브에서 경찰 합격 수기나 동기부여 영상을 찾아본다.", isCorrect: false, result: "💀 [오답 노트]\n동기부여 영상은 타인의 도파민을 빌려 쓰는 행위로, 영상이 끝나면 더 극심한 우울감과 현타가 밀려옵니다.\n\n✅ [정답 해설] (신뢰도 97%)\n밖으로 나가 시야를 넓게 두고 앞을 향해 걷는 '전진 보행'이 불안 회로를 즉시 꺼버립니다." },
-                { label: "🚶 즉시 밖으로 나가 10분간 햇빛을 받으며 앞을 향해 걷는다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 97%)\n[전진 보행/Forward Ambulation] 사물이 내 눈앞을 스쳐 지나가는 시각적 움직임은 뇌의 편도체(불안 센터) 활동을 강제로 셧다운 시키고 도파민 밸런스를 맞춥니다.\n\n❌ [오답 노트]\n멘탈이 무너졌을 때 책상에 가만히 앉아있는 것은 자해 행위입니다." }
-            ]},
-            { time: "칼럼", situation: "점심으로 한식(국밥, 백반) 대신 '빵과 같은 정제 탄수화물'이 수험생의 특정 상황에서 유리한 이유는?", choices: [
-                { label: "소화에 에너지가 덜 쓰이고 뇌에 필요한 포도당을 즉각 꽂아주기 때문", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 94%)\n[오렉신-글루코스 반응] 과도한 나트륨과 포만감은 각성 호르몬(오렉신)을 억제합니다. 가벼운 빵은 소화기 부담을 줄이고 뇌에 즉각적인 연료(당)를 공급해 오후 집중을 돕습니다.\n\n❌ [오답 노트]\n단, 장기적으로는 비타민 B군을 꼭 보충해야 정제 탄수화물의 부작용을 막을 수 있습니다." },
-                { label: "밀가루가 장내 유익균을 활성화시켜 세로토닌을 분비하기 때문", isCorrect: false, result: "💀 [오답 노트]\n밀가루는 장내 유익균 활성화와 무관하며 오히려 장 건강에는 불리할 수 있습니다.\n\n✅ [정답 해설] (신뢰도 94%)\n수험생이 빵을 먹는 진짜 이유는 '포만감 방어'와 '즉각적인 당 수혈'로 식곤증을 막기 위함입니다." }
-            ]},
-            { time: "칼럼", situation: "밤 12시 '칼취침' 룰을 어기고 새벽 2시까지 공부했을 때 뇌에서 일어나는 비극은?", choices: [
-                { label: "뇌의 대뇌피질이 활성화되어 오히려 다음 날 암기력이 상승한다.", isCorrect: false, result: "💀 [오답 노트]\n전혀 근거 없는 낭설입니다. 수면이 부족하면 뇌는 알코올 농도 0.05% (음주 상태)와 같아집니다.\n\n✅ [정답 해설] (신뢰도 99%)\n[기억의 고정화 실패] 오늘 10시간 공부한 내용이 장기기억 저장소로 넘어가지 못하고 자고 일어나면 70%가 날아갑니다." },
-                { label: "오늘 낮에 10시간 동안 공부했던 내용들의 '저장(Save)' 버튼이 눌리지 않고 증발한다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 99%)\n[매튜 워커의 수면과학] 잠은 단순한 휴식이 아닙니다. 수면 중 해마는 낮에 배운 지식을 영구 저장소로 이동시킵니다. 수면을 깎는 것은 오늘 공부한 문서의 '저장 안 함'을 누르는 것과 같습니다.\n\n❌ [오답 노트]\n다음 날 늦게 일어나는 것보다 무서운 게 바로 '오늘 지식의 휘발'입니다." }
-            ]},
-            { time: "칼럼", situation: "[에빙하우스 연구] 암기 효율이 극대화되는 가장 과학적인 복습 타이밍은?", choices: [
-                { label: "외운 즉시 10번 반복해서 소리 내어 읽기", isCorrect: false, result: "💀 [오답: 신뢰도 94%]\n<b>착각적 유창성</b>: 눈에 익은 것을 머리에 들어왔다고 뇌가 거짓말을 하게 됩니다." },
-                { label: "살짝 가물가물하여 기억하기 고통스러울 때 다시 꺼내기", isCorrect: true, result: "🎉 [정답!]\n\n✅ [해설: 신뢰도 99%]\n<b>바람직한 어려움(Desirable Difficulty)</b>: 뇌가 정보를 끄집어내려고 애쓸 때 신경 시냅스가 가장 강력하게 연결됩니다." }
-            ]},
-            { time: "칼럼", situation: "[심리적 분리] 스케줄이 무너진 날, 억지로 책상에 앉아있는 것이 독이 되는 이유는?", choices: [
-                { label: "공부 장소를 '노는 곳'으로 인식하지 않게 보호하려고", isCorrect: true, result: "🎉 [정답!]\n\n✅ [해설: 신뢰도 91%]\n책상에서 딴짓을 반복하면 뇌는 그곳을 휴식 공간으로 오해합니다. 쉴 때는 확실히 이탈해야 '공부 장소'의 각인 효과가 유지됩니다." },
-                { label: "그냥 스트레스를 풀기 위해서", isCorrect: false, result: "💀 [오답]\n단순 휴식보다 중요한 것은 '공간에 대한 뇌의 각인'을 지키는 것입니다." }
-            ]},
-            { time: "칼럼", situation: "[앤드류 휴버먼] 멘탈이 무너지고 불안할 때 뇌과학적으로 가장 빠른 진정법은?", choices: [
-                { label: "🚶 즉시 밖으로 나가 시야를 넓게 두고 전진하며 걷는다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [해설: 신뢰도 94%]\n<b>전진 보행(Forward Ambulation)</b>: 시각적 흐름이 뇌를 통과하면 편도체(불안 센터) 활동이 즉각적으로 억제됩니다." },
-                { label: "유튜브에서 경찰 합격 수기 영상을 찾아본다.", isCorrect: false, result: "💀 [오답]\n타인의 도파민을 빌려 쓰는 행위일 뿐, 영상이 끝나면 불안감은 더 크게 돌아옵니다." }
-            ]},       
-            { time: "칼럼", situation: "[울트라디안 리듬] 13.5시간의 장기 레이스를 완주하기 위한 가장 효율적인 휴식 주기는?", choices: [
-                { label: "90분 집중 후, 10분간 눈을 감고 시각 자극을 차단한다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [해설: 신뢰도 97%]\n인간의 집중력은 90~120분 주기로 파동을 그립니다. 주기가 끝날 때 뇌의 아데노신 농도를 조절해주지 않으면 오후에 치명적인 브레인 포그가 옵니다." },
-                { label: "흐름이 끊기지 않게 4시간 연속으로 공부하고 길게 쉰다.", isCorrect: false, result: "💀 [오답]\n집중력이 바닥난 상태에서 앉아있는 시간은 단순 노동일 뿐 학습 성과로 이어지지 않습니다." }
-            ]},
-            { time: "칼럼",situation: "[울트라디안 리듬] 13.5시간의 장기 레이스를 완주하기 위한 가장 효율적인 휴식 주기는?", choices: [
-                { label: "90분 집중 후, 10분간 눈을 감고 시각 자극을 차단한다.", isCorrect: true, result: "🎉 [정답! 신뢰도 97%]\n\n✅ [심층 해설]: <b>나다니엘 클라이트먼의 '기초 휴식-활동 주기(BRAC)'</b> 이론입니다.\n\n1. <b>90분의 법칙:</b> 인간의 뇌는 수면 중뿐만 아니라 깨어있는 동안에도 약 90분 주기로 고집중과 저집중의 파동을 그립니다. 이 파동이 끝날 때 10분간 쉬어주지 않으면 뇌에 피로 물질인 아데노신이 급격히 쌓여 오후에 치명적인 '브레인 포그'가 옵니다.\n2. <b>시각 자극 차단의 중요성:</b> 뇌 에너지의 80%는 시각 정보를 처리하는 데 쓰입니다. 쉴 때 스마트폰을 보는 것은 휴식이 아니라 뇌를 계속 혹사시키는 행위입니다. 10분간 눈을 감는 것만으로도 전두엽의 부하를 획기적으로 낮출 수 있습니다.\n3. <b>완주 비결:</b> 13.5시간을 채우는 힘은 정신력이 아니라, 90분마다 뇌의 캐시 메모리를 비워주는 '시스템'에서 나옵니다."},
-                { label: "흐름이 끊기지 않게 4시간 연속으로 공부하고 길게 쉰다.", isCorrect: false, result: "💀 [오답: 신뢰도 91%]\n\n❌ [오답 해설]: <b>초집중의 역설</b>입니다. 2시간이 넘어가면 뇌는 활자를 읽고는 있지만 의미를 파악하지 못하는 '가짜 집중(Vigilance decrement)' 상태에 빠집니다. 4시간 연속 공부는 뇌를 과부하 시켜 내일 순공 시간이 3시간으로 뚝 떨어지는 '퐁당퐁당 패턴'의 직접적인 원인이 됩니다." }
-            ]},
-        { 
-                time: "칼럼", 
-                situation: "[100% 원칙] '오늘은 너무 힘드니까 딱 30분만 일찍 접을까?'라는 유혹이 들 때, 장기전에서 가장 위험한 생각은?", 
-                choices: [
-                    { 
-                        label: "98%보다 100%가 지키기 쉽다는 사실을 망각하는 것", 
-                        isCorrect: true, 
-                        result: "🎉 [정답! 신뢰도 96%]\n\n✅ [심층 해설]: <b>클레이튼 크리스텐슨의 '100% 원칙'</b>입니다. '이번 한 번만'이라는 예외를 허용하는 순간, 뇌는 다음 위기 때마다 '타협할지 말지' 결정하는 데 엄청난 에너지를 소모하게 됩니다. 원칙을 100% 지키는 것이 98% 지키는 것보다 생물학적으로 훨씬 쉽습니다." 
-                    },
-                    { 
-                        label: "30분 공부량이 합격에 큰 지장을 줄 것이라 걱정하는 것", 
-                        isCorrect: false, 
-                        result: "💀 [오답: 신뢰도 91%]\n\n❌ [해설]: 30분의 지식 양보다 무서운 것은 <b>'나와의 약속을 어기는 회로'</b>가 뇌에 생성되는 것입니다. 한 번 무너진 댐은 걷잡을 수 없이 무너집니다." 
-                    }
-                ]},
-                    { 
-                time: "칼럼", 
-                situation: "[실행 의도] 오늘따라 공부 시작 버튼을 누르기가 너무 싫을 때, 실행력을 3배 높이는 과학적 주문은?", 
-                choices: [
-                    { 
-                        label: "📍 '만약 탭을 켜면(If), 트리노트 1페이지부터 읽겠다(Then)'고 구체화한다.", 
-                        isCorrect: true, 
-                        result: "🎉 [정답! 신뢰도 98%]\n\n✅ [심층 해설]: <b>피터 골위처의 '실행 의도(Implementation Intentions)'</b> 연구입니다. 뇌는 '열심히 하자'는 막연한 의지보다 'If-Then' 형태의 명령어를 수신할 때 전두엽의 부하 없이 즉각적인 행동을 개시합니다. 의지력이 아닌 '프로그래밍'으로 공부를 시작하세요." 
-                    },
-                    { 
-                        label: "합격 후의 내 모습을 상상하며 긍정적인 에너지를 끌어올린다.", 
-                        isCorrect: false, 
-                        result: "💀 [오답: 신뢰도 85%]\n\n❌ [해설]: 과도한 낙관적 상상은 뇌가 이미 목표를 이룬 것으로 착각하게 만들어, 정작 지금 당장 필요한 '행동 에너지'를 감소시키는 역효과(Mental Contrasting 미비 시)를 냅니다." 
-                    }
-                ]
-            },
-            { 
-                time: "칼럼", 
-                situation: "[인지 부하 이론] 법학 판례 암기가 한계에 도달해 뇌가 '입력을 거부'할 때, 합격생들의 우회 전략은?", 
-                choices: [
-                    { 
-                        label: "🔄 뇌 사용 부위를 바꾸는 'Task Rotation(단순 작업 전환)'을 실시한다.", 
-                        isCorrect: true, 
-                        result: "🎉 [정답! 신뢰도 96%]\n\n✅ [심층 해설]: <b>존 스웰러의 '인지 부하 이론'</b>에 따르면 특정 회로가 지쳤을 때 공부를 아예 쉬는 것보다, 사용 부위가 다른 작업(예: 오답 오려 붙이기, 강의 듣기)으로 전환하는 것이 '집중의 관성'을 유지하면서 특정 뉴런의 피로를 식히는 데 훨씬 효과적입니다. 이것이 13.5시간 완주의 비결입니다." 
-                    },
-                    { 
-                        label: "정신력이 해이해진 것이므로 찬물 세수를 하고 다시 판례를 본다.", 
-                        isCorrect: false, 
-                        result: "💀 [오답: 신뢰도 88%]\n\n❌ [해설]: 과부하가 걸린 회로에 계속 전기를 흘려보내는 격입니다. 이는 뇌의 거부 반응을 키워 결국 다음 날 순공 시간을 박살 내는 '퐁당퐁당 패턴'을 초래합니다." 
-                    }
-                ]
-            },
-            { 
-                time: "칼럼", 
-                situation: "[간격 효과] 기껏 외운 경찰학 두문자가 다음 날 자꾸 가물가물할 때, 뇌과학이 추천하는 해결책은?", 
-                choices: [
-                    { 
-                        label: "📖 '가물가물해서 괴로운 시점'에 딱 한 번만 억지로 떠올려본다.", 
-                        isCorrect: true, 
-                        result: "🎉 [정답! 신뢰도 99%]\n\n✅ [심층 해설]: <b>니콜라스 세페다의 '최적 복습 간격'</b> 연구입니다. 완벽하게 기억날 때 반복하는 것은 시간 낭비입니다. '잊어버릴 것 같아 고통스러운 시점'에 인출을 시도해야 뇌는 이 정보가 생존에 필수적이라 판단하고 장기 기억 저장소의 문을 엽니다. 괴로움이 곧 저장의 증거입니다." 
-                    },
-                    { 
-                        label: "불안하므로 외워질 때까지 그 자리에서 20번 반복해서 읽는다.", 
-                        isCorrect: false, 
-                        result: "💀 [오답: 신뢰도 92%]\n\n❌ [해설]: <b>과잉 학습의 함정</b>입니다. 짧은 시간 내의 반복 노출은 단기 기억만 자극할 뿐이며, 뇌는 금방 지루함을 느껴 정보 처리를 중단합니다." 
-                    }
-                ]
-            },
-            { 
-                time: "칼럼", 
-                situation: "[여키스-도드슨 법칙] 시험이 다가오며 압박감이 심해져 집중이 안 될 때, 뇌의 성과를 극대화하는 법은?", 
-                choices: [
-                    { 
-                        label: "🧘 명상이나 호흡을 통해 각성 수준을 '적절한 중간 상태'로 낮춘다.", 
-                        isCorrect: true, 
-                        result: "🎉 [정답! 신뢰도 94%]\n\n✅ [심층 해설]: <b>여키스-도드슨 법칙(Yerkes-Dodson Law)</b>에 따르면, 스트레스(각성)가 너무 낮아도 문제지만 너무 높아도 성과는 급락합니다. 고난도 암기 과업일수록 뇌가 '차분한 각성' 상태일 때 효율이 가장 높습니다. 너무 조급할 땐 4-7-8 호흡으로 심박수를 낮추는 것이 가장 빠른 공부법입니다." 
-                    },
-                    { 
-                        label: "불안을 동력 삼아 잠을 줄이고 더 처절하게 몰아붙인다.", 
-                        isCorrect: false, 
-                        result: "💀 [오답: 신뢰도 90%]\n\n❌ [해설]: 각성 수준이 임계치를 넘으면 전두엽 기능이 마비되고 공포를 담당하는 편도체만 활성화됩니다. 결국 책상 앞에는 앉아있지만 머릿속은 하얘지는 현상이 발생합니다." 
-                    }
-                ]
-            },
-            { 
-                time: "칼럼", 
-                situation: "[디지털 피로] 공부 중간 휴식 시간에 스마트폰을 보는 것이 '2분 규칙'보다 합격에 해로운 결정적 이유는?", 
-                choices: [
-                    { 
-                        label: "뇌가 휴식으로 인식하지 못하고 '주의력 잔류' 현상을 만들기 때문", 
-                        isCorrect: true, 
-                        result: "🎉 [정답! 신뢰도 97%]\n\n✅ [심층 해설]: <b>미네소타 대학교 소피 르로이 교수의 '주의력 잔류(Attention Residue)'</b> 이론입니다. 폰으로 본 쇼츠나 뉴스의 잔상이 뇌에 남아, 공부로 복귀한 뒤에도 약 20분간 인지 자원의 일부를 계속 점유합니다. 13.5시간 중 상당 시간을 이 '잔상 처리'에 낭비하게 되어 실질적인 순공 밀도가 반토막 납니다." 
-                    },
-                    { 
-                        label: "단순히 시력이 나빠져서 판례 읽기가 힘들어지기 때문", 
-                        isCorrect: false, 
-                        result: "💀 [오답: 신뢰도 89%]\n\n❌ [해설]: 신체적 피로보다 무서운 것은 인지 자원의 파편화입니다. 뇌는 멀티태스킹을 하느라 진정한 회복을 하지 못하게 됩니다." 
-                    }
-                ]},
-                    { 
-                time: "칼럼", 
-                situation: "[사전 전념] AI 기능 테스트나 애니 리뷰 등 '꽂히면 끝까지 가는' 본능적 폭주를 막는 가장 완벽한 경제학적 대책은?", 
-                choices: [
-                    { 
-                        label: "유혹이 닥쳤을 때 합격 수기를 떠올리며 정신력으로 이겨낸다.", 
-                        isCorrect: false, 
-                        result: "💀 [오답: 신뢰도 12%]\n\n❌ [해설]: 유혹이 눈앞에 있을 때 인간의 전두엽은 감정 뇌(변연계)를 이길 수 없습니다. '안 하겠다'는 결심은 뇌 에너지만 소모시키고 결국 패배하게 됩니다." 
-                    },
-                    { 
-                        label: "🛡️ 의지력이 높은 아침에 유혹 앱(유튜브 등)을 삭제하거나 물리적 잠금 장치를 가동한다.", 
-                        isCorrect: true, 
-                        result: "🎉 [정답! 신뢰도 98%]\n\n✅ [심층 해설]: <b>토머스 셸링의 '사전 전념(Precommitment)'</b> 전략입니다. 오디세우스가 사이렌의 노래에 홀리지 않기 위해 자신의 몸을 돛대에 묶은 것과 같습니다. 유혹이 발생한 '후'에 참는 것이 아니라, 유혹이 발생할 '환경'을 미리 제거하는 것만이 유일한 승리법입니다." 
-                    }
-                ]
-            },
-            { 
-                time: "칼럼", 
-                situation: "[미엘린화] 8시간을 넘겨 공부할 때 '머리가 타들어 가고 글자가 튕겨 나가는 고통'이 느껴진다면, 지금 님의 뇌 안에서 벌어지는 일은?", 
-                choices: [
-                    { 
-                        label: "🧠 특정 신경 회로가 절연체(미엘린)로 감싸지며 '초고속 합격 회로'가 구축되는 중이다.", 
-                        isCorrect: true, 
-                        result: "🎉 [정답! 신뢰도 96%]\n\n✅ [심층 해설]: <b>대니얼 코일의 '탤런트 코드'</b> 연구입니다. 뇌가 고통을 느낀다는 것은 해당 지식의 전달 경로에 '미엘린(Myelin)'이라는 절연층이 두껍게 쌓이고 있다는 신호입니다. 미엘린이 두꺼워진 회로는 정보 전달 속도를 최대 100배까지 높여주며, 이 고통을 견디는 시간만이 님을 '기계적인 암기왕'으로 만듭니다." 
-                    },
-                    { 
-                        label: "뇌세포가 파괴되고 있으므로 즉시 공부를 멈추고 잠을 자야 한다는 경고다.", 
-                        isCorrect: false, 
-                        result: "💀 [오답: 신뢰도 82%]\n\n❌ [해설]: 단순한 졸음과 '집중의 고통'은 구분해야 합니다. 튕겨 나가는 활자를 다시 붙잡는 순간의 0.1초가 합격과 불합격을 가르는 뇌 가소성의 골든타임입니다." 
-                    }
-                ]
-            },
-                    { 
-                time: "칼럼", 
-                situation: "[유혹 묶기] 공부 중 너무 보고 싶은 유튜브 영상이 있을 때, 정주행의 늪에 빠지지 않는 가장 강력한 행동 설계는?", 
-                choices: [
-                    { 
-                        label: "📱 책상에 앉아서 보되, 15분 뒤에 꺼야겠다고 계속 의식한다.", 
-                        isCorrect: false, 
-                        result: "💀 [오답: 신뢰도 5%]\n\n❌ [해설]: 의지력은 알고리즘의 유혹을 이길 수 없습니다. 편안한 자세로 보는 유튜브는 뇌의 제어력을 마비시켜 결국 '하나만 더'를 외치게 만듭니다." 
-                    },
-                    { 
-                        label: "🏋️ 무조건 '서서' 보거나 '스트레칭'을 하면서 보는 조건을 건다.", 
-                        isCorrect: true, 
-                        result: "🎉 [정답! 신뢰도 96%]\n\n✅ [심층 해설]: 와튼 스쿨 <b>캐서린 밀크먼의 '유혹 묶기(Temptation Bundling)'</b> 전략입니다. 즐거운 행동(유튜브)을 불편한 행동(서 있기/운동)과 물리적으로 묶어버리면, 신체적 피로도가 도파민 보상을 압도하는 시점이 생깁니다. 뇌가 스스로 '이제 그만보고 앉아서 쉬자'라고 판단하게 만드는 고도의 기술입니다." 
-                    }
-                ]
-            },
-            { 
-                time: "칼럼", 
-                situation: "[도파민 항상성] 공부 복귀 후 글자가 튕겨 나가는 현상을 막기 위해, 유튜브 시청 시 '절대 피해야 할' 콘텐츠 형식은?", 
-                choices: [
-                    { 
-                        label: "숏폼(Shorts, 릴스) 등 1분 이내의 고자극 영상", 
-                        isCorrect: true, 
-                        result: "🎉 [정답! 신뢰도 98%]\n\n✅ [심층 해설]: <b>애나 렘키의 '도파민네이션'</b> 연구입니다. 숏폼은 뇌의 도파민 수치를 비정상적으로 급상승(Phasic release)시킵니다. 이후 공부를 위해 책상에 앉으면 뇌는 상대적으로 지루한 책을 견디지 못하고 '도파민 결핍 상태'를 느끼며 브레인 포그를 일으킵니다. 보상을 줄 때는 가급적 호흡이 긴 영상을 선택하세요." 
-                    },
-                    { 
-                        label: "애니메이션 리뷰나 AI 관련 정보 등 10분 이상의 긴 영상", 
-                        isCorrect: false, 
-                        result: "💀 [오답: 신뢰도 92%]\n\n❌ [해설]: 긴 영상은 숏폼보다 도파민 자극 속도가 완만하여 공부 복귀 시 뇌가 받는 충격이 훨씬 적습니다. 님의 13.5시간 레이스에는 오히려 이 방식이 안전합니다." 
-                    }
-                ]
-            },
-            { 
-                time: "칼럼", 
-                situation: "[공간 분리] 공부하던 스카(공부 공간) 책상에서 유튜브를 보는 행위가 장기 수험생활에 치명적인 이유는?", 
-                choices: [
-                    { 
-                        label: "스카 책상을 뇌가 '노는 곳'으로 오인하여 집중력을 떨어뜨리기 때문", 
-                        isCorrect: true, 
-                        result: "🎉 [정답! 신뢰도 93%]\n\n✅ [심층 해설]: <b>조건반사 이론</b>에 따르면 공간은 특정 행동과 강력하게 결합됩니다. 책상에서 유튜브를 보는 순간, 뇌는 그 책상을 '보상을 기대하는 장소'로 재정의합니다. 이후 공부할 때도 자꾸 딴생각이 나는 원인이 됩니다. 유튜브는 반드시 휴게실이나 복도 등 '공부하지 않는 공간'에서 시청해 공부 장소의 신성함을 보호하세요." 
-                    },
-                    { 
-                        label: "단순히 스카 이용 수칙에 어긋나서 퇴실 조치될 수 있기 때문", 
-                        isCorrect: false, 
-                        result: "💀 [오답]\n\n❌ [분석]: 규칙 위반보다 무서운 건 님의 <b>'뇌 각인 시스템'</b>이 무너지는 것입니다. 공간을 지키는 것이 멘탈을 지키는 첫걸음입니다." 
-                    }
-                ]},
-                    { 
-                time: "칼럼", 
-                situation: "[정보 채집 본능] 공부 중이나 일상 속에서 끊임없이 '새로운 애니/드라마'를 검색하고 찾는 진짜 이유는?", 
-                choices: [
-                    { 
-                        label: "뇌가 새로운 정보를 찾는 과정 자체를 '생존 사냥'으로 인식해 쾌락을 주기 때문", 
-                        isCorrect: true, 
-                        result: "🎉 [정답! 신뢰도 99%]\n\n✅ [심층 해설]: <b>피롤리(Pirolli)의 '정보 채집 이론(Information Foraging Theory)'</b>입니다. 인간의 뇌는 과거에 식량을 찾던 본능을 현재는 '정보(볼거리)'를 찾는 데 사용합니다. 특히 님처럼 극도로 절제된 생활을 하면, 뇌는 새로운 애니를 발견하는 것을 '풍족한 열매를 찾은 것'과 같은 급의 보상으로 처리합니다. 실제 시청하는 것보다 '찾아다니는 과정'에서 도파민이 더 많이 나오기 때문에 멈추기가 힘든 것입니다." 
-                    },
-                    { 
-                        label: "공부할 내용이 너무 많아 뇌가 지능적으로 태업을 하는 것이기 때문", 
-                        isCorrect: false, 
-                        result: "💀 [오답: 신뢰도 70%]\n\n❌ [분석]: 태업이라기보다는 <b>'도파민 헌팅'</b>에 가깝습니다. 뇌는 지루함을 고통으로 인식하며, 이를 해결하기 위해 가장 자극적인 '새로운 서사'를 본능적으로 추구하는 것입니다." 
-                    }
-                ]
-            },
-            { 
-                time: "칼럼", 
-                situation: "[조정 방안: 탐색 격리] 일상 속 끊임없는 볼거리 검색 시간을 줄이는 가장 효과적인 '시간 관리' 기술은?", 
-                choices: [
-                    { 
-                        label: "📅 '탐색 요일'을 주말로 고정하고, 평일엔 미리 정해진 2개만 본다.", 
-                        isCorrect: true, 
-                        result: "🎉 [정답! 신뢰도 95%]\n\n✅ [심층 해설]: <b>행동경제학의 '선택 설계'</b> 전략입니다. 매일 '뭐 볼까?'를 고민하는 행위는 님의 <b>전두엽 에너지(의지력)</b>를 엄청나게 갉아먹습니다. 일요일 밤에 '다음 주 보상용 애니' 딱 2개만 리스트업 해두세요. 평일에는 '찾는 즐거움'을 포기하는 대신 '결정의 피로'를 없애야만 13.5시간 순공 밀도를 유지할 수 있습니다." 
-                    },
-                    { 
-                        label: "공부 의욕이 떨어질 때마다 새로운 애니 1화씩을 보며 기분 전환을 한다.", 
-                        isCorrect: false, 
-                        result: "💀 [오답: 신뢰도 10%]\n\n❌ [분석]: 새로운 자극은 뇌의 도파민 기준치를 폭발시켜, 상대적으로 지루한 '법학 암기'를 불가능하게 만듭니다. 공부 중의 신규성 추구는 합격의 가장 큰 적입니다." 
-                    }
-                ]},
-                { 
-                time: "칼럼", 
-                situation: "[정보 채집] 일상 속에서 끊임없이 새로운 애니나 드라마를 검색하는 사냥 본능을 제어하는 가장 강력한 설계는?", 
-                choices: [
-                    { 
-                        label: "📅 일요일을 '공식 사냥의 날'로 정하고 평일엔 미리 정해진 목록만 본다.", 
-                        isCorrect: true, 
-                        result: "🎉 [정답! 신뢰도 99%]\n\n✅ [심층 해설]: <b>피롤리의 '정보 채집 이론'</b>의 핵심 해결책인 'Patch Foraging Restructuring'입니다. 뇌는 '무엇을 볼지 찾는 과정' 자체를 사냥 성공으로 인식해 도파민을 뿜습니다. 평일에는 사냥(검색)을 물리적으로 금지하고, 일요일에 미리 수확해둔 고기(목록)만 소비하는 시스템을 만들어야 전두엽의 결정 에너지를 합격에 온전히 쓸 수 있습니다." 
-                    },
-                    { 
-                        label: "유혹이 올 때마다 합격해야 한다는 의지를 다지며 참는다.", 
-                        isCorrect: false, 
-                        result: "💀 [오답: 신뢰도 5%]\n\n❌ [해설]: 인간의 사냥 본능은 '의지'보다 훨씬 강력한 생존 회로입니다. 본능을 억누르려 하면 뇌 에너지만 낭비될 뿐 결국 패배하게 됩니다. '환경'을 재설계하는 것이 유일한 방법입니다." 
-                    }
-                ]
-            },
-            { 
-                time: "칼럼", 
-                situation: "[정보 유인 신호] 폰을 켜자마자 보이는 화려한 썸네일의 유혹을 물리적으로 거세하는 방법은?", 
-                choices: [
-                    { 
-                        label: "🌑 스마트폰 설정에서 '흑백 모드(Greyscale)'를 상시 가동한다.", 
-                        isCorrect: true, 
-                        result: "🎉 [정답! 신뢰도 95%]\n\n✅ [심층 해설]: <b>구글 윤리 설계자 트리스탄 해리스</b>가 입증한 방법입니다. 뇌는 화려한 색감을 '영양가 높은 열매(Information Scent)'로 인식해 본능적으로 클릭합니다. 화면을 흑백으로 바꾸는 순간 시각적 유인 신호가 사라져 뇌의 탐색 욕구가 급격히 식게 됩니다. 님의 '신규성 추구' 본능에 찬물을 끼얹는 가장 빠르고 강력한 물리적 제동 장치입니다." 
-                    },
-                    { 
-                        label: "폰 배경화면에 '경찰 합격' 문구를 크게 적어둔다.", 
-                        isCorrect: false, 
-                        result: "💀 [오답: 신뢰도 40%]\n\n❌ [해설]: 문구는 시간이 지나면 배경으로 인식되어 뇌가 더 이상 자극을 받지 않습니다(습관화). 물리적인 색감 차단이 뇌의 생물학적 기제를 이기는 데 훨씬 효과적입니다." 
-                    }
-                ]
-            },
-
-
-
-        ]
-    }
-]
-
-    // ⚙️ 시뮬레이터 구동 엔진 (충돌 방지 수정본)
     let simCurrentScenarioId = null;
     let simCurrentStep = 0;
     let currentSimSteps = [];
 
     function openPasswordModal() {
-        const input = document.getElementById('scenario-pw-input');
-        if(input) input.value = "";
-        document.body.style.overflow = 'hidden';
-        document.getElementById('pw-modal').style.display = 'flex';
+        const input = document.getElementById('scenario-pw-input'); if(input) input.value = "";
+        document.body.style.overflow = 'hidden'; document.getElementById('pw-modal').style.display = 'flex';
         setTimeout(() => { if(input) input.focus(); }, 100);
     }
 
     function checkScenarioPw() {
         const inputVal = document.getElementById('scenario-pw-input').value;
         if (inputVal === window.SCENARIO_PASSWORD) {
-            SFX.play('success');
-            document.getElementById('pw-modal').style.display = 'none';
-            renderScenarioList();
+            SFX.play('success'); document.getElementById('pw-modal').style.display = 'none'; renderScenarioList();
         } else {
-            SFX.play('tap');
-            showToast("❌ 비밀번호가 틀렸습니다.");
-            document.getElementById('scenario-pw-input').value = "";
+            SFX.play('tap'); showToast("❌ 비밀번호가 틀렸습니다."); document.getElementById('scenario-pw-input').value = "";
         }
     }
 
     function renderScenarioList() {
-        const container = document.getElementById('scenario-btn-container');
-        if(!container) return;
-        container.innerHTML = "";
-        
+        const container = document.getElementById('scenario-btn-container'); if(!container) return; container.innerHTML = "";
         SCENARIOS.forEach((scenario, index) => {
             const btn = document.createElement('button');
             btn.style.cssText = `width: 100%; padding: 18px; border-radius: 16px; font-size: 16px; font-weight: 900; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; background: ${scenario.btnColor}; color: white; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);`;
@@ -2091,92 +1565,200 @@ const SCENARIOS = [
     }
 
     function startSimulation(id) {
-        simCurrentScenarioId = id;
-        simCurrentStep = 0;
-        const scenario = SCENARIOS[id];
-        
-        // 랜덤성 처리 (중요 수정)
+        simCurrentScenarioId = id; simCurrentStep = 0; const scenario = SCENARIOS[id];
         let stepsCopy = JSON.parse(JSON.stringify(scenario.steps));
-        if (scenario.isRandom && scenario.pickCount) {
-            currentSimSteps = shuffleArray(stepsCopy).slice(0, scenario.pickCount);
-        } else {
-            currentSimSteps = stepsCopy;
-        }
-
-        document.getElementById('scenario-list-modal').style.display = 'none';
-        document.getElementById('sim-player-modal').style.display = 'flex';
+        currentSimSteps = (scenario.isRandom && scenario.pickCount) ? shuffleArray(stepsCopy).slice(0, scenario.pickCount) : stepsCopy;
+        document.getElementById('scenario-list-modal').style.display = 'none'; document.getElementById('sim-player-modal').style.display = 'flex';
         renderSimStep();
     }
 
     function renderSimStep() {
-        const scenario = SCENARIOS[simCurrentScenarioId];
-        const step = currentSimSteps[simCurrentStep];
+        const scenario = SCENARIOS[simCurrentScenarioId]; const step = currentSimSteps[simCurrentStep];
         if(!step) return closeSimulation();
 
-        // 진행바 & 텍스트 업데이트
-        const prog = ((simCurrentStep) / currentSimSteps.length) * 100;
+        const prog = (simCurrentStep / currentSimSteps.length) * 100;
         document.getElementById('sim-progress-fill').style.width = prog + "%";
         document.getElementById('sim-title').innerText = scenario.title;
         document.getElementById('sim-time-badge').innerText = "⏰ " + step.time;
         document.getElementById('sim-situation-text').innerText = step.situation;
 
-        // 선택지 셔플 & 생성
-        const area = document.getElementById('sim-action-area');
-        area.innerHTML = "";
-        area.style.display = "flex";
+        const area = document.getElementById('sim-action-area'); area.innerHTML = ""; area.style.display = "flex";
         document.getElementById('sim-result-area').style.display = "none";
 
         let choices = shuffleArray(step.choices);
         choices.forEach(c => {
-            const btn = document.createElement('button');
-            btn.className = "sim-action-btn";
-            btn.style.borderColor = scenario.btnColor;
-            btn.style.color = scenario.btnColor;
-            btn.innerHTML = "👉 " + c.label;
-            btn.onclick = () => handleChoice(c);
-            area.appendChild(btn);
+            const btn = document.createElement('button'); btn.className = "sim-action-btn";
+            btn.style.borderColor = scenario.btnColor; btn.style.color = scenario.btnColor; btn.innerHTML = "👉 " + Utils.escapeHTML(c.label);
+            btn.onclick = () => handleChoice(c); area.appendChild(btn);
         });
     }
 
     function handleChoice(choice) {
-        const area = document.getElementById('sim-result-area');
-        const text = document.getElementById('sim-result-text');
-        const nextBtn = document.getElementById('sim-next-btn');
+        const area = document.getElementById('sim-result-area'); const text = document.getElementById('sim-result-text'); const nextBtn = document.getElementById('sim-next-btn');
+        document.getElementById('sim-action-area').style.display = "none"; area.style.display = "block";
 
-        document.getElementById('sim-action-area').style.display = "none";
-        area.style.display = "block";
+        // 다이어트식 마크다운 렌더러: 줄바꿈은 <br>로, **강조**는 <b>강조</b>로 자동 변환합니다.
+        let cleanResult = choice.result.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
 
         if (choice.isCorrect) {
-            SFX.play('success');
-            area.style.background = "#ecfdf5";
-            area.style.borderColor = "#10b981";
-            text.innerHTML = `<b style="color:#059669;font-size:18px;">🎉 정답!</b><br><br>${choice.result}`;
+            SFX.play('success'); area.style.background = "#ecfdf5"; area.style.borderColor = "#10b981";
+            text.innerHTML = `<b style="color:#059669;font-size:18px;">🎉 정답!</b><br><br>${cleanResult}`;
             nextBtn.innerText = (simCurrentStep === currentSimSteps.length - 1) ? "📝 총정리 및 종료" : "다음 상황으로 ➡️";
             nextBtn.onclick = (simCurrentStep === currentSimSteps.length - 1) ? showFinalSummary : () => { simCurrentStep++; renderSimStep(); };
         } else {
-            SFX.play('tap');
-            area.style.background = "#fef2f2";
-            area.style.borderColor = "#ef4444";
-            text.innerHTML = `<b style="color:#dc2626;font-size:18px;">🚨 오답 (주의!)</b><br><br>${choice.result}`;
+            SFX.play('tap'); area.style.background = "#fef2f2"; area.style.borderColor = "#ef4444";
+            text.innerHTML = `<b style="color:#dc2626;font-size:18px;">🚨 오답 (주의!)</b><br><br>${cleanResult}`;
             nextBtn.innerText = "🔄 다시 선택하기";
             nextBtn.onclick = () => { area.style.display = "none"; document.getElementById('sim-action-area').style.display = "flex"; };
         }
     }
 
     function showFinalSummary() {
-        const scenario = SCENARIOS[simCurrentScenarioId];
-        document.getElementById('sim-progress-fill').style.width = "100%";
-        document.getElementById('sim-situation-text').innerHTML = `<div style="background:#f8fafc; padding:20px; border-radius:12px; line-height:1.6; white-space:pre-wrap;">${scenario.summary}</div>`;
+        const scenario = SCENARIOS[simCurrentScenarioId]; document.getElementById('sim-progress-fill').style.width = "100%";
+        document.getElementById('sim-situation-text').innerHTML = `<div style="background:#f8fafc; padding:20px; border-radius:12px; line-height:1.6; white-space:pre-wrap;">${Utils.escapeHTML(scenario.summary || "")}</div>`;
         document.getElementById('sim-result-area').style.display = "none";
         document.getElementById('sim-action-area').innerHTML = `<button class="btn-primary" style="background:${scenario.btnColor}" onclick="closeSimulation()">훈련 종료 (목록으로)</button>`;
         document.getElementById('sim-action-area').style.display = "flex";
     }
 
     function closeSimulation() {
-        document.getElementById('sim-player-modal').style.display = 'none';
-        document.getElementById('scenario-list-modal').style.display = 'flex';
-        simCurrentStep = 0;
+        document.getElementById('sim-player-modal').style.display = 'none'; document.getElementById('scenario-list-modal').style.display = 'flex'; simCurrentStep = 0;
     }
+
+    // ==========================================
+    // 📚 8. 깔끔해진 SCENARIOS 데이터 
+    // ==========================================
+    // (이제 **텍스트** 로 강조할 수 있고, 엔터는 자동으로 줄바꿈 처리됩니다)
+    const SCENARIOS = [
+        {
+            id: 0,
+            btnColor: "#10b981", title: "🟢 비운동일 (13.5H 완주)", subtitle: "화, 수, 금, 토 극한의 몰입 스케줄", isRandom: false,
+            summary: "🔥 [비운동일 13.5H 요약]\n1. 침대 공부로 마찰력 제로 시동\n2. 빵/맥모닝으로 식곤증 방어\n3. 17시 고비 눈팩+커피 냅 리부팅",
+            steps: [
+                {
+                    time: "07:00", situation: "아침 7시. 침대 밖으로 나가기엔 몸이 너무 무겁습니다.", choices: [
+                        { label: "세수부터 하고 책상에 앉으려 노력한다.", isCorrect: false, result: "💀 [오답 노트]\n'침대에서 책상으로 이동'하는 물리적 마찰력이 너무 커서 포기할 확률이 80%입니다.\n\n✅ [정답 해설] (신뢰도 98%)\n**[작업 흥분 이론]** 일단 눈뜨자마자 누운 채로 탭을 켜서 가장 쉬운 암기 과목을 보세요. 뇌의 측좌핵이 예열되어 스스로 일어나게 만듭니다." },
+                        { label: "🛏️ 누운 상태로 탭을 켜서 가장 쉬운 암기 과목을 본다.", isCorrect: true, result: "✅ [정답 해설] (신뢰도 98%)\n**[실행 마찰력 최소화]** 누워서 공부하는 것은 죄가 아닙니다. 가장 저항이 적은 행동으로 뇌를 깨우는 최고 효율의 시동법입니다.\n\n❌ [오답 노트]\n완벽한 세팅(샤워, 책상 정리)을 고집하면 시작 자체가 지연됩니다." }
+                    ]
+                },
+                {
+                    time: "13:30", situation: "점심시간, 든든한 한식을 먹을지 가벼운 빵을 먹을지 고민됩니다.", choices: [
+                        { label: "국밥이나 찌개류로 배를 든든하게 채운다.", isCorrect: false, result: "💀 [오답 노트]\n탄수화물과 나트륨의 과다 결합은 오후 내내 극심한 식곤증(브레인 포그)을 유발합니다.\n\n✅ [정답 해설] (신뢰도 94%)\n**[혈당 스파이크 방어]** 가벼운 빵(정제 탄수화물)으로 뇌에 필요한 당만 빠르게 공급하고 포만감을 낮추는 것이 오후 4시간 집중의 비결입니다." },
+                        { label: "🥐 가벼운 빵을 먹고 즉시 온열안대 20분 휴식을 취한다.", isCorrect: true, result: "✅ [정답 해설] (신뢰도 94%)\n**[NASA식 피로 리셋]** 소식을 통한 혈당 방어 + 시각 정보 차단(눈팩)은 오후 집중력을 오전 수준으로 끌어올리는 치트키입니다.\n\n❌ [오답 노트]\n배부른 한식은 소화 기관으로 혈류를 쏠리게 해 뇌를 멍하게 만듭니다." }
+                    ]
+                },
+                {
+                    time: "17:00", situation: "가장 고비인 17시. 체력이 바닥나고 집중력이 박살 났습니다.", choices: [
+                        { label: "초인적인 의지력으로 참고 야간 스퍼트를 준비한다.", isCorrect: false, result: "💀 [오답 노트]\n의지력은 이미 소진되었습니다. 이대로 버티면 19시쯤 완전히 붕괴되어 조기 퇴근하게 됩니다.\n\n✅ [정답 해설] (신뢰도 99%)\n**[아데노신 클리어]** 커피 1잔을 마시고 눈팩과 함께 20분 자는 '커피 냅'만이 야간 5시간을 버티게 할 유일한 생물학적 동력입니다." },
+                        { label: "☕ 커피 1잔 + 눈팩 2회차 + 20분 수면(커피 냅)을 실행한다.", isCorrect: true, result: "✅ [정답 해설] (신뢰도 99%)\n**[커피 냅 프로토콜]** 카페인이 뇌에 도달하는 20분 동안 가수면을 취해 피로 물질을 비워내면, 각성 효과가 200% 증폭됩니다.\n\n❌ [오답 노트]\n무작정 버티는 것은 활자만 쳐다보는 가짜 공부를 유발합니다." }
+                    ]
+                },
+                {
+                    time: "18:00", situation: "야간 5.5시간 스퍼트를 시작합니다. 뇌가 지루해합니다.", choices: [
+                        { label: "완전한 적막 속에서 법학 이론을 깊게 판다.", isCorrect: false, result: "💀 [오답 노트]\n야간에 인지 부하가 높은 새로운 이론을 파면 뇌가 거부 반응을 일으켜 딴짓을 찾습니다.\n\n✅ [정답 해설] (신뢰도 92%)\n**[맥락 전환 기법]** 프리렌 BGM 같은 백색소음을 켜고, 이미 아는 것을 뱉어내는 '오답 정리/인출'을 해야 텐션이 유지됩니다." },
+                        { label: "🎧 프리렌 BGM을 켜고 오답 정리 및 출력 학습을 한다.", isCorrect: true, result: "✅ [정답 해설] (신뢰도 92%)\n**[상태 조절 효과]** 지루한 야간에는 적절한 청각적 자극(가사 없는 BGM)과 '아웃풋(출력)' 중심의 공부가 뇌의 도파민을 유지시킵니다.\n\n❌ [오답 노트]\n조용한 곳에서의 인풋(이론 읽기)은 수면제와 같습니다." }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 1,
+            btnColor: "#3b82f6", title: "🏃‍♂️ 운동일 (10H 에너지 세이브)", subtitle: "운동 전 목표 완수 및 수면 최적화", isRandom: false,
+            summary: "🏃‍♂️ [운동일 요약]\n1. 19시 30분 전까지 10H 달성\n2. 운동 가는 마찰력 완벽 제거\n3. 즉시 샤워 후 칼취침",
+            steps: [
+                {
+                    time: "18:30", situation: "야간 마무리 1시간 전, 뇌가 완전히 지쳤습니다.", choices: [
+                        { label: "어려운 판례나 복잡한 계산 문제를 푼다.", isCorrect: false, result: "💀 [오답 노트]\n에너지가 고갈된 상태에서 고난도 작업은 좌절감을 유발해 내일의 공부 동기까지 꺾어버립니다.\n\n✅ [정답 해설] (신뢰도 95%)\n**[마무리 엔도르핀]** 가벼운 두문자 암기나 쉬운 OX 문제로 '오늘 다 해냈다'는 성취감을 뇌에 각인시키며 끝내야 합니다." },
+                        { label: "📖 가볍고 쉬운 두문자 암기나 OX 문제를 풀며 성취감을 챙긴다.", isCorrect: true, result: "✅ [정답 해설] (신뢰도 95%)\n**[피크-엔드 법칙]** 뇌는 경험의 '마지막 순간'을 강렬하게 기억합니다. 쉬운 걸로 기분 좋게 끝내야 내일 책상에 앉기 싫은 마음이 사라집니다.\n\n❌ [오답 노트]\n마지막에 어려운 걸 풀다 틀리면 스트레스 호르몬 상태로 퇴실하게 됩니다." }
+                    ]
+                },
+                {
+                    time: "21:00", situation: "운동 갈 시간입니다. 오늘 하루 10시간이나 해서 너무 피곤합니다.", choices: [
+                        { label: "침대에 누워서 갈까 말까 5분만 고민해 본다.", isCorrect: false, result: "💀 [오답 노트]\n인간의 뇌는 피곤할 때 무조건 '안 하는 쪽'으로 합리화의 천재가 됩니다. 고민하는 순간 지는 겁니다.\n\n✅ [정답 해설] (신뢰도 97%)\n**[실행 의도 설계]** 생각할 틈을 주지 마세요. 아침에 미리 세팅해 둔 수건과 옷을 들고 바로 화장실로 직행해야 합니다." },
+                        { label: "🏋️ 생각 스위치를 끄고, 미리 세팅해 둔 옷을 입고 나간다.", isCorrect: true, result: "✅ [정답 해설] (신뢰도 97%)\n**[마찰력 제거의 법칙]** 환경을 미리 세팅해 두면 행동 개시 에너지가 1/10로 줄어듭니다. 운동은 신체 피로를 푸는 '적극적 휴식'입니다.\n\n❌ [오답 노트]\n누워서 고민하는 에너지가 운동하는 에너지보다 큽니다." }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 4,
+            btnColor: "#8b5cf6", title: "🚨 돌발/퐁당퐁당 (무작위 훈련)", subtitle: "8시간-3시간 패턴(자아고갈) 완벽 방어", isRandom: true, pickCount: 3,
+            steps: [
+                {
+                    time: "돌발", situation: "어제 9시간을 넘겼더니, 오늘 아침엔 1분도 책상에 앉기가 싫습니다. (퐁당퐁당 패턴)", choices: [
+                        { label: "어제 많이 했으니 오늘은 스카에 가지 않고 집에서 쉰다.", isCorrect: false, result: "💀 [오답 노트]\n공부 리듬이 끊어지는 전형적인 패배 루트입니다. 내일은 스카 가기가 3배 더 힘들어집니다.\n\n✅ [정답 해설] (신뢰도 98%)\n**[관성 유지의 법칙]** 공부 시간은 줄이더라도 '스카에 출석하는 행위' 자체는 유지해야 뇌의 관성이 깨지지 않습니다." },
+                        { label: "🚶 일단 무조건 스카에 가서 딱 2시간만 제일 좋아하는 과목을 한다.", isCorrect: true, result: "✅ [정답 해설] (신뢰도 98%)\n**[최소 정체성 방어]** '나는 매일 스카에 가는 사람'이라는 정체성을 지키는 게 핵심입니다. 가서 2시간만 쉬운 걸 하고 오면 내일 리듬이 복구됩니다." }
+                    ]
+                },
+                {
+                    time: "돌발", situation: "점심 먹고 스카에 돌아왔는데, 폰으로 유튜브를 켜버렸습니다.", choices: [
+                        { label: "이왕 켠 거, 딱 10분만 보고 끈다.", isCorrect: false, result: "💀 [오답 노트]\n도파민 알고리즘 앞에서 인간의 자제력은 무용지물입니다. 10분이 2시간이 되는 마법을 겪게 됩니다." },
+                        { label: "📱 즉시 폰 전원을 끄고 사물함 깊숙한 곳에 던져 넣는다.", isCorrect: true, result: "✅ [정답 해설] (신뢰도 96%)\n**[환경 통제 이론]** 의지력은 소모품입니다. 유혹을 '참는 데' 에너지를 쓰지 말고, 유혹 자체를 눈앞에서 물리적으로 치워버리세요." }
+                    ]
+                },
+                {
+                    time: "돌발", situation: "시험이 다가오는데 모의고사 점수가 안 올라 불안감에 심장이 뜁니다.", choices: [
+                        { label: "불안감을 잊기 위해 잠을 줄이고 문제풀이 양을 2배로 늘린다.", isCorrect: false, result: "💀 [오답 노트]\n수면 부족 + 스트레스는 코르티솔 수치를 급증시켜 해마를 마비시킵니다. 밑빠진 독에 물 붓기입니다." },
+                        { label: "✍️ 백지를 꺼내 내 감정과 약점을 5분간 객관적으로 쏟아내 적는다.", isCorrect: true, result: "✅ [정답 해설] (신뢰도 94%)\n**[제임스 페네베이커 연구]** 억눌린 감정을 글로 시각화하면, 뇌는 이를 '통제 가능한 문제'로 인식하여 즉각적으로 편도체(불안 센터)를 진정시킵니다." }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 5,
+            btnColor: "#0ea5e9", title: "📚 칼럼 퀴즈 (심화 학습)", subtitle: "전 세계 석학들의 뇌 과학 & 장기 고시생 데이터", isRandom: true, pickCount: 8,
+            steps: [
+                {
+                    time: "칼럼", situation: "[에빙하우스 연구] 암기 효율이 극대화되는 가장 과학적인 복습 타이밍은?", choices: [
+                        { label: "외운 즉시 10번 반복해서 소리 내어 읽기", isCorrect: false, result: "💀 [오답: 신뢰도 94%]\n**착각적 유창성**: 눈에 익은 것을 머리에 들어왔다고 뇌가 거짓말을 하게 됩니다." },
+                        { label: "살짝 가물가물하여 기억하기 고통스러울 때 다시 꺼내기", isCorrect: true, result: "✅ [해설: 신뢰도 99%]\n**바람직한 어려움(Desirable Difficulty)**: 뇌가 정보를 끄집어내려고 애쓸 때 신경 시냅스가 가장 강력하게 연결됩니다." }
+                    ]
+                },
+                {
+                    time: "칼럼", situation: "[울트라디안 리듬] 13.5시간 레이스를 완주하기 위한 효율적인 휴식 주기는?", choices: [
+                        { label: "흐름이 끊기지 않게 4시간 연속으로 공부하고 길게 쉰다.", isCorrect: false, result: "💀 [오답: 신뢰도 91%]\n**초집중의 역설**입니다. 2시간이 넘어가면 뇌는 의미를 파악하지 못하는 '가짜 집중' 상태에 빠집니다." },
+                        { label: "90분 집중 후, 10분간 눈을 감고 시각 자극을 차단한다.", isCorrect: true, result: "✅ [심층 해설: 신뢰도 97%]\n**기초 휴식-활동 주기(BRAC)**: 파동이 끝날 때 10분간 쉬어주지 않으면 뇌에 피로 물질인 아데노신이 쌓입니다. 눈을 감는 것만으로 전두엽 부하를 크게 낮출 수 있습니다." }
+                    ]
+                },
+                {
+                    time: "칼럼", situation: "[100% 원칙] '오늘은 힘드니까 30분 일찍 접을까?'라는 유혹이 위험한 이유는?", choices: [
+                        { label: "30분 공부량이 합격에 큰 지장을 줄 것이라 걱정하는 것", isCorrect: false, result: "💀 [오답: 신뢰도 91%]\n30분의 지식 양보다 무서운 것은 **'나와의 약속을 어기는 회로'**가 뇌에 생성되는 것입니다." },
+                        { label: "98%보다 100%가 지키기 쉽다는 사실을 망각하는 것", isCorrect: true, result: "✅ [심층 해설: 신뢰도 96%]\n**클레이튼 크리스텐슨의 '100% 원칙'**: '이번 한 번만'을 허용하는 순간, 다음 위기 때마다 '타협할지 말지' 결정하는 데 엄청난 전두엽 에너지를 소모하게 됩니다." }
+                    ]
+                },
+                {
+                    time: "칼럼", situation: "[실행 의도] 오늘따라 공부 시작 버튼을 누르기가 너무 싫을 때, 실행력을 높이는 주문은?", choices: [
+                        { label: "합격 후의 모습을 상상하며 긍정적인 에너지를 끌어올린다.", isCorrect: false, result: "💀 [오답: 신뢰도 85%]\n과도한 낙관적 상상은 뇌가 이미 목표를 이룬 것으로 착각하게 만들어 행동 에너지를 감소시킵니다." },
+                        { label: "📍 '만약 탭을 켜면(If), 트리노트 1페이지부터 읽겠다(Then)'고 구체화한다.", isCorrect: true, result: "✅ [심층 해설: 신뢰도 98%]\n**실행 의도(Implementation Intentions)**: 뇌는 막연한 의지보다 'If-Then' 명령어에 전두엽의 부하 없이 즉각적인 행동을 개시합니다." }
+                    ]
+                },
+                {
+                    time: "칼럼", situation: "[도파민 항상성] 13.5시간 레이스 중 유튜브 시청 시 '절대 피해야 할' 영상은?", choices: [
+                        { label: "애니메이션 리뷰 등 10분 이상의 긴 영상", isCorrect: false, result: "💀 [오답: 신뢰도 92%]\n긴 영상은 숏폼보다 자극 상승 속도가 완만하여 공부 복귀 시 뇌가 받는 충격이 덜합니다." },
+                        { label: "숏폼(Shorts, 릴스) 등 1분 이내의 고자극 영상", isCorrect: true, result: "✅ [심층 해설: 신뢰도 98%]\n**애나 렘키의 '도파민네이션'**: 숏폼은 도파민을 비정상적으로 급상승시킵니다. 이후 상대적으로 지루한 책을 견디지 못하고 포그 현상을 일으킵니다." }
+                    ]
+                },
+                {
+                    time: "칼럼", situation: "[사전 전념] 계속 새로운 애니를 찾아보는 본능적 폭주를 막는 경제학적 대책은?", choices: [
+                        { label: "유혹이 닥쳤을 때 합격 수기를 떠올리며 정신력으로 참는다.", isCorrect: false, result: "💀 [오답: 신뢰도 12%]\n유혹이 눈앞에 있을 때 이성(전두엽)은 감정(변연계)을 이길 수 없습니다." },
+                        { label: "🛡️ 의지력이 높은 아침에 유혹 앱을 잠그거나 삭제한다.", isCorrect: true, result: "✅ [심층 해설: 신뢰도 98%]\n**사전 전념(Precommitment)**: 오디세우스가 스스로를 돛대에 묶은 것과 같습니다. 유혹이 발생할 '환경'을 미리 제거하는 것만이 유일한 승리법입니다." }
+                    ]
+                },
+                {
+                    time: "칼럼", situation: "[미엘린화] 8시간을 넘겨 공부할 때 머리가 타들어 가듯 고통스럽다면?", choices: [
+                        { label: "뇌세포가 파괴되고 있으므로 즉시 공부를 멈춰야 한다는 신호다.", isCorrect: false, result: "💀 [오답: 신뢰도 82%]\n단순 졸음과 집중의 고통은 구분해야 합니다. 튕겨 나가는 활자를 붙잡는 순간이 뇌 가소성의 골든타임입니다." },
+                        { label: "🧠 회로가 절연체(미엘린)로 감싸지며 '초고속 합격 회로'가 구축되는 중이다.", isCorrect: true, result: "✅ [심층 해설: 신뢰도 96%]\n고통스럽다는 것은 지식 전달 경로에 **미엘린(Myelin)** 층이 쌓이고 있다는 증거입니다. 이 고통을 견뎌야 기계적인 암기왕이 됩니다." }
+                    ]
+                },
+                {
+                    time: "칼럼", situation: "[공간 분리] 공부하던 스카 책상에서 유튜브를 보면 치명적인 이유는?", choices: [
+                        { label: "규칙 위반으로 퇴실 조치될 수 있기 때문", isCorrect: false, result: "💀 [오답]\n규칙 위반보다 무서운 건 **'뇌 각인 시스템'**이 무너지는 것입니다." },
+                        { label: "스카 책상을 뇌가 '노는 곳'으로 오인하여 집중력을 떨어뜨리기 때문", isCorrect: true, result: "✅ [심층 해설: 신뢰도 93%]\n**조건반사 이론**: 공간은 특정 행동과 결합합니다. 책상에서 놀면 뇌는 그곳을 '보상 기대 장소'로 재정의해 자꾸 딴생각을 유발합니다." }
+                    ]
+                }
+            ]
+        }
+    ];
 
 </script>
 </body>
