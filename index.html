@@ -52,7 +52,6 @@
     #todo-alert-banner { display:none; width: 100%; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 16px; padding: 16px; margin-bottom: 25px; text-align: left; cursor: pointer; box-sizing: border-box; box-shadow: 0 4px 12px rgba(59,130,246,0.1); transition: transform 0.2s; touch-action: manipulation;}
     #todo-alert-banner:active { transform: scale(0.98); }
 
-    /* [v0.5.11] 홈 화면 디데이 배지 스타일 */
     .dday-badge { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 8px 14px; border-radius: 14px; font-size: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3); transition: transform 0.2s; display: inline-flex; align-items: center; gap: 6px; }
     .dday-badge:active { transform: scale(0.95); box-shadow: 0 2px 5px rgba(139, 92, 246, 0.2); }
 
@@ -178,6 +177,17 @@
     .ic-glass-box { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 2px solid rgba(255, 255, 255, 0.4); border-radius: 40px; padding: 50px; text-align: center; margin-bottom: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); }
     #ic-total { font-size:190px; font-weight:900; line-height:1; letter-spacing:-4px; white-space: nowrap; }
     #ic-heatmap-grid { display: flex !important; flex-wrap: wrap !important; gap: 12px !important; width: 100% !important; justify-content: flex-start !important; align-content: flex-start; }
+
+    /* 시뮬레이션 전용 스타일 (V2) */
+    #pw-modal, #scenario-list-modal { z-index: 2300; }
+    #sim-player-modal { z-index: 2400; }
+    .sim-progress-bar { height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; margin-bottom: 20px; }
+    .sim-progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.4s ease; }
+    .sim-action-btn { width: 100%; padding: 18px; border-radius: 14px; background: var(--surface); border: 2px solid var(--primary); color: var(--primary); font-size: 16px; font-weight: 800; cursor: pointer; transition: all 0.2s; text-align: left; display: flex; align-items: center; gap: 10px; margin-bottom: 12px; box-shadow: 0 4px 10px rgba(59,130,246,0.1); }
+    .sim-action-btn:active { transform: scale(0.97); }
+    .sim-action-btn:hover { background: #eff6ff; }
+    .sim-result-box { display: none; background: #ecfdf5; border: 2px solid #34d399; padding: 16px; border-radius: 14px; margin-bottom: 20px; animation: slideDown 0.3s ease; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
 <body>
@@ -239,6 +249,10 @@
         <button class="dash-btn" style="background:var(--primary); color:white; box-shadow: 0 8px 20px rgba(59,130,246,0.3);" onclick="SFX.play('tap'); switchView('study')">🔥 오늘의 달리기 시작</button>
         <button class="dash-btn" style="background:var(--warning); color:var(--warning-text); box-shadow: 0 8px 20px rgba(254,240,138,0.5);" onclick="SFX.play('tap'); switchView('calendar')">📅 내 전체 기록 보기</button>
         
+        <button class="dash-btn-outline" style="border-color: #8b5cf6; color: #7c3aed; margin-top: 25px; background: #fdfcff;" onclick="SFX.play('pop'); openPasswordModal();">
+            🧠 극비 시나리오 (이미지 트레이닝)
+        </button>
+
         <button class="dash-btn-outline" onclick="SFX.play('pop'); document.getElementById('guide-modal').style.display='flex'; document.body.style.overflow='hidden';">📖 페이스메이커 사용 설명서</button>
         
         <div style="margin-top: 25px; font-size: 12px; color: #94a3b8; font-weight: 700; letter-spacing: 0.5px;">
@@ -378,24 +392,15 @@
 
         <div style="max-height: 55vh; overflow-y: auto; padding-right: 5px;">
             <div class="guide-box success">
-                <div class="guide-title">🚀 0.5.11 D-Day Edition</div>
+                <div class="guide-title">🚀 0.6.0 훈련 엔진 탑재</div>
                 <div class="guide-desc">
-                    • <b>디데이 엔진 탑재:</b> 목표 시험일까지의 D-Day를 계산해주는 영구 보존(Persistent) 기능이 추가되었습니다.<br>
-                    • <b>캘린더 렌더링 최적화:</b> 목표/집중 시간이 좁은 칸에서 답답하게 겹치던 현상을 없애고, 미니멀 텍스트 + 솔리드 캡슐의 깔끔한 디자인으로 개편했습니다.<br>
-                    • <b>알람 무결성 확인:</b> 30분 달성 시 팝업과 효과음이 정확한 타이밍에 1회만 울리도록 코어 로직을 재검증했습니다.
+                    • 심층 과학/심리학 기반의 40가지 이미지 트레이닝 기능이 추가되었습니다. 무작위 돌발상황 방어를 통해 멘탈을 강화하세요.
                 </div>
             </div>
             <div class="guide-box purple">
-                <div class="guide-title">🎯 0.5.8 Target Master</div>
+                <div class="guide-title">🎯 0.5.11 D-Day Edition</div>
                 <div class="guide-desc">
-                    • <b>듀얼 체크박스 도입:</b> 공부 전 미리 계획을 세울 수 있는 [🎯 계획] 체크박스 추가 및 시각적 피드백 제공.<br>
-                    • <b>스크롤 잠김 완전 방어:</b> 팝업을 열거나 화면을 넘나들 때 스크롤이 멈추던 고질적 버그를 원천 차단했습니다.
-                </div>
-            </div>
-            <div class="guide-box primary">
-                <div class="guide-title">🛡️ 0.5.0 ~ 0.5.5 (코어 강화)</div>
-                <div class="guide-desc">
-                    • 자정 리셋 꼬임 방어, 시간 뻥튀기 원천 방어, 스톱워치 1.5초 쿨타임 적용 등 뼈대 엔진의 치명적 결함을 모두 해결했습니다.
+                    • 디데이 기능 추가 및 캘린더 렌더링 최적화.
                 </div>
             </div>
         </div>
@@ -522,8 +527,53 @@
     </div>
 </div>
 
+<div id="pw-modal" class="overlay-base">
+    <div class="modal-box" style="text-align: center; max-width: 320px;">
+        <div style="font-size: 40px; margin-bottom: 10px;">🔐</div>
+        <h3 style="margin:0 0 15px 0; font-size:20px; font-weight:800; color:var(--text-main);">시크릿 모드</h3>
+        <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px; line-height: 1.5;">오직 합격을 위한 극비 시나리오입니다.<br>비밀번호를 입력하세요.</p>
+        <input type="password" id="scenario-pw-input" class="input-field" placeholder="비밀번호 6자리" style="text-align: center; letter-spacing: 5px; font-size: 18px; font-weight: bold;" maxlength="6">
+        <button class="btn-primary" style="background: #8b5cf6; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(139,92,246,0.3);" onclick="SFX.play('tap'); checkScenarioPw()">잠금 해제</button>
+        <button style="background:transparent; color:#64748b; border:none; padding:10px; font-weight:bold; cursor:pointer;" onclick="SFX.play('tap'); document.getElementById('pw-modal').style.display='none'; document.body.style.overflow='';">취소</button>
+    </div>
+</div>
+
+<div id="scenario-list-modal" class="overlay-base">
+    <div class="modal-box" style="padding: 25px; max-width: 380px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3 style="margin:0; font-size:22px; font-weight:900; color:var(--text-main);">🧠 이미지 트레이닝</h3>
+            <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); document.getElementById('scenario-list-modal').style.display='none'; document.body.style.overflow='';">✖</button>
+        </div>
+        <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px; font-weight: 600;">상황을 선택하고 시뮬레이션을 시작하세요!</p>
+        <div id="scenario-btn-container" style="display: flex; flex-direction: column; gap: 12px;"></div>
+    </div>
+</div>
+
+<div id="sim-player-modal" class="overlay-base">
+    <div class="modal-box" style="padding: 30px 20px; max-width: 400px; background: var(--bg); display: flex; flex-direction: column;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3 id="sim-title" style="margin:0; font-size:18px; font-weight:900; color:var(--text-main);">시뮬레이션</h3>
+            <button style="background:#e2e8f0; color:#475569; border:none; width:32px; height:32px; border-radius:50%; font-size:14px; cursor:pointer; font-weight:bold;" onclick="SFX.play('tap'); closeSimulation()">✖</button>
+        </div>
+        <div class="sim-progress-bar">
+            <div id="sim-progress-fill" class="sim-progress-fill"></div>
+        </div>
+        <div id="sim-time-badge" style="display:inline-block; align-self:flex-start; background:#1e293b; color:white; padding:6px 12px; border-radius:20px; font-size:14px; font-weight:900; margin-bottom:15px; font-variant-numeric:tabular-nums; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+            ⏰ 00:00
+        </div>
+        <div id="sim-situation-text" style="font-size: 17px; font-weight: 800; color: var(--text-main); line-height: 1.5; margin-bottom: 25px; word-break: keep-all;">
+            상황 설명이 여기에 나옵니다.
+        </div>
+        <div id="sim-action-area" style="display:flex; flex-direction:column;"></div>
+        <div id="sim-result-area" class="sim-result-box">
+            <div id="sim-result-text" style="font-size: 14.5px; color: #047857; font-weight: 600; line-height: 1.5; margin-bottom: 15px;"></div>
+            <button id="sim-next-btn" class="btn-primary" style="background:#10b981; box-shadow:0 4px 12px rgba(16,185,129,0.3); padding:14px; font-size:15px;"></button>
+        </div>
+    </div>
+</div>
+
 <script>
-    const APP_VERSION = "0.5.11 D-Day Ed."; 
+    const APP_VERSION = "0.6.0 훈련 엔진 탑재"; 
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWentq5xmJFB_UL4EWPL7KEknxY9Em9eIYX5CoWfDMh_WooUKk1n63-8gbLFpcu8Oe/exec";
     
     const Utils = {
@@ -581,7 +631,7 @@
     document.body.addEventListener('touchstart', () => { SFX.init(); if(SFX.ctx && SFX.ctx.state === 'suspended') SFX.ctx.resume(); }, { passive: true });
 
     window.addEventListener('click', (e) => {
-        if(e.target.classList.contains('overlay-base') && e.target.id !== 'loading-overlay' && e.target.id !== 'capture-modal') {
+        if(e.target.classList.contains('overlay-base') && e.target.id !== 'loading-overlay' && e.target.id !== 'capture-modal' && e.target.id !== 'sim-player-modal') {
             SFX.play('tap');
             if(e.target.id === 'diary-modal') { saveTextData('diary'); }
             else if(e.target.id === 'todo-modal') { saveTextData('todo'); }
@@ -641,7 +691,6 @@
     let tickFrameId = null; 
     
     let blockSeconds = [], targetBlocks = [], backupSeconds = [], dailyRecords = {}, alarmedBlocks = [];
-    // [v0.5.11] D-Day 영구 데이터 객체
     let ddayConfig = { title: "", date: "" }; 
     
     const domCache = { items: [], timeTexts: [], checks: [], targets: [], notes: [] };
@@ -740,7 +789,6 @@
     function removeL(k) { try { delete memCache[activeUser + '_' + k]; DBEngine.remove(activeUser + '_' + k); localStorage.removeItem(activeUser + '_' + k); } catch(e) {} }
 
     function saveUserLocalData(d) {
-        // [v0.5.11] D-Day 데이터 클라우드 수신 병합
         if(d['ddayConfig']) setL('ddayConfig', d['ddayConfig']);
         
         ['blockSeconds', 'targetBlocks', 'backupSeconds', 'alarmedBlocks', 'settings', 'lastLogicalDate'].forEach(k => { 
@@ -768,8 +816,6 @@
 
     function getUserLocalData() {
         const backup = { runningState: JSON.stringify({ isRunning: isRunning, startTime: isRunning ? lastTickTime : 0 }) };
-        
-        // [v0.5.11] D-Day 데이터 클라우드 송신
         backup['ddayConfig'] = getL('ddayConfig') || "";
         
         ['blockSeconds', 'targetBlocks', 'backupSeconds', 'dailyRecords', 'alarmedBlocks', 'settings', 'lastLogicalDate'].forEach(k => { backup[k] = getL(k) || ""; });
@@ -939,7 +985,6 @@
         else { alertEl.style.display = 'none'; }
     }
     
-    // [v0.5.11] D-Day 날짜/텍스트 UI 계산 및 렌더링 코어
     function updateDdayUI() {
         const badge = document.getElementById('dday-badge');
         const popupBadge = document.getElementById('popup-dday');
@@ -989,7 +1034,7 @@
         document.getElementById('dday-modal').style.display = 'none';
         document.body.style.overflow = '';
         showToast("디데이가 설정되었습니다.");
-        triggerAutoSync(true); // 즉각 클라우드 백업
+        triggerAutoSync(true); 
     }
 
     function clearDday() {
@@ -1019,7 +1064,6 @@
         const settings = JSON.parse(getL('settings') || '{"isAlarmOn":true, "isSoundOn":true}');
         isAlarmOn = settings.isAlarmOn ?? true; isSoundOn = settings.isSoundOn ?? true; updateSettingsUI();
         
-        // [v0.5.11] D-Day 로컬 파싱
         try { ddayConfig = JSON.parse(getL('ddayConfig')) || {title:"", date:""}; } 
         catch(e) { ddayConfig = {title:"", date:""}; }
         
@@ -1103,7 +1147,6 @@
             blockSeconds = Array(48).fill(0); targetBlocks = Array(48).fill(false); backupSeconds = Array(48).fill(0); alarmedBlocks = Array(48).fill(false); 
             for(let i=0; i<48; i++) { removeL(`note_${i}`); if(domCache.notes[i]) domCache.notes[i].value = ""; }
             
-            // [v0.5.11 안전성] ddayConfig는 날짜가 바뀌어도 절대 건드리지 않음 (영구 보존 락)
             setL('targetBlocks', JSON.stringify(targetBlocks)); setL('backupSeconds', JSON.stringify(backupSeconds)); setL('alarmedBlocks', JSON.stringify(alarmedBlocks));
             setL('blockSeconds', JSON.stringify(blockSeconds)); setL('lastLogicalDate', currentLogicDate); 
             
@@ -1463,7 +1506,6 @@
     function goToToday() { currentRenderDate = new Date(); renderCalendar(); }
     function changeMonth(offset) { currentRenderDate.setDate(1); currentRenderDate.setMonth(currentRenderDate.getMonth() + offset); renderCalendar(); }
     
-    // [v0.5.11] 캘린더 미니멀 배지(텍스트 + 캡슐) 렌더링
     function renderCalendar() {
         const grid = document.getElementById('cal-grid'); grid.innerHTML = ''; 
         const y = currentRenderDate.getFullYear(), m = currentRenderDate.getMonth();
@@ -1481,7 +1523,6 @@
 
             if (rec) { 
                 let hN = parseInt((rec.totalTime || "0h").split('h')[0]); 
-                // 데이터가 00:00 이면 아예 렌더링을 컷하여 깔끔한 빈 칸 유지
                 if(rec.targetTime && rec.targetTime !== "00h 00m" && rec.targetTime !== "0h 0m") { 
                     let compactTarget = rec.targetTime.replace('h ', ':').replace('m', '');
                     tHtml = `<div class="cal-badge target" title="목표 시간">${compactTarget}</div>`; 
@@ -1633,6 +1674,510 @@
             navigator.serviceWorker.register('./sw.js').then(reg => console.log('Service Worker 등록 완료!')).catch(err => console.log('Service Worker 등록 실패:', err));
         });
     }
+
+    // ==========================================
+    // 🧠 인터랙티브 시뮬레이터 (이미지 트레이닝) 코어 V2 - 심층 과학/심리 에디션
+    // ==========================================
+
+    window.SCENARIO_PASSWORD = "036003";
+
+    function shuffleArray(array) {
+        let newArr = [...array];
+        for (let i = newArr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+        }
+        return newArr;
+    }
+
+// 📜 [심층 과학 기반] 8월 경찰 합격 맞춤형 & 퐁당퐁당 방어 시나리오 DB
+const SCENARIOS = [
+    {
+        id: 0,
+        btnColor: "#10b981", 
+        title: "🟢 비운동일 (13.5H 완주)",
+        subtitle: "화, 수, 금, 토 극한의 몰입 스케줄",
+        isRandom: false,
+        summary: "🔥 [비운동일 13.5H 요약]\n1. 침대 공부로 마찰력 제로 시동\n2. 빵/맥모닝으로 식곤증 방어\n3. 17시 고비 눈팩+커피 냅 리부팅",
+        steps: [
+            { time: "07:00", situation: "아침 7시. 침대 밖으로 나가기엔 몸이 너무 무겁습니다.", choices: [
+                { label: "세수부터 하고 책상에 앉으려 노력한다.", isCorrect: false, result: "💀 [오답 노트]\n'침대에서 책상으로 이동'하는 물리적 마찰력이 너무 커서 포기할 확률이 80%입니다.\n\n✅ [정답 해설] (신뢰도 98%)\n[작업 흥분 이론] 일단 눈뜨자마자 누운 채로 탭을 켜서 가장 쉬운 암기 과목을 보세요. 뇌의 측좌핵이 예열되어 스스로 일어나게 만듭니다." },
+                { label: "🛏️ 누운 상태로 탭을 켜서 가장 쉬운 암기 과목을 본다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 98%)\n[실행 마찰력 최소화] 누워서 공부하는 것은 죄가 아닙니다. 가장 저항이 적은 행동으로 뇌를 깨우는 최고 효율의 시동법입니다.\n\n❌ [오답 노트]\n완벽한 세팅(샤워, 책상 정리)을 고집하면 시작 자체가 지연됩니다." }
+            ]},
+            { time: "13:30", situation: "점심시간, 든든한 한식을 먹을지 가벼운 빵을 먹을지 고민됩니다.", choices: [
+                { label: "국밥이나 찌개류로 배를 든든하게 채운다.", isCorrect: false, result: "💀 [오답 노트]\n탄수화물과 나트륨의 과다 결합은 오후 내내 극심한 식곤증(브레인 포그)을 유발합니다.\n\n✅ [정답 해설] (신뢰도 94%)\n[혈당 스파이크 방어] 가벼운 빵(정제 탄수화물)으로 뇌에 필요한 당만 빠르게 공급하고 포만감을 낮추는 것이 오후 4시간 집중의 비결입니다." },
+                { label: "🥐 가벼운 빵을 먹고 즉시 온열안대 20분 휴식을 취한다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 94%)\n[NASA식 피로 리셋] 소식을 통한 혈당 방어 + 시각 정보 차단(눈팩)은 오후 집중력을 오전 수준으로 끌어올리는 치트키입니다.\n\n❌ [오답 노트]\n배부른 한식은 소화 기관으로 혈류를 쏠리게 해 뇌를 멍하게 만듭니다." }
+            ]},
+            { time: "17:00", situation: "가장 고비인 17시. 체력이 바닥나고 집중력이 박살 났습니다.", choices: [
+                { label: "초인적인 의지력으로 참고 야간 스퍼트를 준비한다.", isCorrect: false, result: "💀 [오답 노트]\n의지력은 이미 소진되었습니다. 이대로 버티면 19시쯤 완전히 붕괴되어 조기 퇴근하게 됩니다.\n\n✅ [정답 해설] (신뢰도 99%)\n[아데노신 클리어] 커피 1잔을 마시고 눈팩과 함께 20분 자는 '커피 냅'만이 야간 5시간을 버티게 할 유일한 생물학적 동력입니다." },
+                { label: "☕ 커피 1잔 + 눈팩 2회차 + 20분 수면(커피 냅)을 실행한다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 99%)\n[커피 냅 프로토콜] 카페인이 뇌에 도달하는 20분 동안 가수면을 취해 피로 물질을 비워내면, 각성 효과가 200% 증폭됩니다.\n\n❌ [오답 노트]\n무작정 버티는 것은 활자만 쳐다보는 가짜 공부를 유발합니다." }
+            ]},
+            { time: "18:00", situation: "야간 5.5시간 스퍼트를 시작합니다. 뇌가 지루해합니다.", choices: [
+                { label: "완전한 적막 속에서 법학 이론을 깊게 판다.", isCorrect: false, result: "💀 [오답 노트]\n야간에 인지 부하가 높은 새로운 이론을 파면 뇌가 거부 반응을 일으켜 딴짓을 찾습니다.\n\n✅ [정답 해설] (신뢰도 92%)\n[맥락 전환 기법] 프리렌 BGM 같은 백색소음을 켜고, 이미 아는 것을 뱉어내는 '오답 정리/인출'을 해야 텐션이 유지됩니다." },
+                { label: "🎧 프리렌 BGM을 켜고 오답 정리 및 출력 학습을 한다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 92%)\n[상태 조절 효과] 지루한 야간에는 적절한 청각적 자극(가사 없는 BGM)과 '아웃풋(출력)' 중심의 공부가 뇌의 도파민을 유지시킵니다.\n\n❌ [오답 노트]\n조용한 곳에서의 인풋(이론 읽기)은 수면제와 같습니다." }
+            ]}
+        ]
+    },
+    {
+        id: 1,
+        btnColor: "#3b82f6", 
+        title: "🏃‍♂️ 운동일 (10H 에너지 세이브)",
+        subtitle: "운동 전 목표 완수 및 수면 최적화",
+        isRandom: false,
+        summary: "🏃‍♂️ [운동일 요약]\n1. 19시 30분 전까지 10H 달성\n2. 운동 가는 마찰력 완벽 제거\n3. 즉시 샤워 후 칼취침",
+        steps: [
+            { time: "18:30", situation: "야간 마무리 1시간 전, 뇌가 완전히 지쳤습니다.", choices: [
+                { label: "어려운 판례나 복잡한 계산 문제를 푼다.", isCorrect: false, result: "💀 [오답 노트]\n에너지가 고갈된 상태에서 고난도 작업은 좌절감을 유발해 내일의 공부 동기까지 꺾어버립니다.\n\n✅ [정답 해설] (신뢰도 95%)\n[마무리 엔도르핀] 가벼운 두문자 암기나 쉬운 OX 문제로 '오늘 다 해냈다'는 성취감을 뇌에 각인시키며 끝내야 합니다." },
+                { label: "📖 가볍고 쉬운 두문자 암기나 OX 문제를 풀며 성취감을 챙긴다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 95%)\n[피크-엔드 법칙] 뇌는 경험의 '마지막 순간'을 강렬하게 기억합니다. 쉬운 걸로 기분 좋게 끝내야 내일 책상에 앉기 싫은 마음이 사라집니다.\n\n❌ [오답 노트]\n마지막에 어려운 걸 풀다 틀리면 스트레스 호르몬 상태로 퇴실하게 됩니다." }
+            ]},
+            { time: "21:00", situation: "운동 갈 시간입니다. 오늘 하루 10시간이나 해서 너무 피곤합니다.", choices: [
+                { label: "침대에 누워서 갈까 말까 5분만 고민해 본다.", isCorrect: false, result: "💀 [오답 노트]\n인간의 뇌는 피곤할 때 무조건 '안 하는 쪽'으로 합리화의 천재가 됩니다. 고민하는 순간 지는 겁니다.\n\n✅ [정답 해설] (신뢰도 97%)\n[실행 의도 설계] 생각할 틈을 주지 마세요. 아침에 미리 세팅해 둔 수건과 옷을 들고 바로 화장실로 직행해야 합니다." },
+                { label: "🏋️ 생각 스위치를 끄고, 미리 세팅해 둔 옷을 입고 나간다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 97%)\n[마찰력 제거의 법칙] 환경을 미리 세팅해 두면 행동 개시 에너지가 1/10로 줄어듭니다. 운동은 신체 피로를 푸는 '적극적 휴식'입니다.\n\n❌ [오답 노트]\n누워서 고민하는 에너지가 운동하는 에너지보다 큽니다." }
+            ]}
+        ]
+    },
+    {
+        id: 4,
+        btnColor: "#8b5cf6", 
+        title: "🚨 돌발/퐁당퐁당 (무작위 훈련)",
+        subtitle: "8시간-3시간 패턴(자아고갈) 완벽 방어",
+        isRandom: true,
+        pickCount: 5,
+        steps: [
+            { time: "돌발", situation: "어제 9시간을 넘겼더니, 오늘 아침엔 1분도 책상에 앉기가 싫습니다. (퐁당퐁당 패턴)", choices: [
+                { label: "어제 많이 했으니 오늘은 스카에 가지 않고 집에서 쉰다.", isCorrect: false, result: "💀 [오답 노트]\n공부 리듬이 끊어지는 전형적인 패배 루트입니다. 내일은 스카 가기가 3배 더 힘들어집니다.\n\n✅ [정답 해설] (신뢰도 98%)\n[관성 유지의 법칙] 공부 시간은 줄이더라도 '스카에 출석하는 행위' 자체는 유지해야 뇌의 관성이 깨지지 않습니다." },
+                { label: "🚶 일단 무조건 스카에 가서 딱 2시간만 제일 좋아하는 과목을 한다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 98%)\n[최소 정체성 방어] '나는 매일 스카에 가는 사람'이라는 정체성을 지키는 게 핵심입니다. 가서 2시간만 쉬운 걸 하고 오면 내일 리듬이 복구됩니다.\n\n❌ [오답 노트]\n집에서 쉬면 뇌는 이를 '보상'으로 인식해 계속 늘어집니다." }
+            ]},
+            { time: "돌발", situation: "점심 먹고 스카에 돌아왔는데, 폰으로 유튜브를 켜버렸습니다.", choices: [
+                { label: "이왕 켠 거, 딱 10분만 보고 끈다.", isCorrect: false, result: "💀 [오답 노트]\n도파민 알고리즘 앞에서 인간의 자제력은 무용지물입니다. 10분이 2시간이 되는 마법을 겪게 됩니다.\n\n✅ [정답 해설] (신뢰도 96%)\n[물리적 격리] 스스로를 믿지 마세요. 폰 전원을 끄고 사물함이나 카운터에 강제로 격리해야 합니다." },
+                { label: "📱 즉시 폰 전원을 끄고 사물함 깊숙한 곳에 던져 넣는다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 96%)\n[환경 통제 이론] 의지력은 소모품입니다. 유혹을 '참는 데' 에너지를 쓰지 말고, 유혹 자체를 눈앞에서 물리적으로 치워버리세요.\n\n❌ [오답 노트]\n'딱 영상 하나만'은 도파민 폭포의 밸브를 여는 행위입니다." }
+            ]},
+            { time: "돌발", situation: "8월 시험이 다가오는데 모의고사 점수가 안 올라 불안감에 심장이 뜁니다.", choices: [
+                { label: "불안감을 잊기 위해 잠을 줄이고 문제풀이 양을 2배로 늘린다.", isCorrect: false, result: "💀 [오답 노트]\n수면 부족 + 스트레스는 코르티솔 수치를 급증시켜 해마(기억저장소)를 마비시킵니다. 밑빠진 독에 물 붓기입니다.\n\n✅ [정답 해설] (신뢰도 94%)\n[표현적 글쓰기] 백지에 지금 나의 불안한 상태와 모르는 약점을 솔직하게 적어 내려가면 전두엽이 이성을 되찾습니다." },
+                { label: "✍️ 백지를 꺼내 내 감정과 약점을 5분간 객관적으로 쏟아내 적는다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 94%)\n[제임스 페네베이커 연구] 억눌린 감정을 글로 시각화하면, 뇌는 이를 '통제 가능한 문제'로 인식하여 즉각적으로 편도체(불안 센터)를 진정시킵니다.\n\n❌ [오답 노트]\n공포에 질린 상태에서의 양치기(무지성 문제풀기)는 기억에 남지 않습니다." }
+            ]}
+        ]
+    },
+    {
+        id: 5,
+        btnColor: "#0ea5e9", 
+        title: "📚 칼럼 퀴즈 (심화 학습)",
+        subtitle: "전 세계 석학들의 뇌 과학 & 장기 고시생 데이터",
+        isRandom: true,
+        pickCount: 8,
+        steps: [
+            { time: "칼럼", situation: "경찰 시험 준비생 중 '퐁당퐁당(8시간→2시간)' 패턴을 겪는 사람들의 가장 흔한 착각은?", choices: [
+                { label: "자신이 단순히 '의지력이 부족한 사람'이라고 자책하는 것", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 99%)\n[자아 고갈 이론] 의지력은 핸드폰 배터리와 같습니다. 전날 8시간을 오버페이스로 달려서 배터리가 0%가 된 것뿐입니다. 당신의 멘탈 문제가 아니라 '시스템의 부재' 때문입니다.\n\n❌ [오답 노트]\n매일 일정한 시간(예: 7시간)을 꾸준히 유지하는 것이 퐁당퐁당 10시간보다 압도적으로 유리합니다." },
+                { label: "영양제를 덜 챙겨 먹어서 체력이 떨어졌다고 믿는 것", isCorrect: false, result: "💀 [오답 노트]\n체력 문제 이전에 '도파민과 인지 에너지의 과소비'가 주원인입니다.\n\n✅ [정답 해설] (신뢰도 99%)\n자신의 한계치를 모른 채 기분 좋을 때 무리하게 달리면 뇌가 항상성을 맞추기 위해 다음 날 강제 셧다운을 시킵니다." }
+            ]},
+            { time: "칼럼", situation: "NASA 조종사들에게도 적용되는 '17시 20분 커피 냅(Coffee Nap)'의 가장 정확한 과학적 원리는?", choices: [
+                { label: "단순히 20분 자는 동안 피로 물질인 '아데노신'이 수용체에서 씻겨 나가기 때문", isCorrect: false, result: "💀 [오답 노트]\n절반만 맞습니다. 그냥 자는 것보다 '커피'와 결합했을 때 마법이 일어납니다.\n\n✅ [정답 해설] (신뢰도 98%)\n수면이 아데노신을 비워낸 그 빈자리를, 20분 뒤 각성한 카페인이 완벽하게 꿰차고 들어가기 때문입니다." },
+                { label: "수면이 피로 물질(아데노신)을 비워낸 빈자리를 카페인이 완벽히 차지하기 때문", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 98%)\n[NASA 수면 과학] 뇌의 피로물질과 카페인은 열쇠구멍(수용체)을 두고 싸웁니다. 20분의 수면이 피로물질을 청소해 주면, 카페인이 100% 흡수되어 야간 5시간을 버틸 무적의 텐션이 생깁니다.\n\n❌ [오답 노트]\n수면 없이 커피만 들이부으면 찌꺼기 위에 코팅을 하는 격입니다." }
+            ]},
+            { time: "칼럼", situation: "8월 시험 합격이라는 거대한 목표 앞에서 멘탈이 무너질 때, 신경과학자 앤드류 휴버먼이 제안하는 뇌 리셋법은?", choices: [
+                { label: "유튜브에서 경찰 합격 수기나 동기부여 영상을 찾아본다.", isCorrect: false, result: "💀 [오답 노트]\n동기부여 영상은 타인의 도파민을 빌려 쓰는 행위로, 영상이 끝나면 더 극심한 우울감과 현타가 밀려옵니다.\n\n✅ [정답 해설] (신뢰도 97%)\n밖으로 나가 시야를 넓게 두고 앞을 향해 걷는 '전진 보행'이 불안 회로를 즉시 꺼버립니다." },
+                { label: "🚶 즉시 밖으로 나가 10분간 햇빛을 받으며 앞을 향해 걷는다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 97%)\n[전진 보행/Forward Ambulation] 사물이 내 눈앞을 스쳐 지나가는 시각적 움직임은 뇌의 편도체(불안 센터) 활동을 강제로 셧다운 시키고 도파민 밸런스를 맞춥니다.\n\n❌ [오답 노트]\n멘탈이 무너졌을 때 책상에 가만히 앉아있는 것은 자해 행위입니다." }
+            ]},
+            { time: "칼럼", situation: "점심으로 한식(국밥, 백반) 대신 '빵과 같은 정제 탄수화물'이 수험생의 특정 상황에서 유리한 이유는?", choices: [
+                { label: "소화에 에너지가 덜 쓰이고 뇌에 필요한 포도당을 즉각 꽂아주기 때문", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 94%)\n[오렉신-글루코스 반응] 과도한 나트륨과 포만감은 각성 호르몬(오렉신)을 억제합니다. 가벼운 빵은 소화기 부담을 줄이고 뇌에 즉각적인 연료(당)를 공급해 오후 집중을 돕습니다.\n\n❌ [오답 노트]\n단, 장기적으로는 비타민 B군을 꼭 보충해야 정제 탄수화물의 부작용을 막을 수 있습니다." },
+                { label: "밀가루가 장내 유익균을 활성화시켜 세로토닌을 분비하기 때문", isCorrect: false, result: "💀 [오답 노트]\n밀가루는 장내 유익균 활성화와 무관하며 오히려 장 건강에는 불리할 수 있습니다.\n\n✅ [정답 해설] (신뢰도 94%)\n수험생이 빵을 먹는 진짜 이유는 '포만감 방어'와 '즉각적인 당 수혈'로 식곤증을 막기 위함입니다." }
+            ]},
+            { time: "칼럼", situation: "밤 12시 '칼취침' 룰을 어기고 새벽 2시까지 공부했을 때 뇌에서 일어나는 비극은?", choices: [
+                { label: "뇌의 대뇌피질이 활성화되어 오히려 다음 날 암기력이 상승한다.", isCorrect: false, result: "💀 [오답 노트]\n전혀 근거 없는 낭설입니다. 수면이 부족하면 뇌는 알코올 농도 0.05% (음주 상태)와 같아집니다.\n\n✅ [정답 해설] (신뢰도 99%)\n[기억의 고정화 실패] 오늘 10시간 공부한 내용이 장기기억 저장소로 넘어가지 못하고 자고 일어나면 70%가 날아갑니다." },
+                { label: "오늘 낮에 10시간 동안 공부했던 내용들의 '저장(Save)' 버튼이 눌리지 않고 증발한다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [정답 해설] (신뢰도 99%)\n[매튜 워커의 수면과학] 잠은 단순한 휴식이 아닙니다. 수면 중 해마는 낮에 배운 지식을 영구 저장소로 이동시킵니다. 수면을 깎는 것은 오늘 공부한 문서의 '저장 안 함'을 누르는 것과 같습니다.\n\n❌ [오답 노트]\n다음 날 늦게 일어나는 것보다 무서운 게 바로 '오늘 지식의 휘발'입니다." }
+            ]},
+            { time: "칼럼", situation: "[에빙하우스 연구] 암기 효율이 극대화되는 가장 과학적인 복습 타이밍은?", choices: [
+                { label: "외운 즉시 10번 반복해서 소리 내어 읽기", isCorrect: false, result: "💀 [오답: 신뢰도 94%]\n<b>착각적 유창성</b>: 눈에 익은 것을 머리에 들어왔다고 뇌가 거짓말을 하게 됩니다." },
+                { label: "살짝 가물가물하여 기억하기 고통스러울 때 다시 꺼내기", isCorrect: true, result: "🎉 [정답!]\n\n✅ [해설: 신뢰도 99%]\n<b>바람직한 어려움(Desirable Difficulty)</b>: 뇌가 정보를 끄집어내려고 애쓸 때 신경 시냅스가 가장 강력하게 연결됩니다." }
+            ]},
+            { time: "칼럼", situation: "[심리적 분리] 스케줄이 무너진 날, 억지로 책상에 앉아있는 것이 독이 되는 이유는?", choices: [
+                { label: "공부 장소를 '노는 곳'으로 인식하지 않게 보호하려고", isCorrect: true, result: "🎉 [정답!]\n\n✅ [해설: 신뢰도 91%]\n책상에서 딴짓을 반복하면 뇌는 그곳을 휴식 공간으로 오해합니다. 쉴 때는 확실히 이탈해야 '공부 장소'의 각인 효과가 유지됩니다." },
+                { label: "그냥 스트레스를 풀기 위해서", isCorrect: false, result: "💀 [오답]\n단순 휴식보다 중요한 것은 '공간에 대한 뇌의 각인'을 지키는 것입니다." }
+            ]},
+            { time: "칼럼", situation: "[앤드류 휴버먼] 멘탈이 무너지고 불안할 때 뇌과학적으로 가장 빠른 진정법은?", choices: [
+                { label: "🚶 즉시 밖으로 나가 시야를 넓게 두고 전진하며 걷는다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [해설: 신뢰도 94%]\n<b>전진 보행(Forward Ambulation)</b>: 시각적 흐름이 뇌를 통과하면 편도체(불안 센터) 활동이 즉각적으로 억제됩니다." },
+                { label: "유튜브에서 경찰 합격 수기 영상을 찾아본다.", isCorrect: false, result: "💀 [오답]\n타인의 도파민을 빌려 쓰는 행위일 뿐, 영상이 끝나면 불안감은 더 크게 돌아옵니다." }
+            ]},       
+            { time: "칼럼", situation: "[울트라디안 리듬] 13.5시간의 장기 레이스를 완주하기 위한 가장 효율적인 휴식 주기는?", choices: [
+                { label: "90분 집중 후, 10분간 눈을 감고 시각 자극을 차단한다.", isCorrect: true, result: "🎉 [정답!]\n\n✅ [해설: 신뢰도 97%]\n인간의 집중력은 90~120분 주기로 파동을 그립니다. 주기가 끝날 때 뇌의 아데노신 농도를 조절해주지 않으면 오후에 치명적인 브레인 포그가 옵니다." },
+                { label: "흐름이 끊기지 않게 4시간 연속으로 공부하고 길게 쉰다.", isCorrect: false, result: "💀 [오답]\n집중력이 바닥난 상태에서 앉아있는 시간은 단순 노동일 뿐 학습 성과로 이어지지 않습니다." }
+            ]},
+            { time: "칼럼",situation: "[울트라디안 리듬] 13.5시간의 장기 레이스를 완주하기 위한 가장 효율적인 휴식 주기는?", choices: [
+                { label: "90분 집중 후, 10분간 눈을 감고 시각 자극을 차단한다.", isCorrect: true, result: "🎉 [정답! 신뢰도 97%]\n\n✅ [심층 해설]: <b>나다니엘 클라이트먼의 '기초 휴식-활동 주기(BRAC)'</b> 이론입니다.\n\n1. <b>90분의 법칙:</b> 인간의 뇌는 수면 중뿐만 아니라 깨어있는 동안에도 약 90분 주기로 고집중과 저집중의 파동을 그립니다. 이 파동이 끝날 때 10분간 쉬어주지 않으면 뇌에 피로 물질인 아데노신이 급격히 쌓여 오후에 치명적인 '브레인 포그'가 옵니다.\n2. <b>시각 자극 차단의 중요성:</b> 뇌 에너지의 80%는 시각 정보를 처리하는 데 쓰입니다. 쉴 때 스마트폰을 보는 것은 휴식이 아니라 뇌를 계속 혹사시키는 행위입니다. 10분간 눈을 감는 것만으로도 전두엽의 부하를 획기적으로 낮출 수 있습니다.\n3. <b>완주 비결:</b> 13.5시간을 채우는 힘은 정신력이 아니라, 90분마다 뇌의 캐시 메모리를 비워주는 '시스템'에서 나옵니다."},
+                { label: "흐름이 끊기지 않게 4시간 연속으로 공부하고 길게 쉰다.", isCorrect: false, result: "💀 [오답: 신뢰도 91%]\n\n❌ [오답 해설]: <b>초집중의 역설</b>입니다. 2시간이 넘어가면 뇌는 활자를 읽고는 있지만 의미를 파악하지 못하는 '가짜 집중(Vigilance decrement)' 상태에 빠집니다. 4시간 연속 공부는 뇌를 과부하 시켜 내일 순공 시간이 3시간으로 뚝 떨어지는 '퐁당퐁당 패턴'의 직접적인 원인이 됩니다." }
+            ]},
+        { 
+                time: "칼럼", 
+                situation: "[100% 원칙] '오늘은 너무 힘드니까 딱 30분만 일찍 접을까?'라는 유혹이 들 때, 장기전에서 가장 위험한 생각은?", 
+                choices: [
+                    { 
+                        label: "98%보다 100%가 지키기 쉽다는 사실을 망각하는 것", 
+                        isCorrect: true, 
+                        result: "🎉 [정답! 신뢰도 96%]\n\n✅ [심층 해설]: <b>클레이튼 크리스텐슨의 '100% 원칙'</b>입니다. '이번 한 번만'이라는 예외를 허용하는 순간, 뇌는 다음 위기 때마다 '타협할지 말지' 결정하는 데 엄청난 에너지를 소모하게 됩니다. 원칙을 100% 지키는 것이 98% 지키는 것보다 생물학적으로 훨씬 쉽습니다." 
+                    },
+                    { 
+                        label: "30분 공부량이 합격에 큰 지장을 줄 것이라 걱정하는 것", 
+                        isCorrect: false, 
+                        result: "💀 [오답: 신뢰도 91%]\n\n❌ [해설]: 30분의 지식 양보다 무서운 것은 <b>'나와의 약속을 어기는 회로'</b>가 뇌에 생성되는 것입니다. 한 번 무너진 댐은 걷잡을 수 없이 무너집니다." 
+                    }
+                ]},
+                    { 
+                time: "칼럼", 
+                situation: "[실행 의도] 오늘따라 공부 시작 버튼을 누르기가 너무 싫을 때, 실행력을 3배 높이는 과학적 주문은?", 
+                choices: [
+                    { 
+                        label: "📍 '만약 탭을 켜면(If), 트리노트 1페이지부터 읽겠다(Then)'고 구체화한다.", 
+                        isCorrect: true, 
+                        result: "🎉 [정답! 신뢰도 98%]\n\n✅ [심층 해설]: <b>피터 골위처의 '실행 의도(Implementation Intentions)'</b> 연구입니다. 뇌는 '열심히 하자'는 막연한 의지보다 'If-Then' 형태의 명령어를 수신할 때 전두엽의 부하 없이 즉각적인 행동을 개시합니다. 의지력이 아닌 '프로그래밍'으로 공부를 시작하세요." 
+                    },
+                    { 
+                        label: "합격 후의 내 모습을 상상하며 긍정적인 에너지를 끌어올린다.", 
+                        isCorrect: false, 
+                        result: "💀 [오답: 신뢰도 85%]\n\n❌ [해설]: 과도한 낙관적 상상은 뇌가 이미 목표를 이룬 것으로 착각하게 만들어, 정작 지금 당장 필요한 '행동 에너지'를 감소시키는 역효과(Mental Contrasting 미비 시)를 냅니다." 
+                    }
+                ]
+            },
+            { 
+                time: "칼럼", 
+                situation: "[인지 부하 이론] 법학 판례 암기가 한계에 도달해 뇌가 '입력을 거부'할 때, 합격생들의 우회 전략은?", 
+                choices: [
+                    { 
+                        label: "🔄 뇌 사용 부위를 바꾸는 'Task Rotation(단순 작업 전환)'을 실시한다.", 
+                        isCorrect: true, 
+                        result: "🎉 [정답! 신뢰도 96%]\n\n✅ [심층 해설]: <b>존 스웰러의 '인지 부하 이론'</b>에 따르면 특정 회로가 지쳤을 때 공부를 아예 쉬는 것보다, 사용 부위가 다른 작업(예: 오답 오려 붙이기, 강의 듣기)으로 전환하는 것이 '집중의 관성'을 유지하면서 특정 뉴런의 피로를 식히는 데 훨씬 효과적입니다. 이것이 13.5시간 완주의 비결입니다." 
+                    },
+                    { 
+                        label: "정신력이 해이해진 것이므로 찬물 세수를 하고 다시 판례를 본다.", 
+                        isCorrect: false, 
+                        result: "💀 [오답: 신뢰도 88%]\n\n❌ [해설]: 과부하가 걸린 회로에 계속 전기를 흘려보내는 격입니다. 이는 뇌의 거부 반응을 키워 결국 다음 날 순공 시간을 박살 내는 '퐁당퐁당 패턴'을 초래합니다." 
+                    }
+                ]
+            },
+            { 
+                time: "칼럼", 
+                situation: "[간격 효과] 기껏 외운 경찰학 두문자가 다음 날 자꾸 가물가물할 때, 뇌과학이 추천하는 해결책은?", 
+                choices: [
+                    { 
+                        label: "📖 '가물가물해서 괴로운 시점'에 딱 한 번만 억지로 떠올려본다.", 
+                        isCorrect: true, 
+                        result: "🎉 [정답! 신뢰도 99%]\n\n✅ [심층 해설]: <b>니콜라스 세페다의 '최적 복습 간격'</b> 연구입니다. 완벽하게 기억날 때 반복하는 것은 시간 낭비입니다. '잊어버릴 것 같아 고통스러운 시점'에 인출을 시도해야 뇌는 이 정보가 생존에 필수적이라 판단하고 장기 기억 저장소의 문을 엽니다. 괴로움이 곧 저장의 증거입니다." 
+                    },
+                    { 
+                        label: "불안하므로 외워질 때까지 그 자리에서 20번 반복해서 읽는다.", 
+                        isCorrect: false, 
+                        result: "💀 [오답: 신뢰도 92%]\n\n❌ [해설]: <b>과잉 학습의 함정</b>입니다. 짧은 시간 내의 반복 노출은 단기 기억만 자극할 뿐이며, 뇌는 금방 지루함을 느껴 정보 처리를 중단합니다." 
+                    }
+                ]
+            },
+            { 
+                time: "칼럼", 
+                situation: "[여키스-도드슨 법칙] 시험이 다가오며 압박감이 심해져 집중이 안 될 때, 뇌의 성과를 극대화하는 법은?", 
+                choices: [
+                    { 
+                        label: "🧘 명상이나 호흡을 통해 각성 수준을 '적절한 중간 상태'로 낮춘다.", 
+                        isCorrect: true, 
+                        result: "🎉 [정답! 신뢰도 94%]\n\n✅ [심층 해설]: <b>여키스-도드슨 법칙(Yerkes-Dodson Law)</b>에 따르면, 스트레스(각성)가 너무 낮아도 문제지만 너무 높아도 성과는 급락합니다. 고난도 암기 과업일수록 뇌가 '차분한 각성' 상태일 때 효율이 가장 높습니다. 너무 조급할 땐 4-7-8 호흡으로 심박수를 낮추는 것이 가장 빠른 공부법입니다." 
+                    },
+                    { 
+                        label: "불안을 동력 삼아 잠을 줄이고 더 처절하게 몰아붙인다.", 
+                        isCorrect: false, 
+                        result: "💀 [오답: 신뢰도 90%]\n\n❌ [해설]: 각성 수준이 임계치를 넘으면 전두엽 기능이 마비되고 공포를 담당하는 편도체만 활성화됩니다. 결국 책상 앞에는 앉아있지만 머릿속은 하얘지는 현상이 발생합니다." 
+                    }
+                ]
+            },
+            { 
+                time: "칼럼", 
+                situation: "[디지털 피로] 공부 중간 휴식 시간에 스마트폰을 보는 것이 '2분 규칙'보다 합격에 해로운 결정적 이유는?", 
+                choices: [
+                    { 
+                        label: "뇌가 휴식으로 인식하지 못하고 '주의력 잔류' 현상을 만들기 때문", 
+                        isCorrect: true, 
+                        result: "🎉 [정답! 신뢰도 97%]\n\n✅ [심층 해설]: <b>미네소타 대학교 소피 르로이 교수의 '주의력 잔류(Attention Residue)'</b> 이론입니다. 폰으로 본 쇼츠나 뉴스의 잔상이 뇌에 남아, 공부로 복귀한 뒤에도 약 20분간 인지 자원의 일부를 계속 점유합니다. 13.5시간 중 상당 시간을 이 '잔상 처리'에 낭비하게 되어 실질적인 순공 밀도가 반토막 납니다." 
+                    },
+                    { 
+                        label: "단순히 시력이 나빠져서 판례 읽기가 힘들어지기 때문", 
+                        isCorrect: false, 
+                        result: "💀 [오답: 신뢰도 89%]\n\n❌ [해설]: 신체적 피로보다 무서운 것은 인지 자원의 파편화입니다. 뇌는 멀티태스킹을 하느라 진정한 회복을 하지 못하게 됩니다." 
+                    }
+                ]},
+                    { 
+                time: "칼럼", 
+                situation: "[사전 전념] AI 기능 테스트나 애니 리뷰 등 '꽂히면 끝까지 가는' 본능적 폭주를 막는 가장 완벽한 경제학적 대책은?", 
+                choices: [
+                    { 
+                        label: "유혹이 닥쳤을 때 합격 수기를 떠올리며 정신력으로 이겨낸다.", 
+                        isCorrect: false, 
+                        result: "💀 [오답: 신뢰도 12%]\n\n❌ [해설]: 유혹이 눈앞에 있을 때 인간의 전두엽은 감정 뇌(변연계)를 이길 수 없습니다. '안 하겠다'는 결심은 뇌 에너지만 소모시키고 결국 패배하게 됩니다." 
+                    },
+                    { 
+                        label: "🛡️ 의지력이 높은 아침에 유혹 앱(유튜브 등)을 삭제하거나 물리적 잠금 장치를 가동한다.", 
+                        isCorrect: true, 
+                        result: "🎉 [정답! 신뢰도 98%]\n\n✅ [심층 해설]: <b>토머스 셸링의 '사전 전념(Precommitment)'</b> 전략입니다. 오디세우스가 사이렌의 노래에 홀리지 않기 위해 자신의 몸을 돛대에 묶은 것과 같습니다. 유혹이 발생한 '후'에 참는 것이 아니라, 유혹이 발생할 '환경'을 미리 제거하는 것만이 유일한 승리법입니다." 
+                    }
+                ]
+            },
+            { 
+                time: "칼럼", 
+                situation: "[미엘린화] 8시간을 넘겨 공부할 때 '머리가 타들어 가고 글자가 튕겨 나가는 고통'이 느껴진다면, 지금 님의 뇌 안에서 벌어지는 일은?", 
+                choices: [
+                    { 
+                        label: "🧠 특정 신경 회로가 절연체(미엘린)로 감싸지며 '초고속 합격 회로'가 구축되는 중이다.", 
+                        isCorrect: true, 
+                        result: "🎉 [정답! 신뢰도 96%]\n\n✅ [심층 해설]: <b>대니얼 코일의 '탤런트 코드'</b> 연구입니다. 뇌가 고통을 느낀다는 것은 해당 지식의 전달 경로에 '미엘린(Myelin)'이라는 절연층이 두껍게 쌓이고 있다는 신호입니다. 미엘린이 두꺼워진 회로는 정보 전달 속도를 최대 100배까지 높여주며, 이 고통을 견디는 시간만이 님을 '기계적인 암기왕'으로 만듭니다." 
+                    },
+                    { 
+                        label: "뇌세포가 파괴되고 있으므로 즉시 공부를 멈추고 잠을 자야 한다는 경고다.", 
+                        isCorrect: false, 
+                        result: "💀 [오답: 신뢰도 82%]\n\n❌ [해설]: 단순한 졸음과 '집중의 고통'은 구분해야 합니다. 튕겨 나가는 활자를 다시 붙잡는 순간의 0.1초가 합격과 불합격을 가르는 뇌 가소성의 골든타임입니다." 
+                    }
+                ]
+            },
+                    { 
+                time: "칼럼", 
+                situation: "[유혹 묶기] 공부 중 너무 보고 싶은 유튜브 영상이 있을 때, 정주행의 늪에 빠지지 않는 가장 강력한 행동 설계는?", 
+                choices: [
+                    { 
+                        label: "📱 책상에 앉아서 보되, 15분 뒤에 꺼야겠다고 계속 의식한다.", 
+                        isCorrect: false, 
+                        result: "💀 [오답: 신뢰도 5%]\n\n❌ [해설]: 의지력은 알고리즘의 유혹을 이길 수 없습니다. 편안한 자세로 보는 유튜브는 뇌의 제어력을 마비시켜 결국 '하나만 더'를 외치게 만듭니다." 
+                    },
+                    { 
+                        label: "🏋️ 무조건 '서서' 보거나 '스트레칭'을 하면서 보는 조건을 건다.", 
+                        isCorrect: true, 
+                        result: "🎉 [정답! 신뢰도 96%]\n\n✅ [심층 해설]: 와튼 스쿨 <b>캐서린 밀크먼의 '유혹 묶기(Temptation Bundling)'</b> 전략입니다. 즐거운 행동(유튜브)을 불편한 행동(서 있기/운동)과 물리적으로 묶어버리면, 신체적 피로도가 도파민 보상을 압도하는 시점이 생깁니다. 뇌가 스스로 '이제 그만보고 앉아서 쉬자'라고 판단하게 만드는 고도의 기술입니다." 
+                    }
+                ]
+            },
+            { 
+                time: "칼럼", 
+                situation: "[도파민 항상성] 공부 복귀 후 글자가 튕겨 나가는 현상을 막기 위해, 유튜브 시청 시 '절대 피해야 할' 콘텐츠 형식은?", 
+                choices: [
+                    { 
+                        label: "숏폼(Shorts, 릴스) 등 1분 이내의 고자극 영상", 
+                        isCorrect: true, 
+                        result: "🎉 [정답! 신뢰도 98%]\n\n✅ [심층 해설]: <b>애나 렘키의 '도파민네이션'</b> 연구입니다. 숏폼은 뇌의 도파민 수치를 비정상적으로 급상승(Phasic release)시킵니다. 이후 공부를 위해 책상에 앉으면 뇌는 상대적으로 지루한 책을 견디지 못하고 '도파민 결핍 상태'를 느끼며 브레인 포그를 일으킵니다. 보상을 줄 때는 가급적 호흡이 긴 영상을 선택하세요." 
+                    },
+                    { 
+                        label: "애니메이션 리뷰나 AI 관련 정보 등 10분 이상의 긴 영상", 
+                        isCorrect: false, 
+                        result: "💀 [오답: 신뢰도 92%]\n\n❌ [해설]: 긴 영상은 숏폼보다 도파민 자극 속도가 완만하여 공부 복귀 시 뇌가 받는 충격이 훨씬 적습니다. 님의 13.5시간 레이스에는 오히려 이 방식이 안전합니다." 
+                    }
+                ]
+            },
+            { 
+                time: "칼럼", 
+                situation: "[공간 분리] 공부하던 스카(공부 공간) 책상에서 유튜브를 보는 행위가 장기 수험생활에 치명적인 이유는?", 
+                choices: [
+                    { 
+                        label: "스카 책상을 뇌가 '노는 곳'으로 오인하여 집중력을 떨어뜨리기 때문", 
+                        isCorrect: true, 
+                        result: "🎉 [정답! 신뢰도 93%]\n\n✅ [심층 해설]: <b>조건반사 이론</b>에 따르면 공간은 특정 행동과 강력하게 결합됩니다. 책상에서 유튜브를 보는 순간, 뇌는 그 책상을 '보상을 기대하는 장소'로 재정의합니다. 이후 공부할 때도 자꾸 딴생각이 나는 원인이 됩니다. 유튜브는 반드시 휴게실이나 복도 등 '공부하지 않는 공간'에서 시청해 공부 장소의 신성함을 보호하세요." 
+                    },
+                    { 
+                        label: "단순히 스카 이용 수칙에 어긋나서 퇴실 조치될 수 있기 때문", 
+                        isCorrect: false, 
+                        result: "💀 [오답]\n\n❌ [분석]: 규칙 위반보다 무서운 건 님의 <b>'뇌 각인 시스템'</b>이 무너지는 것입니다. 공간을 지키는 것이 멘탈을 지키는 첫걸음입니다." 
+                    }
+                ]},
+                    { 
+                time: "칼럼", 
+                situation: "[정보 채집 본능] 공부 중이나 일상 속에서 끊임없이 '새로운 애니/드라마'를 검색하고 찾는 진짜 이유는?", 
+                choices: [
+                    { 
+                        label: "뇌가 새로운 정보를 찾는 과정 자체를 '생존 사냥'으로 인식해 쾌락을 주기 때문", 
+                        isCorrect: true, 
+                        result: "🎉 [정답! 신뢰도 99%]\n\n✅ [심층 해설]: <b>피롤리(Pirolli)의 '정보 채집 이론(Information Foraging Theory)'</b>입니다. 인간의 뇌는 과거에 식량을 찾던 본능을 현재는 '정보(볼거리)'를 찾는 데 사용합니다. 특히 님처럼 극도로 절제된 생활을 하면, 뇌는 새로운 애니를 발견하는 것을 '풍족한 열매를 찾은 것'과 같은 급의 보상으로 처리합니다. 실제 시청하는 것보다 '찾아다니는 과정'에서 도파민이 더 많이 나오기 때문에 멈추기가 힘든 것입니다." 
+                    },
+                    { 
+                        label: "공부할 내용이 너무 많아 뇌가 지능적으로 태업을 하는 것이기 때문", 
+                        isCorrect: false, 
+                        result: "💀 [오답: 신뢰도 70%]\n\n❌ [분석]: 태업이라기보다는 <b>'도파민 헌팅'</b>에 가깝습니다. 뇌는 지루함을 고통으로 인식하며, 이를 해결하기 위해 가장 자극적인 '새로운 서사'를 본능적으로 추구하는 것입니다." 
+                    }
+                ]
+            },
+            { 
+                time: "칼럼", 
+                situation: "[조정 방안: 탐색 격리] 일상 속 끊임없는 볼거리 검색 시간을 줄이는 가장 효과적인 '시간 관리' 기술은?", 
+                choices: [
+                    { 
+                        label: "📅 '탐색 요일'을 주말로 고정하고, 평일엔 미리 정해진 2개만 본다.", 
+                        isCorrect: true, 
+                        result: "🎉 [정답! 신뢰도 95%]\n\n✅ [심층 해설]: <b>행동경제학의 '선택 설계'</b> 전략입니다. 매일 '뭐 볼까?'를 고민하는 행위는 님의 <b>전두엽 에너지(의지력)</b>를 엄청나게 갉아먹습니다. 일요일 밤에 '다음 주 보상용 애니' 딱 2개만 리스트업 해두세요. 평일에는 '찾는 즐거움'을 포기하는 대신 '결정의 피로'를 없애야만 13.5시간 순공 밀도를 유지할 수 있습니다." 
+                    },
+                    { 
+                        label: "공부 의욕이 떨어질 때마다 새로운 애니 1화씩을 보며 기분 전환을 한다.", 
+                        isCorrect: false, 
+                        result: "💀 [오답: 신뢰도 10%]\n\n❌ [분석]: 새로운 자극은 뇌의 도파민 기준치를 폭발시켜, 상대적으로 지루한 '법학 암기'를 불가능하게 만듭니다. 공부 중의 신규성 추구는 합격의 가장 큰 적입니다." 
+                    }
+                ]},
+                { 
+                time: "칼럼", 
+                situation: "[정보 채집] 일상 속에서 끊임없이 새로운 애니나 드라마를 검색하는 사냥 본능을 제어하는 가장 강력한 설계는?", 
+                choices: [
+                    { 
+                        label: "📅 일요일을 '공식 사냥의 날'로 정하고 평일엔 미리 정해진 목록만 본다.", 
+                        isCorrect: true, 
+                        result: "🎉 [정답! 신뢰도 99%]\n\n✅ [심층 해설]: <b>피롤리의 '정보 채집 이론'</b>의 핵심 해결책인 'Patch Foraging Restructuring'입니다. 뇌는 '무엇을 볼지 찾는 과정' 자체를 사냥 성공으로 인식해 도파민을 뿜습니다. 평일에는 사냥(검색)을 물리적으로 금지하고, 일요일에 미리 수확해둔 고기(목록)만 소비하는 시스템을 만들어야 전두엽의 결정 에너지를 합격에 온전히 쓸 수 있습니다." 
+                    },
+                    { 
+                        label: "유혹이 올 때마다 합격해야 한다는 의지를 다지며 참는다.", 
+                        isCorrect: false, 
+                        result: "💀 [오답: 신뢰도 5%]\n\n❌ [해설]: 인간의 사냥 본능은 '의지'보다 훨씬 강력한 생존 회로입니다. 본능을 억누르려 하면 뇌 에너지만 낭비될 뿐 결국 패배하게 됩니다. '환경'을 재설계하는 것이 유일한 방법입니다." 
+                    }
+                ]
+            },
+            { 
+                time: "칼럼", 
+                situation: "[정보 유인 신호] 폰을 켜자마자 보이는 화려한 썸네일의 유혹을 물리적으로 거세하는 방법은?", 
+                choices: [
+                    { 
+                        label: "🌑 스마트폰 설정에서 '흑백 모드(Greyscale)'를 상시 가동한다.", 
+                        isCorrect: true, 
+                        result: "🎉 [정답! 신뢰도 95%]\n\n✅ [심층 해설]: <b>구글 윤리 설계자 트리스탄 해리스</b>가 입증한 방법입니다. 뇌는 화려한 색감을 '영양가 높은 열매(Information Scent)'로 인식해 본능적으로 클릭합니다. 화면을 흑백으로 바꾸는 순간 시각적 유인 신호가 사라져 뇌의 탐색 욕구가 급격히 식게 됩니다. 님의 '신규성 추구' 본능에 찬물을 끼얹는 가장 빠르고 강력한 물리적 제동 장치입니다." 
+                    },
+                    { 
+                        label: "폰 배경화면에 '경찰 합격' 문구를 크게 적어둔다.", 
+                        isCorrect: false, 
+                        result: "💀 [오답: 신뢰도 40%]\n\n❌ [해설]: 문구는 시간이 지나면 배경으로 인식되어 뇌가 더 이상 자극을 받지 않습니다(습관화). 물리적인 색감 차단이 뇌의 생물학적 기제를 이기는 데 훨씬 효과적입니다." 
+                    }
+                ]
+            },
+
+
+
+        ]
+    }
+]
+
+    // ⚙️ 시뮬레이터 구동 엔진 (충돌 방지 수정본)
+    let simCurrentScenarioId = null;
+    let simCurrentStep = 0;
+    let currentSimSteps = [];
+
+    function openPasswordModal() {
+        const input = document.getElementById('scenario-pw-input');
+        if(input) input.value = "";
+        document.body.style.overflow = 'hidden';
+        document.getElementById('pw-modal').style.display = 'flex';
+        setTimeout(() => { if(input) input.focus(); }, 100);
+    }
+
+    function checkScenarioPw() {
+        const inputVal = document.getElementById('scenario-pw-input').value;
+        if (inputVal === window.SCENARIO_PASSWORD) {
+            SFX.play('success');
+            document.getElementById('pw-modal').style.display = 'none';
+            renderScenarioList();
+        } else {
+            SFX.play('tap');
+            showToast("❌ 비밀번호가 틀렸습니다.");
+            document.getElementById('scenario-pw-input').value = "";
+        }
+    }
+
+    function renderScenarioList() {
+        const container = document.getElementById('scenario-btn-container');
+        if(!container) return;
+        container.innerHTML = "";
+        
+        SCENARIOS.forEach((scenario, index) => {
+            const btn = document.createElement('button');
+            btn.style.cssText = `width: 100%; padding: 18px; border-radius: 16px; font-size: 16px; font-weight: 900; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; background: ${scenario.btnColor}; color: white; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);`;
+            btn.innerHTML = `<span style="font-size: 17px;">${scenario.title}</span><span style="font-size: 12px; opacity: 0.8;">${scenario.subtitle}</span>`;
+            btn.onclick = () => { SFX.play('tap'); startSimulation(index); };
+            container.appendChild(btn);
+        });
+        document.getElementById('scenario-list-modal').style.display = 'flex';
+    }
+
+    function startSimulation(id) {
+        simCurrentScenarioId = id;
+        simCurrentStep = 0;
+        const scenario = SCENARIOS[id];
+        
+        // 랜덤성 처리 (중요 수정)
+        let stepsCopy = JSON.parse(JSON.stringify(scenario.steps));
+        if (scenario.isRandom && scenario.pickCount) {
+            currentSimSteps = shuffleArray(stepsCopy).slice(0, scenario.pickCount);
+        } else {
+            currentSimSteps = stepsCopy;
+        }
+
+        document.getElementById('scenario-list-modal').style.display = 'none';
+        document.getElementById('sim-player-modal').style.display = 'flex';
+        renderSimStep();
+    }
+
+    function renderSimStep() {
+        const scenario = SCENARIOS[simCurrentScenarioId];
+        const step = currentSimSteps[simCurrentStep];
+        if(!step) return closeSimulation();
+
+        // 진행바 & 텍스트 업데이트
+        const prog = ((simCurrentStep) / currentSimSteps.length) * 100;
+        document.getElementById('sim-progress-fill').style.width = prog + "%";
+        document.getElementById('sim-title').innerText = scenario.title;
+        document.getElementById('sim-time-badge').innerText = "⏰ " + step.time;
+        document.getElementById('sim-situation-text').innerText = step.situation;
+
+        // 선택지 셔플 & 생성
+        const area = document.getElementById('sim-action-area');
+        area.innerHTML = "";
+        area.style.display = "flex";
+        document.getElementById('sim-result-area').style.display = "none";
+
+        let choices = shuffleArray(step.choices);
+        choices.forEach(c => {
+            const btn = document.createElement('button');
+            btn.className = "sim-action-btn";
+            btn.style.borderColor = scenario.btnColor;
+            btn.style.color = scenario.btnColor;
+            btn.innerHTML = "👉 " + c.label;
+            btn.onclick = () => handleChoice(c);
+            area.appendChild(btn);
+        });
+    }
+
+    function handleChoice(choice) {
+        const area = document.getElementById('sim-result-area');
+        const text = document.getElementById('sim-result-text');
+        const nextBtn = document.getElementById('sim-next-btn');
+
+        document.getElementById('sim-action-area').style.display = "none";
+        area.style.display = "block";
+
+        if (choice.isCorrect) {
+            SFX.play('success');
+            area.style.background = "#ecfdf5";
+            area.style.borderColor = "#10b981";
+            text.innerHTML = `<b style="color:#059669;font-size:18px;">🎉 정답!</b><br><br>${choice.result}`;
+            nextBtn.innerText = (simCurrentStep === currentSimSteps.length - 1) ? "📝 총정리 및 종료" : "다음 상황으로 ➡️";
+            nextBtn.onclick = (simCurrentStep === currentSimSteps.length - 1) ? showFinalSummary : () => { simCurrentStep++; renderSimStep(); };
+        } else {
+            SFX.play('tap');
+            area.style.background = "#fef2f2";
+            area.style.borderColor = "#ef4444";
+            text.innerHTML = `<b style="color:#dc2626;font-size:18px;">🚨 오답 (주의!)</b><br><br>${choice.result}`;
+            nextBtn.innerText = "🔄 다시 선택하기";
+            nextBtn.onclick = () => { area.style.display = "none"; document.getElementById('sim-action-area').style.display = "flex"; };
+        }
+    }
+
+    function showFinalSummary() {
+        const scenario = SCENARIOS[simCurrentScenarioId];
+        document.getElementById('sim-progress-fill').style.width = "100%";
+        document.getElementById('sim-situation-text').innerHTML = `<div style="background:#f8fafc; padding:20px; border-radius:12px; line-height:1.6; white-space:pre-wrap;">${scenario.summary}</div>`;
+        document.getElementById('sim-result-area').style.display = "none";
+        document.getElementById('sim-action-area').innerHTML = `<button class="btn-primary" style="background:${scenario.btnColor}" onclick="closeSimulation()">훈련 종료 (목록으로)</button>`;
+        document.getElementById('sim-action-area').style.display = "flex";
+    }
+
+    function closeSimulation() {
+        document.getElementById('sim-player-modal').style.display = 'none';
+        document.getElementById('scenario-list-modal').style.display = 'flex';
+        simCurrentStep = 0;
+    }
+
 </script>
 </body>
 </html>
