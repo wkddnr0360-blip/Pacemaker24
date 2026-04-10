@@ -714,98 +714,99 @@
     function getL(k) { return memCache[activeUser + '_' + k] || localStorage.getItem(activeUser + '_' + k) || null; }
     function removeL(k) { try { delete memCache[activeUser + '_' + k]; DBEngine.remove(activeUser + '_' + k); localStorage.removeItem(activeUser + '_' + k); } catch(e) {} }
 
-function saveUserLocalData(d) {
-        if(d['ddayConfig']) setL('ddayConfig', d['ddayConfig']);
+// [완벽 무결성 패치] 다중 접속 충돌 방지 및 LWW(최종 수정 우선) 엔진
+    function saveUserLocalData(d) {
+        // 1. 로컬 데이터 변경 감지 엔진 (자동 타임스탬프 추적)
+        if (!window.isSetLHooked) {
+            window.isSetLHooked = true;
+            const originalSetL = setL; // 기존 함수 보존
+            let lastIoTime = 0;
+            setL = function(k, v) {
+                // 상태가 바뀔 때마다 '최종 수정 시간'을 갱신 (스톱워치 부하 방지를 위해 2초 스로틀링)
+                if (k !== 'lastUpdateTime' && k !== 'runningState') { 
+                    let now = Date.now();
+                    if (now - lastIoTime > 2000) {
+                        lastIoTime = now;
+                        let nowStr = now.toString();
+                        memCache[activeUser + '_lastUpdateTime'] = nowStr;
+                        try { localStorage.setItem(activeUser + '_lastUpdateTime', nowStr); } catch(e){}
+                    }
+                }
+                originalSetL(k, v);
+            };
+        }
+
+        // 2. 시간 교차 검증 (가장 최근에 만진 기기의 데이터를 100% 신뢰)
+        const cloudTime = parseInt(d.lastUpdateTime || '0');
+        const localTime = parseInt(getL('lastUpdateTime') || '0');
+        const isCloudNewer = cloudTime >= localTime;
+
+        if(d['ddayConfig']) { try { ddayConfig = JSON.parse(d['ddayConfig']); setL('ddayConfig', d['ddayConfig']); } catch(e){} }
         
         const currentLogicDate = Utils.getLogicalDateString();
         const cloudLogicDate = d.lastLogicalDate || currentLogicDate;
 
-        // [동시접속 패치 1] 날짜가 같을 때만 블록 시간 병합 (다르면 엉킴 방지)
+        // 3. 당일 보드 데이터 병합 (목표 해제, 삭제 등 의도적 축소 완벽 지원)
         if (currentLogicDate === cloudLogicDate) {
-            let localBlocks = JSON.parse(getL('blockSeconds') || '[]');
-            let cloudBlocks = d['blockSeconds'] ? JSON.parse(d['blockSeconds']) : [];
-            if (localBlocks.length === 48 && cloudBlocks.length === 48) {
-                // 무조건 공부를 한 쪽(큰 값)을 보존
-                d['blockSeconds'] = JSON.stringify(localBlocks.map((sec, i) => Math.max(sec, cloudBlocks[i])));
+            if (isCloudNewer) {
+                // 클라우드가 최신이면 목표시간 축소(보라색 버튼 해제) 및 시간 리셋 무조건 반영
+                if (d['blockSeconds']) { blockSeconds = JSON.parse(d['blockSeconds']); setL('blockSeconds', d['blockSeconds']); }
+                if (d['targetBlocks']) { targetBlocks = JSON.parse(d['targetBlocks']); setL('targetBlocks', d['targetBlocks']); }
             }
-
-            let localTargets = JSON.parse(getL('targetBlocks') || '[]');
-            let cloudTargets = d['targetBlocks'] ? JSON.parse(d['targetBlocks']) : [];
-            if (localTargets.length === 48 && cloudTargets.length === 48) {
-                // 한 쪽이라도 계획(목표)을 세웠다면 보존
-                d['targetBlocks'] = JSON.stringify(localTargets.map((t, i) => t || cloudTargets[i]));
-            }
+            // 로컬이 최신이면 클라우드의 과거 데이터 무시 (타이머 보호 및 내 변경사항 유지)
         }
 
-        ['blockSeconds', 'targetBlocks', 'backupSeconds', 'alarmedBlocks', 'settings', 'lastLogicalDate'].forEach(k => { 
-            if (d[k] !== undefined && d[k] !== "") setL(k, d[k]); 
+        // 4. 기본 설정 및 배열 반영
+        ['backupSeconds', 'alarmedBlocks', 'settings', 'lastLogicalDate'].forEach(k => { 
+            if (d[k] !== undefined && d[k] !== "") {
+                if (isCloudNewer || !getL(k)) setL(k, d[k]); 
+            }
         });
 
+        // 5. 캘린더 전체 기록 병합
         if (d['dailyRecords']) {
             try {
-                let localRec = JSON.parse(getL('dailyRecords') || '{}'); let cloudRec = JSON.parse(d['dailyRecords'] || '{}');
-                let mergedRec = {}; let allDates = new Set([...Object.keys(localRec), ...Object.keys(cloudRec)]);
+                let localRec = JSON.parse(getL('dailyRecords') || '{}'); 
+                let cloudRec = JSON.parse(d['dailyRecords'] || '{}');
+                let mergedRec = {}; 
+                let allDates = new Set([...Object.keys(localRec), ...Object.keys(cloudRec)]);
                 
-                const parseMins = (str) => {
-                    if(!str) return 0;
-                    let h = parseInt(str.split('h')[0]) || 0;
-                    let m = parseInt((str.split('h')[1] || "").replace('m','').trim()) || 0;
-                    return h * 60 + m;
-                };
-
-                // [동시접속 패치 2] 텍스트 유실 방지 헬퍼 (더 긴 내용을 보존)
-                const mergeText = (lText, cText) => {
-                    let l = (lText || "").trim(); let c = (cText || "").trim();
-                    if (!l) return c; if (!c) return l;
-                    return l.length >= c.length ? l : c; 
-                };
-
                 allDates.forEach(date => {
-                    let l = localRec[date] || {}; let c = cloudRec[date] || {};
-                    let lTotalMins = parseMins(l.totalTime); let cTotalMins = parseMins(c.totalTime);
-                    let lTargetMins = parseMins(l.targetTime); let cTargetMins = parseMins(c.targetTime);
-
-                    mergedRec[date] = {
-                        totalTime: lTotalMins >= cTotalMins ? (l.totalTime || "00h 00m") : c.totalTime,
-                        targetTime: lTargetMins >= cTargetMins ? (l.targetTime || "00h 00m") : c.targetTime,
-                        details: (c.details && c.details.length >= (l.details ? l.details.length : 0)) ? c.details : (l.details || []),
-                        diary: mergeText(l.diary, c.diary),
-                        todo: mergeText(l.todo, c.todo)
-                    };
+                    let l = localRec[date]; let c = cloudRec[date];
+                    if (!l) { mergedRec[date] = c; return; }
+                    if (!c) { mergedRec[date] = l; return; }
+                    
+                    // 오늘 기록은 최신 수정 시간을 따르고, 과거 기록은 서버 백업본을 신뢰
+                    mergedRec[date] = (date === currentLogicDate && !isCloudNewer) ? l : c;
                 });
+                dailyRecords = mergedRec;
                 setL('dailyRecords', JSON.stringify(mergedRec));
             } catch(e) {}
         }
         
+        // 6. 텍스트 메모 리셋 및 삭제 반영
         for (let i=0; i<48; i++) { 
-            let n = d[`note_${i}`]; 
-            let localN = getL(`note_${i}`);
-            if (!n || n === "null") n = "";
-            if (!localN || localN === "null") localN = "";
-            
-            // [동시접속 패치 3] 구간 메모도 더 긴 텍스트를 보존하여 유실 차단
-            let finalNote = (localN.length >= n.length) ? localN : n;
-            
-            if (finalNote.trim() !== "") setL(`note_${i}`, finalNote); 
-            else removeL(`note_${i}`); 
+            let n = (d[`note_${i}`] || "").trim(); 
+            if (isCloudNewer) {
+                if (n !== "" && n !== "null") setL(`note_${i}`, n); 
+                else removeL(`note_${i}`); // 다른 기기에서 메모를 지웠다면 똑같이 지움
+            }
         }
+        updateUI(true); // 데이터 동기화 직후 즉시 화면 리프레시
     }
 
     function getUserLocalData() {
         const backup = { runningState: JSON.stringify({ isRunning: isRunning, startTime: isRunning ? lastTickTime : 0 }) };
+        backup['lastUpdateTime'] = getL('lastUpdateTime') || Date.now().toString(); // 나의 최신 수정 시간표표표 전송
         backup['ddayConfig'] = getL('ddayConfig') || "";
         ['blockSeconds', 'targetBlocks', 'backupSeconds', 'dailyRecords', 'alarmedBlocks', 'settings', 'lastLogicalDate'].forEach(k => { backup[k] = getL(k) || ""; });
         for (let i=0; i<48; i++) { let n = getL(`note_${i}`); backup[`note_${i}`] = (!n || n === "null" || n.trim() === "") ? "" : n; }
         return backup;
     }
 
-    // ==========================================
-    // ☁️ 4. 서버 동기화 및 오프라인 방어 로직
-    // ==========================================
     async function fetchServer(action, dataObj = null, customId = null, retries = 3) {
         const uid = customId || activeUser;
         const body = { userId: uid, password: activePw, action: action, data: dataObj };
-        
         for (let i = 0; i < retries; i++) {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 8000); 
@@ -815,18 +816,12 @@ function saveUserLocalData(d) {
                     body: JSON.stringify(body), signal: controller.signal
                 });
                 clearTimeout(timeoutId);
-                
-                // [안정성 패치] 서버가 JSON이 아닌 에러 페이지(HTML) 반환 시 앱 크래시 방어
                 const text = await res.text();
-                try {
-                    return JSON.parse(text);
-                } catch(parseError) {
-                    throw new Error("JSON Parse Error");
-                }
+                try { return JSON.parse(text); } catch(e) { throw new Error("Server Response Error"); } // 파싱 에러 시 크래시 방어
             } catch(e) { 
                 clearTimeout(timeoutId);
-                if (i === retries - 1) return { success: false, message: "네트워크 불안정 또는 파싱 오류" };
-                await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+                if (i === retries - 1) return { success: false, message: "통신 장애" };
+                await new Promise(r => setTimeout(r, 1000 * (i + 1))); // 재시도 백오프 로직
             }
         }
         return { success: false, message: "서버 혼잡" };
