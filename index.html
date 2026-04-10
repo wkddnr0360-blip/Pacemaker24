@@ -19,7 +19,7 @@
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <style>
-    /* 기존 CSS 스타일 유지 (변경 없음) */
+    /* 기존 CSS 스타일 유지 */
     :root { 
         --primary: #3b82f6; --primary-dark: #2563eb; --bg: #f8fafc; 
         --surface: #ffffff; --text-main: #1e293b; --text-muted: #64748b; 
@@ -179,7 +179,7 @@
     #ic-total { font-size:190px; font-weight:900; line-height:1; letter-spacing:-4px; white-space: nowrap; }
     #ic-heatmap-grid { display: flex !important; flex-wrap: wrap !important; gap: 12px !important; width: 100% !important; justify-content: flex-start !important; align-content: flex-start; }
 
-    /* 시뮬레이션 전용 스타일 (V2) */
+    /* 시뮬레이션 전용 스타일 */
     #pw-modal, #scenario-list-modal { z-index: 2300; }
     #sim-player-modal { z-index: 2400; }
     .sim-progress-bar { height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; margin-bottom: 20px; }
@@ -371,8 +371,8 @@
         </div>
         <div style="max-height: 55vh; overflow-y: auto; padding-right: 5px;">
             <div class="guide-box success">
-                <div class="guide-title">🛡️ 0.6.1 데이터 무손실 패치</div>
-                <div class="guide-desc">• 서버 접속 실패 시 강제 초기화 방지 및 오프라인 구동 지원.<br>• 자정(새벽 5시) 전환 시 타이머 중복 계산 버그 수정.</div>
+                <div class="guide-title">🛡️ 0.6.5 동시접속 하이브리드 패치</div>
+                <div class="guide-desc">• 다중 기기 접속 시 시간 유실 차단<br>• 모바일 환경 통신 장애 및 무한 튕김 해결.</div>
             </div>
             <div class="guide-box success">
                 <div class="guide-title">🚀 0.6.0 훈련 엔진 탑재</div>
@@ -547,7 +547,7 @@
     // ==========================================
     // 📦 1. 시스템 설정 및 전역 변수
     // ==========================================
-    const APP_VERSION = "0.6.1 데이터 무손실 패치"; 
+    const APP_VERSION = "0.6.5 동시접속 완벽 하이브리드 패치"; 
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWentq5xmJFB_UL4EWPL7KEknxY9Em9eIYX5CoWfDMh_WooUKk1n63-8gbLFpcu8Oe/exec";
     
     let activeUser = localStorage.getItem('activeUser');
@@ -568,7 +568,7 @@
     let currentRenderDate = new Date();
 
     // ==========================================
-    // 🛠️ 2. 유틸리티 및 시스템 함수 (순서 수정됨!)
+    // 🛠️ 2. 유틸리티 및 시스템 함수
     // ==========================================
     const Utils = {
         pad: (num) => String(num).padStart(2, '0'),
@@ -587,7 +587,6 @@
         getLogicalDateString: () => Utils.getRelativeDateString(0)
     };
 
-    // 🚨 Utils 도구가 준비된 후 시간을 계산하도록 위치 변경
     const timeData = Array.from({ length: 48 }, (_, i) => {
         let h = (5 + Math.floor(i * 30 / 60)) % 24; let m = (i * 30) % 60;
         return { time: `${Utils.pad(h)}:${Utils.pad(m)}` };
@@ -714,11 +713,10 @@
     function getL(k) { return memCache[activeUser + '_' + k] || localStorage.getItem(activeUser + '_' + k) || null; }
     function removeL(k) { try { delete memCache[activeUser + '_' + k]; DBEngine.remove(activeUser + '_' + k); localStorage.removeItem(activeUser + '_' + k); } catch(e) {} }
 
-// [완벽 무결성 패치 v3] 백화현상(White Screen) 원천 차단 및 무적 파싱 엔진
+    // [하이브리드 병합 엔진] : 절대 날아가지 않는 시간 보호막 적용
     function saveUserLocalData(d) {
         if (!d) return;
 
-        // 안전한 파싱 헬퍼 (이미 객체/배열인 데이터를 다시 파싱해 앱이 튕기는 현상 완벽 방어)
         const safeParse = (val, fallback) => {
             if (!val) return fallback;
             if (typeof val === 'string') {
@@ -746,7 +744,7 @@
 
         const cloudTime = parseInt(d.lastUpdateTime || '0');
         const localTime = parseInt(getL('lastUpdateTime') || '0');
-        const isCloudNewer = cloudTime >= localTime;
+        const isCloudNewer = cloudTime > localTime;
 
         if(d['ddayConfig']) { 
             let parsedDday = safeParse(d['ddayConfig'], {title:"", date:""});
@@ -758,44 +756,54 @@
         const cloudLogicDate = d.lastLogicalDate || currentLogicDate;
 
         if (currentLogicDate === cloudLogicDate) {
-            if (isCloudNewer) {
-                if (d['blockSeconds']) { 
-                    blockSeconds = safeParse(d['blockSeconds'], Array(48).fill(0)); 
-                    setL('blockSeconds', JSON.stringify(blockSeconds)); 
-                }
-                if (d['targetBlocks']) { 
-                    targetBlocks = safeParse(d['targetBlocks'], Array(48).fill(false)); 
-                    setL('targetBlocks', JSON.stringify(targetBlocks)); 
-                }
-            }
+            // [시간과 목표는 무조건 하이브리드 병합 (Math.max & 논리합)]
+            let localBlocks = safeParse(getL('blockSeconds'), Array(48).fill(0));
+            let cloudBlocks = safeParse(d['blockSeconds'], Array(48).fill(0));
+            blockSeconds = localBlocks.map((sec, i) => Math.max(sec, cloudBlocks[i] || 0));
+            setL('blockSeconds', JSON.stringify(blockSeconds)); 
+            
+            let localTargets = safeParse(getL('targetBlocks'), Array(48).fill(false));
+            let cloudTargets = safeParse(d['targetBlocks'], Array(48).fill(false));
+            targetBlocks = localTargets.map((t, i) => t || cloudTargets[i] || false);
+            setL('targetBlocks', JSON.stringify(targetBlocks)); 
         }
 
+        // [설정값 및 나머지 배열들 적용]
         ['backupSeconds', 'alarmedBlocks', 'settings', 'lastLogicalDate'].forEach(k => { 
             if (d[k] !== undefined && d[k] !== "") {
                 if (isCloudNewer || !getL(k)) setL(k, typeof d[k] === 'object' ? JSON.stringify(d[k]) : d[k]); 
             }
         });
 
+        // [캘린더 기록 병합]
         if (d['dailyRecords']) {
             try {
                 let localRec = safeParse(getL('dailyRecords'), {}); 
                 let cloudRec = safeParse(d['dailyRecords'], {});
                 let mergedRec = {}; 
                 let allDates = new Set([...Object.keys(localRec), ...Object.keys(cloudRec)]);
+                
                 allDates.forEach(date => {
                     let l = localRec[date]; let c = cloudRec[date];
                     if (!l) { mergedRec[date] = c; return; }
                     if (!c) { mergedRec[date] = l; return; }
-                    mergedRec[date] = (date === currentLogicDate && !isCloudNewer) ? l : c;
+                    
+                    if (date === currentLogicDate) {
+                        mergedRec[date] = l; 
+                        if (isCloudNewer) { mergedRec[date].diary = c.diary; mergedRec[date].todo = c.todo; }
+                    } else {
+                        mergedRec[date] = isCloudNewer ? c : l;
+                    }
                 });
                 dailyRecords = mergedRec;
                 setL('dailyRecords', JSON.stringify(mergedRec));
             } catch(e) {}
         }
         
+        // [노트는 LWW 적용]
         for (let i=0; i<48; i++) { 
-            let n = (d[`note_${i}`] || "").trim(); 
             if (isCloudNewer) {
+                let n = (d[`note_${i}`] || "").trim(); 
                 if (n !== "" && n !== "null") setL(`note_${i}`, n); 
                 else removeL(`note_${i}`); 
             }
@@ -812,16 +820,21 @@
         return backup;
     }
 
+    // [네트워크 안정성 강화] 모바일 환경 캐시 무시 및 타임아웃 15초 연장
     async function fetchServer(action, dataObj = null, customId = null, retries = 3) {
         const uid = customId || activeUser;
         const body = { userId: uid, password: activePw, action: action, data: dataObj };
         for (let i = 0; i < retries; i++) {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 8000); 
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15초 대기 
             try {
                 const res = await fetch(SCRIPT_URL, { 
-                    redirect: "follow", method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, 
-                    body: JSON.stringify(body), signal: controller.signal
+                    redirect: "follow", 
+                    method: "POST", 
+                    headers: { "Content-Type": "text/plain;charset=utf-8", "Cache-Control": "no-cache, no-store, must-revalidate" }, 
+                    body: JSON.stringify(body), 
+                    signal: controller.signal,
+                    cache: "no-store" 
                 });
                 clearTimeout(timeoutId);
                 const text = await res.text();
@@ -923,7 +936,6 @@
         else syncTimer = setTimeout(() => performSync(), 3000); 
     }
 
-  // 안전한 데이터 파싱 헬퍼 (구글 서버 혼잡 시 HTML 에러 응답으로 인한 앱 튕김 완벽 방어)
     const safeDataParse = (data) => {
         if (!data || data === "{}" || data === "null") return null;
         if (typeof data === 'object') return data;
@@ -999,7 +1011,6 @@
         } 
         else if (document.visibilityState === "visible") {
             if (isRunning) {
-                // 화면이 다시 켜졌을 때, 꺼져있던 시간만큼 타이머 단숨에 복구 (절대시간 동기화)
                 const now = Date.now(); const passedSecs = Math.floor((now - lastTickTime) / 1000);
                 if (passedSecs >= 1) { 
                     distributeTime(lastTickTime, passedSecs); 
@@ -1075,7 +1086,7 @@
             if(wasRunning) {
                 const now = Date.now(); const passedSecs = Math.floor((now - lastTickTime) / 1000);
                 if (passedSecs > 0) { distributeTime(lastTickTime, passedSecs); setL('blockSeconds', JSON.stringify(blockSeconds)); }
-                stopStopwatch(); // 날짜 변경 시 타이머 중복 방지를 위한 셧다운
+                stopStopwatch(); 
                 showToast("📅 새벽 5시 리셋으로 타이머가 일시 정지되었습니다.");
             }
 
@@ -1617,7 +1628,7 @@
     }
 
     // ==========================================
-    // 🧠 7. 시뮬레이터 로직 및 깨끗한 데이터(SCENARIOS) 
+    // 🧠 7. 시뮬레이터 로직
     // ==========================================
     window.SCENARIO_PASSWORD = "036003";
 
@@ -1691,7 +1702,6 @@
         const area = document.getElementById('sim-result-area'); const text = document.getElementById('sim-result-text'); const nextBtn = document.getElementById('sim-next-btn');
         document.getElementById('sim-action-area').style.display = "none"; area.style.display = "block";
 
-        // 다이어트식 마크다운 렌더러: 줄바꿈은 <br>로, **강조**는 <b>강조</b>로 자동 변환합니다.
         let cleanResult = choice.result.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
 
         if (choice.isCorrect) {
@@ -1719,10 +1729,6 @@
         document.getElementById('sim-player-modal').style.display = 'none'; document.getElementById('scenario-list-modal').style.display = 'flex'; simCurrentStep = 0;
     }
 
-    // ==========================================
-    // 📚 8. 깔끔해진 SCENARIOS 데이터 
-    // ==========================================
-    // (이제 **텍스트** 로 강조할 수 있고, 엔터는 자동으로 줄바꿈 처리됩니다)
     const SCENARIOS = [
         {
             id: 0,
@@ -1793,7 +1799,7 @@
                 {
                     time: "돌발", situation: "시험이 다가오는데 모의고사 점수가 안 올라 불안감에 심장이 뜁니다.", choices: [
                         { label: "불안감을 잊기 위해 잠을 줄이고 문제풀이 양을 2배로 늘린다.", isCorrect: false, result: "💀 [오답 노트]\n수면 부족 + 스트레스는 코르티솔 수치를 급증시켜 해마를 마비시킵니다. 밑빠진 독에 물 붓기입니다." },
-                        { label: "✍️ 백지를 꺼내 내 감정과 약점을 5분간 객관적으로 쏟아내 적는다.", isCorrect: true, result: "✅ [정답 해설] (신뢰도 94%)\n**[제임스 페네베이커 연구]** 억눌린 감정을 글로 시각화하면, 뇌는 이를 '통제 가능한 문제'로 인식하여 즉각적으로 편도체(불안 센터)를 진정시킵니다." }
+                        { label: "✍️ 백지를 꺼내 내 감정과 약점을 5분간 객관적으로 쏟아내 적는다.", isCorrect: true, result: "✅ [정답 해설] (신뢰도 94%)\n**[제임스 페네베이커 연구]** 억눌린 감정을 글로 시각화하면, 뇌는 이를 '통제 가능한 문제'로 인식하여 즉각적으로 편도체(불안 센터) 진정시킵니다." }
                     ]
                 }
             ]
