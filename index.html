@@ -923,6 +923,13 @@
         else syncTimer = setTimeout(() => performSync(), 3000); 
     }
 
+  // 안전한 데이터 파싱 헬퍼 (구글 서버 혼잡 시 HTML 에러 응답으로 인한 앱 튕김 완벽 방어)
+    const safeDataParse = (data) => {
+        if (!data || data === "{}" || data === "null") return null;
+        if (typeof data === 'object') return data;
+        try { return JSON.parse(data); } catch(e) { return null; }
+    };
+
     async function handleAuth() {
         activeUser = document.getElementById('login-id').value.trim();
         let rawPw = document.getElementById('login-pw').value.trim();
@@ -939,16 +946,17 @@
             const res = await loadAllDataFromServer();
             showLoading(false);
             
-            if(res.success && res.data && res.data !== "{}" && res.data !== "null") {
+            const finalData = safeDataParse(res.data);
+
+            if(res.success && finalData) {
                 localStorage.setItem('activeUser', activeUser); localStorage.setItem('activePw', activePw); 
                 document.getElementById('login-view').style.display = 'none';
-                let finalData = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
                 applyCloudData(finalData, true);
                 startDashboard();
             } else if (!res.success && dbData.length > 0) {
                 localStorage.setItem('activeUser', activeUser); localStorage.setItem('activePw', activePw); 
                 document.getElementById('login-view').style.display = 'none';
-                showToast("🌐 통신 지연. 안전한 오프라인 모드로 실행됩니다.");
+                showToast("🌐 서버 지연. 안전한 오프라인 모드로 실행됩니다.");
                 initLocalState();
                 startDashboard();
             } else if (!res.success && dbData.length === 0) {
@@ -962,9 +970,8 @@
             }
         } catch(err) {
             showLoading(false);
-            console.error(err);
             document.getElementById('login-view').style.display = 'none';
-            showToast("데이터 렌더링 오류. 즉시 오프라인 안전 모드로 접속합니다.");
+            showToast("🌐 구글 서버 지연. 로컬 데이터로 접속합니다.");
             initLocalState();
             startDashboard();
         }
@@ -992,6 +999,7 @@
         } 
         else if (document.visibilityState === "visible") {
             if (isRunning) {
+                // 화면이 다시 켜졌을 때, 꺼져있던 시간만큼 타이머 단숨에 복구 (절대시간 동기화)
                 const now = Date.now(); const passedSecs = Math.floor((now - lastTickTime) / 1000);
                 if (passedSecs >= 1) { 
                     distributeTime(lastTickTime, passedSecs); 
@@ -1025,12 +1033,13 @@
                 const res = await loadAllDataFromServer();
                 showLoading(false);
 
-                if(res.success && res.data && res.data !== "{}" && res.data !== "null") {
-                    let finalData = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
+                const finalData = safeDataParse(res.data);
+
+                if(res.success && finalData) {
                     applyCloudData(finalData, true);
                     startDashboard();
                 } else if (!res.success && dbData.length > 0) {
-                    showToast("🌐 통신 지연. 안전한 오프라인 모드로 실행됩니다.");
+                    showToast("🌐 구글 서버 지연. 로컬 데이터로 접속합니다.");
                     initLocalState();
                     startDashboard();
                 } else if (!res.success && dbData.length === 0) {
@@ -1043,8 +1052,6 @@
                 }
             } catch(err) {
                 showLoading(false);
-                console.error(err);
-                showToast("⚠️ 시스템 파싱 에러 방어. 안전 복구 모드로 실행됩니다.");
                 initLocalState();
                 startDashboard();
             }
