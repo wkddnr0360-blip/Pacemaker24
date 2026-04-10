@@ -714,15 +714,23 @@
     function getL(k) { return memCache[activeUser + '_' + k] || localStorage.getItem(activeUser + '_' + k) || null; }
     function removeL(k) { try { delete memCache[activeUser + '_' + k]; DBEngine.remove(activeUser + '_' + k); localStorage.removeItem(activeUser + '_' + k); } catch(e) {} }
 
-// [완벽 무결성 패치 v2] 다중 접속 충돌 방지 및 LWW(최종 수정 우선) 엔진
+// [완벽 무결성 패치 v3] 백화현상(White Screen) 원천 차단 및 무적 파싱 엔진
     function saveUserLocalData(d) {
-        // 1. 로컬 데이터 변경 감지 엔진 (자동 타임스탬프 추적)
+        if (!d) return;
+
+        // 안전한 파싱 헬퍼 (이미 객체/배열인 데이터를 다시 파싱해 앱이 튕기는 현상 완벽 방어)
+        const safeParse = (val, fallback) => {
+            if (!val) return fallback;
+            if (typeof val === 'string') {
+                try { return JSON.parse(val); } catch(e) { return fallback; }
+            }
+            return val;
+        };
+
         if (!window.isStorageHooked) {
             window.isStorageHooked = true;
-            const originalSetL = setL; 
-            const originalRemoveL = removeL;
+            const originalSetL = setL; const originalRemoveL = removeL;
             let lastIoTime = 0;
-            
             const updateTime = () => {
                 let now = Date.now();
                 if (now - lastIoTime > 2000) {
@@ -732,58 +740,52 @@
                     try { localStorage.setItem(activeUser + '_lastUpdateTime', nowStr); } catch(e){}
                 }
             };
-
-            setL = function(k, v) {
-                if (k !== 'lastUpdateTime' && k !== 'runningState') updateTime();
-                originalSetL(k, v);
-            };
-            
-            removeL = function(k) {
-                if (k !== 'lastUpdateTime' && k !== 'runningState') updateTime();
-                originalRemoveL(k);
-            };
+            setL = function(k, v) { if (k !== 'lastUpdateTime' && k !== 'runningState') updateTime(); originalSetL(k, v); };
+            removeL = function(k) { if (k !== 'lastUpdateTime' && k !== 'runningState') updateTime(); originalRemoveL(k); };
         }
 
-        // 2. 시간 교차 검증 (가장 최근에 만진 기기의 데이터를 100% 신뢰)
         const cloudTime = parseInt(d.lastUpdateTime || '0');
         const localTime = parseInt(getL('lastUpdateTime') || '0');
         const isCloudNewer = cloudTime >= localTime;
 
-        if(d['ddayConfig']) { try { ddayConfig = JSON.parse(d['ddayConfig']); setL('ddayConfig', d['ddayConfig']); } catch(e){} }
+        if(d['ddayConfig']) { 
+            let parsedDday = safeParse(d['ddayConfig'], {title:"", date:""});
+            ddayConfig = parsedDday; 
+            setL('ddayConfig', JSON.stringify(parsedDday));
+        }
         
         const currentLogicDate = Utils.getLogicalDateString();
         const cloudLogicDate = d.lastLogicalDate || currentLogicDate;
 
-        // 3. 당일 보드 데이터 병합 (목표 해제, 삭제 등 의도적 축소 완벽 지원)
         if (currentLogicDate === cloudLogicDate) {
             if (isCloudNewer) {
-                // 클라우드가 최신이면 목표시간 축소(보라색 버튼 해제) 및 시간 리셋 무조건 반영
-                if (d['blockSeconds']) { blockSeconds = JSON.parse(d['blockSeconds']); setL('blockSeconds', d['blockSeconds']); }
-                if (d['targetBlocks']) { targetBlocks = JSON.parse(d['targetBlocks']); setL('targetBlocks', d['targetBlocks']); }
+                if (d['blockSeconds']) { 
+                    blockSeconds = safeParse(d['blockSeconds'], Array(48).fill(0)); 
+                    setL('blockSeconds', JSON.stringify(blockSeconds)); 
+                }
+                if (d['targetBlocks']) { 
+                    targetBlocks = safeParse(d['targetBlocks'], Array(48).fill(false)); 
+                    setL('targetBlocks', JSON.stringify(targetBlocks)); 
+                }
             }
         }
 
-        // 4. 기본 설정 및 배열 반영
         ['backupSeconds', 'alarmedBlocks', 'settings', 'lastLogicalDate'].forEach(k => { 
             if (d[k] !== undefined && d[k] !== "") {
-                if (isCloudNewer || !getL(k)) setL(k, d[k]); 
+                if (isCloudNewer || !getL(k)) setL(k, typeof d[k] === 'object' ? JSON.stringify(d[k]) : d[k]); 
             }
         });
 
-        // 5. 캘린더 전체 기록 병합
         if (d['dailyRecords']) {
             try {
-                let localRec = JSON.parse(getL('dailyRecords') || '{}'); 
-                let cloudRec = JSON.parse(d['dailyRecords'] || '{}');
+                let localRec = safeParse(getL('dailyRecords'), {}); 
+                let cloudRec = safeParse(d['dailyRecords'], {});
                 let mergedRec = {}; 
                 let allDates = new Set([...Object.keys(localRec), ...Object.keys(cloudRec)]);
-                
                 allDates.forEach(date => {
                     let l = localRec[date]; let c = cloudRec[date];
                     if (!l) { mergedRec[date] = c; return; }
                     if (!c) { mergedRec[date] = l; return; }
-                    
-                    // 오늘 기록은 최신 수정 시간을 따르고, 과거 기록은 서버 백업본을 신뢰
                     mergedRec[date] = (date === currentLogicDate && !isCloudNewer) ? l : c;
                 });
                 dailyRecords = mergedRec;
@@ -791,15 +793,14 @@
             } catch(e) {}
         }
         
-        // 6. 텍스트 메모 리셋 및 삭제 반영
         for (let i=0; i<48; i++) { 
             let n = (d[`note_${i}`] || "").trim(); 
             if (isCloudNewer) {
                 if (n !== "" && n !== "null") setL(`note_${i}`, n); 
-                else removeL(`note_${i}`); // 다른 기기에서 메모를 지웠다면 똑같이 지움
+                else removeL(`note_${i}`); 
             }
         }
-        updateUI(true); // 데이터 동기화 직후 즉시 화면 리프레시
+        updateUI(true); 
     }
 
     function getUserLocalData() {
@@ -824,7 +825,7 @@
                 });
                 clearTimeout(timeoutId);
                 const text = await res.text();
-                try { return JSON.parse(text); } catch(e) { throw new Error("Server Response Error"); } 
+                try { return JSON.parse(text); } catch(e) { throw new Error("Parse Fail"); } 
             } catch(e) { 
                 clearTimeout(timeoutId);
                 if (i === retries - 1) return { success: false, message: "통신 장애" };
@@ -853,15 +854,22 @@
     async function loadAllDataFromServer() {
         let res = await fetchServer("login_load");
         if (!res.success || !res.data) return res;
-        let parsed;
-        try { parsed = JSON.parse(res.data); } catch(e) { return { success: true, data: res.data }; }
-        if (parsed && parsed.type === "single") { return { success: true, data: parsed.content }; } 
-        else if (parsed && parsed.type === "master") {
-            let count = parsed.chunkCount; let fullStr = "";
+        
+        let dataObj = typeof res.data === 'string' ? null : res.data;
+        if (!dataObj) {
+            try { dataObj = JSON.parse(res.data); } catch(e) { return { success: true, data: res.data }; }
+        }
+
+        if (dataObj && dataObj.type === "single") { 
+            return { success: true, data: dataObj.content }; 
+        } else if (dataObj && dataObj.type === "master") {
+            let count = dataObj.chunkCount; let fullStr = "";
             for (let i = 0; i < count; i++) {
                 let cRes = await fetchServer("login_load", null, activeUser + "_p" + i);
-                if (cRes.success && cRes.data) { let cParsed = JSON.parse(cRes.data); fullStr += cParsed.content; } 
-                else return { success: false, message: "분할 데이터 로드 실패" };
+                if (cRes.success && cRes.data) { 
+                    let cParsed = typeof cRes.data === 'string' ? JSON.parse(cRes.data) : cRes.data; 
+                    fullStr += (cParsed.content || ""); 
+                } else return { success: false, message: "분할 데이터 로드 실패" };
             }
             return { success: true, data: fullStr };
         } 
@@ -878,9 +886,11 @@
         showLoading(true, "데이터 최신화 중... ☁️");
         try {
             const res = await loadAllDataFromServer();
-            if (res.success && res.data && res.data !== "{}") { applyCloudData(JSON.parse(res.data), silent, true); } 
-            else { if (!silent) { SFX.play('tap'); showToast("❌ 최신 데이터를 불러오지 못했습니다."); } }
-        } catch(e) { if (!silent) showToast("❌ 통신 상태가 원활하지 않습니다."); } 
+            if (res.success && res.data && res.data !== "{}" && res.data !== "null") { 
+                let finalData = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
+                applyCloudData(finalData, silent, true); 
+            } else { if (!silent) { SFX.play('tap'); showToast("❌ 최신 데이터를 불러오지 못했습니다."); } }
+        } catch(e) { if (!silent) showToast("❌ 데이터 파싱 오류 발생. 오프라인 기록을 유지합니다."); } 
         finally { showLoading(false); if(ind) ind.innerText = ""; isSyncing = false; }
     }
 
@@ -925,38 +935,41 @@
         let dbData = await DBEngine.getAll(activeUser + '_');
         dbData.forEach(item => memCache[item.id] = item.value);
 
-        const res = await loadAllDataFromServer();
-        showLoading(false);
-        
-        // 데이터 무손실 패치 적용 구역
-        if(res.success && res.data && res.data !== "{}") {
-            localStorage.setItem('activeUser', activeUser); localStorage.setItem('activePw', activePw); 
+        try {
+            const res = await loadAllDataFromServer();
+            showLoading(false);
+            
+            if(res.success && res.data && res.data !== "{}" && res.data !== "null") {
+                localStorage.setItem('activeUser', activeUser); localStorage.setItem('activePw', activePw); 
+                document.getElementById('login-view').style.display = 'none';
+                let finalData = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
+                applyCloudData(finalData, true);
+                startDashboard();
+            } else if (!res.success && dbData.length > 0) {
+                localStorage.setItem('activeUser', activeUser); localStorage.setItem('activePw', activePw); 
+                document.getElementById('login-view').style.display = 'none';
+                showToast("🌐 통신 지연. 안전한 오프라인 모드로 실행됩니다.");
+                initLocalState();
+                startDashboard();
+            } else if (!res.success && dbData.length === 0) {
+                statusEl.innerText = res.message || "서버 통신에 실패했습니다."; SFX.play('tap');
+                activeUser = null; activePw = null; 
+            } else {
+                localStorage.setItem('activeUser', activeUser); localStorage.setItem('activePw', activePw); 
+                document.getElementById('login-view').style.display = 'none';
+                initLocalState(); 
+                startDashboard();
+            }
+        } catch(err) {
+            showLoading(false);
+            console.error(err);
             document.getElementById('login-view').style.display = 'none';
-            applyCloudData(JSON.parse(res.data), true);
-            startDashboard();
-        } else if (!res.success && dbData.length > 0) {
-            // 통신 실패 + 기기 내 로컬 데이터 존재 = 오프라인 구동
-            localStorage.setItem('activeUser', activeUser); localStorage.setItem('activePw', activePw); 
-            document.getElementById('login-view').style.display = 'none';
-            showToast("🌐 통신 지연. 안전한 오프라인 모드로 실행됩니다.");
+            showToast("데이터 렌더링 오류. 즉시 오프라인 안전 모드로 접속합니다.");
             initLocalState();
-            startDashboard();
-        } else if (!res.success && dbData.length === 0) {
-            // 첫 로그인인데 통신 실패
-            statusEl.innerText = res.message || "서버 통신에 실패했습니다."; SFX.play('tap');
-            activeUser = null; activePw = null; 
-        } else {
-            // 서버 연결 완료, 새 계정 시작
-            localStorage.setItem('activeUser', activeUser); localStorage.setItem('activePw', activePw); 
-            document.getElementById('login-view').style.display = 'none';
-            initLocalState(); 
             startDashboard();
         }
     }
 
-    // ==========================================
-    // ⏰ 5. 생명주기 및 시간 관리
-    // ==========================================
     window.addEventListener('beforeunload', (e) => { 
         if (isRunning) { e.preventDefault(); e.returnValue = ''; }
         if (activeUser && activePw) {
@@ -987,7 +1000,7 @@
                     saveAndRefresh(); 
                 }
             } else if (activeUser && activePw && navigator.onLine && !isSyncing) {
-                triggerAutoSync(); // 복귀 시 가벼운 동기화 체크
+                triggerAutoSync(); 
             }
             checkNewDay(); updateDashboardTodoAlert(); 
         }
@@ -1007,25 +1020,38 @@
 
             document.getElementById('login-view').style.display = 'none';
             showLoading(true, "데이터 불러오는 중... 🛰️");
-            const res = await loadAllDataFromServer();
-            showLoading(false);
+            
+            try {
+                const res = await loadAllDataFromServer();
+                showLoading(false);
 
-            if(res.success && res.data && res.data !== "{}") {
-                applyCloudData(JSON.parse(res.data), true);
-                startDashboard();
-            } else if (!res.success && dbData.length > 0) {
-                showToast("🌐 통신 지연. 안전한 오프라인 모드로 실행됩니다.");
+                if(res.success && res.data && res.data !== "{}" && res.data !== "null") {
+                    let finalData = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
+                    applyCloudData(finalData, true);
+                    startDashboard();
+                } else if (!res.success && dbData.length > 0) {
+                    showToast("🌐 통신 지연. 안전한 오프라인 모드로 실행됩니다.");
+                    initLocalState();
+                    startDashboard();
+                } else if (!res.success && dbData.length === 0) {
+                    document.getElementById('login-view').style.display = 'flex';
+                    document.getElementById('login-status').innerText = "통신 실패. 네트워크 연결 후 로그인해주세요.";
+                    activeUser = null; activePw = null;
+                } else {
+                    initLocalState(); 
+                    startDashboard();
+                }
+            } catch(err) {
+                showLoading(false);
+                console.error(err);
+                showToast("⚠️ 시스템 파싱 에러 방어. 안전 복구 모드로 실행됩니다.");
                 initLocalState();
                 startDashboard();
-            } else if (!res.success && dbData.length === 0) {
-                document.getElementById('login-view').style.display = 'flex';
-                document.getElementById('login-status').innerText = "통신 실패. 네트워크 연결 후 로그인해주세요.";
-                activeUser = null; activePw = null;
-            } else {
-                initLocalState(); 
-                startDashboard();
             }
-        } else { document.getElementById('loading-overlay').style.display = 'none'; document.getElementById('login-view').style.display = 'flex'; }
+        } else { 
+            document.getElementById('loading-overlay').style.display = 'none'; 
+            document.getElementById('login-view').style.display = 'flex'; 
+        }
     }
 
     window.addEventListener('online', () => { 
