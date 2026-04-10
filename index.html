@@ -713,14 +713,14 @@
     function getL(k) { return memCache[activeUser + '_' + k] || localStorage.getItem(activeUser + '_' + k) || null; }
     function removeL(k) { try { delete memCache[activeUser + '_' + k]; DBEngine.remove(activeUser + '_' + k); localStorage.removeItem(activeUser + '_' + k); } catch(e) {} }
 
-    // [하이브리드 병합 엔진] : 절대 날아가지 않는 시간 보호막 적용
+   // [심층 패치 1] Null 폭발 방어 적용 완료
     function saveUserLocalData(d) {
         if (!d) return;
 
         const safeParse = (val, fallback) => {
-            if (!val) return fallback;
+            if (!val || val === "null") return fallback;
             if (typeof val === 'string') {
-                try { return JSON.parse(val); } catch(e) { return fallback; }
+                try { let p = JSON.parse(val); return p === null ? fallback : p; } catch(e) { return fallback; }
             }
             return val;
         };
@@ -756,7 +756,6 @@
         const cloudLogicDate = d.lastLogicalDate || currentLogicDate;
 
         if (currentLogicDate === cloudLogicDate) {
-            // [시간과 목표는 무조건 하이브리드 병합 (Math.max & 논리합)]
             let localBlocks = safeParse(getL('blockSeconds'), Array(48).fill(0));
             let cloudBlocks = safeParse(d['blockSeconds'], Array(48).fill(0));
             blockSeconds = localBlocks.map((sec, i) => Math.max(sec, cloudBlocks[i] || 0));
@@ -768,14 +767,12 @@
             setL('targetBlocks', JSON.stringify(targetBlocks)); 
         }
 
-        // [설정값 및 나머지 배열들 적용]
         ['backupSeconds', 'alarmedBlocks', 'settings', 'lastLogicalDate'].forEach(k => { 
             if (d[k] !== undefined && d[k] !== "") {
                 if (isCloudNewer || !getL(k)) setL(k, typeof d[k] === 'object' ? JSON.stringify(d[k]) : d[k]); 
             }
         });
 
-        // [캘린더 기록 병합]
         if (d['dailyRecords']) {
             try {
                 let localRec = safeParse(getL('dailyRecords'), {}); 
@@ -800,7 +797,6 @@
             } catch(e) {}
         }
         
-        // [노트는 LWW 적용]
         for (let i=0; i<48; i++) { 
             if (isCloudNewer) {
                 let n = (d[`note_${i}`] || "").trim(); 
@@ -1080,6 +1076,7 @@
         if (activeUser) { showToast("🌐 네트워크가 복구되었습니다."); triggerAutoSync(true); }
     });
 
+   // [심층 패치 3] 새벽 5시 타임머신 오염 방어 (데이터 잘림 방지)
     function checkNewDay() {
         const currentLogicDate = Utils.getLogicalDateString(); 
         const lastLogicDate = getL('lastLogicalDate');
@@ -1088,8 +1085,17 @@
         if (currentLogicDate !== lastLogicDate) {
             const wasRunning = isRunning;
             if(wasRunning) {
-                const now = Date.now(); const passedSecs = Math.floor((now - lastTickTime) / 1000);
-                if (passedSecs > 0) { distributeTime(lastTickTime, passedSecs); setL('blockSeconds', JSON.stringify(blockSeconds)); }
+                const now = Date.now();
+                // 5 AM 경계선 계산
+                let cutoff = new Date(); cutoff.setHours(5,0,0,0);
+                if (now > cutoff.getTime() && lastTickTime < cutoff.getTime()) {
+                    let passedBefore5 = Math.floor((cutoff.getTime() - lastTickTime) / 1000);
+                    if (passedBefore5 > 0) distributeTime(lastTickTime, passedBefore5);
+                } else {
+                    let passedSecs = Math.floor((now - lastTickTime) / 1000);
+                    if (passedSecs > 0) distributeTime(lastTickTime, passedSecs);
+                }
+                setL('blockSeconds', JSON.stringify(blockSeconds));
                 stopStopwatch(); 
                 showToast("📅 새벽 5시 리셋으로 타이머가 일시 정지되었습니다.");
             }
@@ -1209,6 +1215,7 @@
         }
     }
 
+   // [심층 패치 2] 고스트 캘린더(달력 렌더링 누락) 현상 해결
     function applyCloudData(parsedData, silent, skipSync = false) {
         const currentLogicalDate = Utils.getLogicalDateString();
         const cloudLogicalDate = parsedData.lastLogicalDate || currentLogicalDate;
@@ -1238,7 +1245,10 @@
             showToast("📅 어제 기록을 백업하고 보드를 초기화했습니다.");
         } else { setL('lastLogicalDate', currentLogicalDate); }
 
-        updateUI(true); renderCalendar(); updateHighlight(); updateDashboardTodoAlert(); updateDdayUI();
+        updateUI(true); 
+        syncTodayRecord(); // 추가됨: 화면에 그리기 전 데이터 강제 정산
+        renderCalendar(); 
+        updateHighlight(); updateDashboardTodoAlert(); updateDdayUI();
         
         if (batonTaken && !skipSync) { triggerAutoSync(); if(!silent) showToast("🔥 타임워프! 바통을 이어받았습니다."); } 
         else if(!silent && !skipSync) { SFX.play('success'); showToast("✅ 동기화 완료!"); }
