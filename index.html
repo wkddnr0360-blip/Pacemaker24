@@ -820,21 +820,25 @@
         return backup;
     }
 
-    // [네트워크 안정성 강화] 모바일 환경 캐시 무시 및 타임아웃 15초 연장
+// [네트워크 안정성 강화 v2] CORS 보안 오류 해결 및 무적 캐시 우회(Cache-Buster) 적용
     async function fetchServer(action, dataObj = null, customId = null, retries = 3) {
         const uid = customId || activeUser;
         const body = { userId: uid, password: activePw, action: action, data: dataObj };
+        
+        // 🚀 [핵심 패치] URL 끝에 현재 시간을 붙여서 구글 서버의 CORS 차단을 피하면서 모바일 캐시를 완벽히 뚫어냅니다.
+        const noCacheUrl = SCRIPT_URL + "?t=" + Date.now();
+
         for (let i = 0; i < retries; i++) {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15초 대기 
+            const timeoutId = setTimeout(() => controller.abort(), 15000); 
             try {
-                const res = await fetch(SCRIPT_URL, { 
+                const res = await fetch(noCacheUrl, { 
                     redirect: "follow", 
                     method: "POST", 
-                    headers: { "Content-Type": "text/plain;charset=utf-8", "Cache-Control": "no-cache, no-store, must-revalidate" }, 
+                    // 구글 서버가 튕겨내지 않도록 헤더는 가장 순수한 상태로 유지합니다.
+                    headers: { "Content-Type": "text/plain;charset=utf-8" }, 
                     body: JSON.stringify(body), 
-                    signal: controller.signal,
-                    cache: "no-store" 
+                    signal: controller.signal
                 });
                 clearTimeout(timeoutId);
                 const text = await res.text();
