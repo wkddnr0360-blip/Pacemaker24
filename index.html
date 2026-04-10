@@ -826,6 +826,7 @@
         }
         return { success: false, message: "서버 혼잡" };
     }
+    
     async function saveAllDataToServer() {
         let fullStr = JSON.stringify(getUserLocalData());
         const CHUNK_SIZE = 40000; 
