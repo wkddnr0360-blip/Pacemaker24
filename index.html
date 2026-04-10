@@ -714,25 +714,33 @@
     function getL(k) { return memCache[activeUser + '_' + k] || localStorage.getItem(activeUser + '_' + k) || null; }
     function removeL(k) { try { delete memCache[activeUser + '_' + k]; DBEngine.remove(activeUser + '_' + k); localStorage.removeItem(activeUser + '_' + k); } catch(e) {} }
 
-// [완벽 무결성 패치] 다중 접속 충돌 방지 및 LWW(최종 수정 우선) 엔진
+// [완벽 무결성 패치 v2] 다중 접속 충돌 방지 및 LWW(최종 수정 우선) 엔진
     function saveUserLocalData(d) {
         // 1. 로컬 데이터 변경 감지 엔진 (자동 타임스탬프 추적)
-        if (!window.isSetLHooked) {
-            window.isSetLHooked = true;
-            const originalSetL = setL; // 기존 함수 보존
+        if (!window.isStorageHooked) {
+            window.isStorageHooked = true;
+            const originalSetL = setL; 
+            const originalRemoveL = removeL;
             let lastIoTime = 0;
-            setL = function(k, v) {
-                // 상태가 바뀔 때마다 '최종 수정 시간'을 갱신 (스톱워치 부하 방지를 위해 2초 스로틀링)
-                if (k !== 'lastUpdateTime' && k !== 'runningState') { 
-                    let now = Date.now();
-                    if (now - lastIoTime > 2000) {
-                        lastIoTime = now;
-                        let nowStr = now.toString();
-                        memCache[activeUser + '_lastUpdateTime'] = nowStr;
-                        try { localStorage.setItem(activeUser + '_lastUpdateTime', nowStr); } catch(e){}
-                    }
+            
+            const updateTime = () => {
+                let now = Date.now();
+                if (now - lastIoTime > 2000) {
+                    lastIoTime = now;
+                    let nowStr = now.toString();
+                    memCache[activeUser + '_lastUpdateTime'] = nowStr;
+                    try { localStorage.setItem(activeUser + '_lastUpdateTime', nowStr); } catch(e){}
                 }
+            };
+
+            setL = function(k, v) {
+                if (k !== 'lastUpdateTime' && k !== 'runningState') updateTime();
                 originalSetL(k, v);
+            };
+            
+            removeL = function(k) {
+                if (k !== 'lastUpdateTime' && k !== 'runningState') updateTime();
+                originalRemoveL(k);
             };
         }
 
@@ -753,7 +761,6 @@
                 if (d['blockSeconds']) { blockSeconds = JSON.parse(d['blockSeconds']); setL('blockSeconds', d['blockSeconds']); }
                 if (d['targetBlocks']) { targetBlocks = JSON.parse(d['targetBlocks']); setL('targetBlocks', d['targetBlocks']); }
             }
-            // 로컬이 최신이면 클라우드의 과거 데이터 무시 (타이머 보호 및 내 변경사항 유지)
         }
 
         // 4. 기본 설정 및 배열 반영
@@ -797,7 +804,7 @@
 
     function getUserLocalData() {
         const backup = { runningState: JSON.stringify({ isRunning: isRunning, startTime: isRunning ? lastTickTime : 0 }) };
-        backup['lastUpdateTime'] = getL('lastUpdateTime') || Date.now().toString(); // 나의 최신 수정 시간표표표 전송
+        backup['lastUpdateTime'] = getL('lastUpdateTime') || Date.now().toString(); 
         backup['ddayConfig'] = getL('ddayConfig') || "";
         ['blockSeconds', 'targetBlocks', 'backupSeconds', 'dailyRecords', 'alarmedBlocks', 'settings', 'lastLogicalDate'].forEach(k => { backup[k] = getL(k) || ""; });
         for (let i=0; i<48; i++) { let n = getL(`note_${i}`); backup[`note_${i}`] = (!n || n === "null" || n.trim() === "") ? "" : n; }
@@ -817,16 +824,16 @@
                 });
                 clearTimeout(timeoutId);
                 const text = await res.text();
-                try { return JSON.parse(text); } catch(e) { throw new Error("Server Response Error"); } // 파싱 에러 시 크래시 방어
+                try { return JSON.parse(text); } catch(e) { throw new Error("Server Response Error"); } 
             } catch(e) { 
                 clearTimeout(timeoutId);
                 if (i === retries - 1) return { success: false, message: "통신 장애" };
-                await new Promise(r => setTimeout(r, 1000 * (i + 1))); // 재시도 백오프 로직
+                await new Promise(r => setTimeout(r, 1000 * (i + 1))); 
             }
         }
         return { success: false, message: "서버 혼잡" };
     }
-    
+
     async function saveAllDataToServer() {
         let fullStr = JSON.stringify(getUserLocalData());
         const CHUNK_SIZE = 40000; 
