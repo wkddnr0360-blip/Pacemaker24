@@ -19,7 +19,6 @@
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <style>
-    /* 기존 CSS 스타일 유지 */
     :root { 
         --primary: #3b82f6; --primary-dark: #2563eb; --bg: #f8fafc; 
         --surface: #ffffff; --text-main: #1e293b; --text-muted: #64748b; 
@@ -34,6 +33,22 @@
 
     .input-field { width: 100%; box-sizing: border-box; padding: 14px; margin-bottom: 16px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 15px; background: var(--bg); transition: all 0.2s; font-family: inherit; }
     .input-field:focus { outline: none; border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 4px rgba(59,130,246,0.1); }
+    
+    /* 🚀 리치 텍스트 에디터 (자동 확장형) CSS */
+    .rich-editor {
+        width: 100%; min-height: 180px; padding: 15px; border-radius: 12px;
+        border: 1.5px solid #e2e8f0; font-family: inherit; font-size: 14.5px;
+        box-sizing: border-box; background: var(--bg); color: var(--text-main);
+        line-height: 1.7; outline: none; transition: all 0.2s; cursor: text;
+        word-break: break-word; white-space: pre-wrap;
+    }
+    .rich-editor:focus { border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 4px rgba(59,130,246,0.1); }
+    .rich-editor:empty:before { content: attr(placeholder); color: #94a3b8; pointer-events: none; display: block; font-style: italic;}
+    .editor-toolbar { display:flex; gap:6px; flex-wrap:wrap; background:var(--surface); padding:8px; border-radius:10px; border:1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+    .ed-btn { background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:6px 12px; font-size:13px; font-weight:800; cursor:pointer; color:var(--text-main); display:flex; align-items:center; justify-content:center; transition:0.1s; touch-action: manipulation;}
+    .ed-btn:active { background:#e2e8f0; transform: scale(0.95); }
+    .sticky-toolbar-wrap { position:sticky; top:0; background:var(--bg); z-index:10; padding-bottom:12px; }
+
     .btn-primary { background: var(--primary); color: white; border: none; padding: 16px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 12px rgba(59,130,246,0.3); touch-action: manipulation; }
     .btn-primary:active { transform: scale(0.98); }
 
@@ -131,7 +146,10 @@
     .cal-badge.actual.high { background: #ea580c; }
 
     .overlay-base { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px); z-index: 2000; cursor: pointer; }
-    .modal-box { background: var(--surface); width: 100%; max-width: 420px; border-radius: 24px; padding: 25px; max-height: 85vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.3); box-sizing: border-box; cursor: default; }
+    .modal-box { background: var(--surface); width: 100%; max-width: 450px; border-radius: 24px; max-height: 85vh; display:flex; flex-direction:column; box-shadow: 0 25px 50px rgba(0,0,0,0.3); box-sizing: border-box; cursor: default; overflow: hidden; }
+    .modal-header { padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: var(--surface); z-index: 20; }
+    .modal-content-scroll { flex-grow: 1; overflow-y: auto; padding: 20px; background: var(--bg); position: relative; }
+    .modal-footer { padding: 15px 20px; background: var(--surface); border-top: 1px solid #e2e8f0; z-index: 20; }
 
     #loading-overlay { background: rgba(255,255,255,0.95); flex-direction: column; gap: 10px; color: var(--primary); font-weight: bold; z-index: 9999; font-size: 18px; cursor: default; }
     #toast-notification { position: fixed; top: -60px; left: 50%; transform: translateX(-50%); background: var(--surface); color: var(--text-main); padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 800; box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 9999; transition: top 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); border: 2px solid var(--primary); pointer-events: none; }
@@ -167,7 +185,7 @@
 
     #settings-modal, #patch-note-modal, #guide-modal, #dday-modal { z-index: 2200; }
     #diary-modal, #todo-modal, #capture-modal { z-index: 2100; }
-    #record-modal { z-index: 2000; }
+    #record-modal, #board-modal { z-index: 2000; }
 
     .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: #f8fafc; border-radius: 12px; margin-bottom: 10px; font-weight: 800; color: var(--text-main); }
     .setting-btn { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; transition: background 0.2s; touch-action: manipulation;}
@@ -178,17 +196,6 @@
     .ic-glass-box { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 2px solid rgba(255, 255, 255, 0.4); border-radius: 40px; padding: 50px; text-align: center; margin-bottom: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); }
     #ic-total { font-size:190px; font-weight:900; line-height:1; letter-spacing:-4px; white-space: nowrap; }
     #ic-heatmap-grid { display: flex !important; flex-wrap: wrap !important; gap: 12px !important; width: 100% !important; justify-content: flex-start !important; align-content: flex-start; }
-
-    /* 시뮬레이션 전용 스타일 */
-    #pw-modal, #scenario-list-modal { z-index: 2300; }
-    #sim-player-modal { z-index: 2400; }
-    .sim-progress-bar { height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; margin-bottom: 20px; }
-    .sim-progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.4s ease; }
-    .sim-action-btn { width: 100%; padding: 18px; border-radius: 14px; background: var(--surface); border: 2px solid var(--primary); color: var(--primary); font-size: 16px; font-weight: 800; cursor: pointer; transition: all 0.2s; text-align: left; display: flex; align-items: center; gap: 10px; margin-bottom: 12px; box-shadow: 0 4px 10px rgba(59,130,246,0.1); }
-    .sim-action-btn:active { transform: scale(0.97); }
-    .sim-action-btn:hover { background: #eff6ff; }
-    .sim-result-box { display: none; background: #ecfdf5; border: 2px solid #34d399; padding: 16px; border-radius: 14px; margin-bottom: 20px; animation: slideDown 0.3s ease; }
-    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
 <body>
@@ -242,7 +249,7 @@
         </div>
         <button class="dash-btn" style="background:var(--primary); color:white; box-shadow: 0 8px 20px rgba(59,130,246,0.3);" onclick="SFX.play('tap'); switchView('study')">🔥 오늘의 달리기 시작</button>
         <button class="dash-btn" style="background:var(--warning); color:var(--warning-text); box-shadow: 0 8px 20px rgba(254,240,138,0.5);" onclick="SFX.play('tap'); switchView('calendar')">📅 내 전체 기록 보기</button>
-        <button class="dash-btn-outline" style="border-color: #8b5cf6; color: #7c3aed; margin-top: 25px; background: #fdfcff;" onclick="SFX.play('pop'); openPasswordModal();">🧠 극비 시나리오 (이미지 트레이닝)</button>
+        <button class="dash-btn-outline" style="border-color: #0ea5e9; color: #0284c7; margin-top: 25px; background: #fdfcff;" onclick="SFX.play('pop'); openBoardModal();">📢 스터디 라운지 (게시판)</button>
         <button class="dash-btn-outline" onclick="SFX.play('pop'); document.getElementById('guide-modal').style.display='flex'; document.body.style.overflow='hidden';">📖 페이스메이커 사용 설명서</button>
         <div style="margin-top: 25px; font-size: 12px; color: #94a3b8; font-weight: 700; letter-spacing: 0.5px;">Pacemaker Planner ver <span class="app-version-display"></span></div>
     </div>
@@ -320,7 +327,7 @@
 </div>
 
 <div id="dday-modal" class="overlay-base">
-    <div class="modal-box">
+    <div class="modal-box" style="padding: 25px; display:block;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
             <h3 style="margin:0; font-size:22px; font-weight:800; color:var(--text-main);">⏳ 디데이 설정</h3>
             <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); document.getElementById('dday-modal').style.display='none'; document.body.style.overflow='';">✖</button>
@@ -335,7 +342,7 @@
 </div>
 
 <div id="settings-modal" class="overlay-base">
-    <div class="modal-box" style="padding: 25px; max-width: 360px;">
+    <div class="modal-box" style="padding: 25px; max-width: 360px; display:block;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <h3 style="margin:0; font-size:22px; font-weight:900; color:var(--text-main);">⚙️ 시스템 설정</h3>
             <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); document.getElementById('settings-modal').style.display='none'; document.body.style.overflow='';">✖</button>
@@ -364,23 +371,19 @@
 </div>
 
 <div id="patch-note-modal" class="overlay-base">
-    <div class="modal-box" style="padding: 25px; max-width: 420px; background: var(--bg);">
+    <div class="modal-box" style="padding: 25px; max-width: 420px; background: var(--bg); display:block;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <h3 style="margin:0; font-size:20px; font-weight:800; color:var(--text-main);">📢 업데이트 히스토리</h3>
             <button style="background:var(--surface); color:#64748b; border:1px solid #e2e8f0; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; transition: background 0.2s;" onclick="SFX.play('tap'); document.getElementById('patch-note-modal').style.display='none'; document.body.style.overflow='';">✖</button>
         </div>
         <div style="max-height: 55vh; overflow-y: auto; padding-right: 5px;">
-            <div class="guide-box success">
-                <div class="guide-title">🛡️ 0.6.5 동시접속 하이브리드 패치</div>
-                <div class="guide-desc">• 다중 기기 접속 시 시간 유실 차단<br>• 모바일 환경 통신 장애 및 무한 튕김 해결.</div>
-            </div>
-            <div class="guide-box success">
-                <div class="guide-title">🚀 0.6.0 훈련 엔진 탑재</div>
-                <div class="guide-desc">• 심층 과학/심리학 기반의 40가지 이미지 트레이닝 기능 추가.</div>
+            <div class="guide-box primary">
+                <div class="guide-title">🚀 0.8.1 리치 에디터 & 안정화 패치</div>
+                <div class="guide-desc">• 📝 글 작성 시 창이 스스로 길어지는 <b>리치 텍스트 에디터</b> 도입 (스크롤 불편 해소).<br>• 🎨 툴바를 이용해 <b>굵기, 폰트 크기, 색상 등 문서 꾸미기</b> 지원.<br>• 🛡️ 다중 접속 시 빈 데이터가 로컬을 덮어씌우는 현상을 막는 <b>서버 보호막 로직</b> 적용.</div>
             </div>
             <div class="guide-box purple">
-                <div class="guide-title">🎯 0.5.11 D-Day Edition</div>
-                <div class="guide-desc">• 디데이 기능 추가 및 캘린더 렌더링 최적화.</div>
+                <div class="guide-title">🚀 0.8.0 캘린더 UI & 알람 패치</div>
+                <div class="guide-desc">• ⏰ 앱이 열려있으면 <b>6시간 주기 알람</b> 자동 전송.<br>• 🎨 캘린더 상세 모달 <b>3단 탭(Tab) UI</b> 적용 (타임라인/할일/일기).</div>
             </div>
         </div>
         <button class="btn-primary" style="margin-top:15px; padding:14px; border-radius:12px; font-size:15px;" onclick="SFX.play('tap'); document.getElementById('patch-note-modal').style.display='none'; document.body.style.overflow='';">확인 완료</button>
@@ -388,38 +391,38 @@
 </div>
 
 <div id="guide-modal" class="overlay-base">
-    <div class="modal-box" style="padding: 25px; max-width: 450px; background: var(--bg);">
+    <div class="modal-box" style="padding: 25px; max-width: 450px; background: var(--bg); display:block;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h3 style="margin:0; font-size:22px; font-weight:900; color:var(--text-main);">🙋‍♀️ 무작정 따라하는 초보 가이드</h3>
+            <h3 style="margin:0; font-size:22px; font-weight:900; color:var(--text-main);">🙋‍♀️ 초보 가이드 (v0.8.1)</h3>
             <button style="background:var(--surface); color:#64748b; border:1px solid #e2e8f0; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); document.getElementById('guide-modal').style.display='none'; document.body.style.overflow='';">✖</button>
         </div>
         <div style="max-height: 60vh; overflow-y: auto; padding-right: 5px;">
             <div style="font-size:14.5px; color:var(--text-main); font-weight:700; margin-bottom:20px; line-height:1.6; padding:0 5px;">
-                안녕하세요! 🎉<br>Pacemaker Planner에 오신 것을 환영합니다.<br>복잡하게 생각할 필요 없어요. <b>이 6가지만 순서대로 읽고 바로 시작해 보세요!</b>
+                복잡하게 생각할 필요 없어요. <b>이 6가지만 순서대로 읽고 바로 시작해 보세요!</b>
             </div>
             <div class="guide-box" style="border-left: 5px solid #6366f1;">
-                <div class="guide-title">⏳ 1단계. 디데이(D-Day) 설정</div>
-                <div class="guide-desc">홈 화면 좌측 상단의 <b>[⏳ 디데이 설정 +]</b> 버튼을 눌러 목표 시험일을 등록하세요. 매일 스톱워치 창에서 D-Day를 확인하며 전력 질주할 수 있습니다!</div>
+                <div class="guide-title">⏳ 1단계. 디데이 설정</div>
+                <div class="guide-desc">홈 화면 좌측 상단의 <b>[⏳ 디데이 설정 +]</b> 버튼을 눌러 목표일을 등록하세요. 스톱워치 창에서 매일 확인 가능합니다.</div>
             </div>
             <div class="guide-box purple">
-                <div class="guide-title">🎯 2단계. 오늘의 코스 계획하기</div>
-                <div class="guide-desc">공부 시작 전, 회색 캡슐 안의 <b>[🎯 계획]</b> 아이콘을 눌러보세요. 해당 구간이 보라색으로 변하며 오늘 달려야 할 목표 시간이 스톱워치 위에 표시됩니다.</div>
+                <div class="guide-title">🎯 2단계. 코스 계획 & 정기 알람</div>
+                <div class="guide-desc"><b>[🎯 계획]</b> 아이콘을 눌러 구간을 설정하세요. 브라우저 알람을 켜두면 스톱워치를 안 켜도 6시간마다 알람이 갑니다!</div>
             </div>
             <div class="guide-box primary">
-                <div class="guide-title">▶️ 3단계. 그냥 누르세요! (스톱워치)</div>
-                <div class="guide-desc">공부를 시작할 때 맨 아래 파란색 <b>[▶ 재생]</b> 버튼을 꾹 누르세요. 30분을 채우면 자동으로 파란색 불과 함께 알람이 울립니다!</div>
-            </div>
-            <div class="guide-box orange">
-                <div class="guide-title">✅ 4단계. 구간 마스터 (수동 체크)</div>
-                <div class="guide-desc">스톱워치를 깜빡 잊었거나 오프라인에서 공부했나요? 시간표의 <b>[✅ 완료]</b> 아이콘을 직접 누르세요. 해당 구간이 즉시 꽉 채워진 것으로 보정됩니다!</div>
+                <div class="guide-title">▶️ 3단계. 스톱워치 실행</div>
+                <div class="guide-desc">맨 아래 <b>[▶ 재생]</b> 버튼을 꾹 누르세요. 30분을 채우면 자동으로 불이 들어오며 알람이 울립니다.</div>
             </div>
             <div class="guide-box success">
-                <div class="guide-title">📝 5단계. 메모와 일기 (저장은 자동!)</div>
-                <div class="guide-desc">메모장, 할일, 일기를 남겨보세요. 창을 닫거나 배경을 누르기만 해도 안전하게 <b>클라우드에 자동 저장</b>됩니다.</div>
+                <div class="guide-title">📝 4단계. 메모와 일기 (저장은 자동!)</div>
+                <div class="guide-desc">메모, 할 일, 일기를 새롭게 도입된 <b>리치 에디터</b>로 작성하세요. 글이 길어져도 끊김 없이 편하게 적고 꾸밀 수 있습니다.</div>
             </div>
             <div class="guide-box info">
+                <div class="guide-title">📢 5단계. 실시간 스터디 라운지</div>
+                <div class="guide-desc">홈 화면의 <b>[스터디 라운지]</b>에 들어가 다짐이나 메모를 자유롭게 남기세요. 모두와 함께 달리는 기분을 느낄 수 있습니다.</div>
+            </div>
+            <div class="guide-box orange">
                 <div class="guide-title">🛡️ 6단계. 절대 안전망 (새벽 5시 리셋)</div>
-                <div class="guide-desc">우리의 하루는 밤 12시가 아니라 <b>매일 새벽 5시에 리셋</b>됩니다. 안심하고 새벽까지 달리세요!</div>
+                <div class="guide-desc">우리의 하루는 밤 12시가 아니라 <b>매일 새벽 5시에 리셋</b>됩니다. 데이터는 서버에 3중으로 안전하게 보관됩니다.</div>
             </div>
         </div>
         <button class="btn-primary" style="margin-top:20px; padding:16px; border-radius:12px; font-size:16px;" onclick="SFX.play('success'); document.getElementById('guide-modal').style.display='none'; document.body.style.overflow='';">와, 진짜 쉽네요! 이제 시작할게요 🔥</button>
@@ -438,36 +441,75 @@
 </div>
 
 <div id="diary-modal" class="overlay-base">
-    <div class="modal-box">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h3 id="diary-modal-title" style="margin:0; font-size:22px; font-weight:800; color:var(--text-main);">📝 오늘의 일기</h3>
-            <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); saveTextData('diary', true); document.getElementById('diary-modal').style.display='none'; document.body.style.overflow='';">✖</button>
+    <div class="modal-box" style="padding:0; display:flex; flex-direction:column; background:var(--bg);">
+        <div class="modal-header">
+            <h3 id="diary-modal-title" style="margin:0; font-size:18px; font-weight:800; color:var(--text-main);">📝 오늘의 일기</h3>
+            <button style="background:#f1f5f9; color:#64748b; border:none; width:32px; height:32px; border-radius:50%; font-weight:bold; cursor:pointer;" onclick="SFX.play('tap'); saveTextData('diary', true); document.getElementById('diary-modal').style.display='none'; document.body.style.overflow='';">✖</button>
         </div>
-        <input type="hidden" id="diary-date-input">
-        <textarea id="diary-input" maxlength="1500" style="width:100%; height:160px; padding:15px; border-radius:12px; border:1.5px solid #e2e8f0; font-family:inherit; font-size:14px; box-sizing:border-box; resize:none; background:var(--bg); color:var(--text-main);" placeholder="오늘 하루는 어땠나요? 잘한 점, 아쉬운 점, 내일의 다짐을 자유롭게 적어보세요!"></textarea>
-        <button class="btn-primary" style="margin-top:15px; background:#8b5cf6; box-shadow: 0 4px 12px rgba(139,92,246,0.3);" onclick="SFX.play('tap'); saveTextData('diary')">💾 일기 저장하고 동기화</button>
+        <div class="modal-content-scroll">
+            <div class="sticky-toolbar-wrap">
+                <div class="editor-toolbar">
+                    <button class="ed-btn" onclick="formatText('bold')"><b>B</b></button>
+                    <button class="ed-btn" onclick="formatText('underline')"><u>U</u></button>
+                    <button class="ed-btn" onclick="formatText('fontSize', '4')">크게</button>
+                    <div style="width:1px; background:#cbd5e1; margin:0 2px;"></div>
+                    <button class="ed-btn" style="color:#ef4444;" onclick="formatText('foreColor', '#ef4444')">●</button>
+                    <button class="ed-btn" style="color:#3b82f6;" onclick="formatText('foreColor', '#3b82f6')">●</button>
+                    <button class="ed-btn" style="color:#1e293b;" onclick="formatText('foreColor', '#1e293b')">●</button>
+                </div>
+            </div>
+            <input type="hidden" id="diary-date-input">
+            <div id="diary-input" class="rich-editor" contenteditable="true" placeholder="오늘 하루는 어땠나요? 자유롭게 적어보세요!"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-primary" style="background:#8b5cf6;" onclick="SFX.play('tap'); saveTextData('diary')">💾 일기 저장하고 동기화</button>
+        </div>
     </div>
 </div>
 
 <div id="todo-modal" class="overlay-base">
-    <div class="modal-box">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h3 id="todo-modal-title" style="margin:0; font-size:22px; font-weight:800; color:var(--text-main);">✅ 오늘의 할 일</h3>
-            <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); saveTextData('todo', true); document.getElementById('todo-modal').style.display='none'; document.body.style.overflow='';">✖</button>
+    <div class="modal-box" style="padding:0; display:flex; flex-direction:column; background:var(--bg);">
+        <div class="modal-header">
+            <h3 id="todo-modal-title" style="margin:0; font-size:18px; font-weight:800; color:var(--text-main);">✅ 오늘의 할 일</h3>
+            <button style="background:#f1f5f9; color:#64748b; border:none; width:32px; height:32px; border-radius:50%; font-weight:bold; cursor:pointer;" onclick="SFX.play('tap'); saveTextData('todo', true); document.getElementById('todo-modal').style.display='none'; document.body.style.overflow='';">✖</button>
         </div>
-        <input type="hidden" id="todo-date-input">
-        <textarea id="todo-input" maxlength="500" style="width:100%; height:120px; padding:15px; border-radius:12px; border:1.5px solid #e2e8f0; font-family:inherit; font-size:14px; box-sizing:border-box; resize:none; background:var(--bg); color:var(--text-main);" placeholder="이 날의 할 일, 목표 등을 리스트업 해보세요!"></textarea>
-        <button class="btn-primary" style="margin-top:15px; background:#0ea5e9; box-shadow: 0 4px 12px rgba(14,165,233,0.3);" onclick="SFX.play('tap'); saveTextData('todo')">💾 할 일 저장하고 동기화</button>
+        <div class="modal-content-scroll">
+            <div class="sticky-toolbar-wrap">
+                <div class="editor-toolbar">
+                    <button class="ed-btn" onclick="insertEmojiAtCursor('⬜ ')">⬜ 할일 추가</button>
+                    <button class="ed-btn" onclick="insertEmojiAtCursor('✅ ')">✅ 완료 처리</button>
+                    <div style="width:1px; background:#cbd5e1; margin:0 2px;"></div>
+                    <button class="ed-btn" onclick="formatText('bold')"><b>B</b></button>
+                    <button class="ed-btn" style="color:#ef4444;" onclick="formatText('foreColor', '#ef4444')">●</button>
+                    <button class="ed-btn" style="color:#3b82f6;" onclick="formatText('foreColor', '#3b82f6')">●</button>
+                </div>
+            </div>
+            <input type="hidden" id="todo-date-input">
+            <div id="todo-input" class="rich-editor" contenteditable="true" placeholder="오늘의 할 일을 리스트업 해보세요!"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-primary" style="background:#0ea5e9;" onclick="SFX.play('tap'); saveTextData('todo')">💾 할 일 저장하고 동기화</button>
+        </div>
     </div>
 </div>
 
 <div id="record-modal" class="overlay-base">
-    <div class="modal-box">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+    <div class="modal-box" style="padding: 20px; max-width: 450px; display:block;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
             <h3 id="modal-title" style="margin:0; font-size:22px; font-weight:800; color:var(--text-main);">상세 기록</h3>
             <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; transition: background 0.2s;" onclick="SFX.play('tap'); document.getElementById('record-modal').style.display='none'; document.body.style.overflow='';">✖</button>
         </div>
-        <div id="modal-body"></div>
+        <div id="modal-body" style="display:flex; flex-direction:column;"></div>
+    </div>
+</div>
+
+<div id="board-modal" class="overlay-base">
+    <div class="modal-box" style="padding:0; display:flex; flex-direction:column; background: #f8fafc; height: 85vh; width: 100%; max-width: 500px;">
+        <div class="modal-header" style="box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+            <h3 id="board-header-title" style="margin:0; font-size:18px; font-weight:900; color:var(--text-main);">📢 스터디 라운지</h3>
+            <button style="background:#f1f5f9; color:#64748b; border:none; width:32px; height:32px; border-radius:50%; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); closeBoardModal()">✖</button>
+        </div>
+        <div id="board-content-area" class="modal-content-scroll" style="position: relative;"></div>
     </div>
 </div>
 
@@ -481,64 +523,16 @@
     <div id="insta-card">
         <div id="ic-date" style="font-size:45px; font-weight:bold; margin-bottom:15px; opacity:0.9;"></div>
         <div id="ic-title" style="font-size:85px; font-weight:900; margin-bottom:50px; letter-spacing:-2px;">🔥 오늘의 달리기</div>
-        
         <div class="ic-glass-box">
             <div style="font-size:38px; font-weight:bold; margin-bottom:10px; opacity:0.85;">TOTAL STUDY TIME</div>
             <div id="ic-total"></div>
         </div>
-
         <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 25px;">
             <div style="font-size: 35px; font-weight: bold; opacity: 0.9;">📊 하루 집중 몰입 패턴</div>
             <div id="ic-heatmap-grid"></div>
         </div>
-
         <div style="margin-top:auto; text-align:center; font-size:40px; font-weight:800; border-top:3px solid rgba(255,255,255,0.3); padding-top:40px; letter-spacing:-1px;">
             24H Pacemaker | @<span id="ic-user"></span>
-        </div>
-    </div>
-</div>
-
-<div id="pw-modal" class="overlay-base">
-    <div class="modal-box" style="text-align: center; max-width: 320px;">
-        <div style="font-size: 40px; margin-bottom: 10px;">🔐</div>
-        <h3 style="margin:0 0 15px 0; font-size:20px; font-weight:800; color:var(--text-main);">시크릿 모드</h3>
-        <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px; line-height: 1.5;">오직 합격을 위한 극비 시나리오입니다.<br>비밀번호를 입력하세요.</p>
-        <input type="password" id="scenario-pw-input" class="input-field" placeholder="비밀번호 6자리" style="text-align: center; letter-spacing: 5px; font-size: 18px; font-weight: bold;" maxlength="6">
-        <button class="btn-primary" style="background: #8b5cf6; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(139,92,246,0.3);" onclick="SFX.play('tap'); checkScenarioPw()">잠금 해제</button>
-        <button style="background:transparent; color:#64748b; border:none; padding:10px; font-weight:bold; cursor:pointer;" onclick="SFX.play('tap'); document.getElementById('pw-modal').style.display='none'; document.body.style.overflow='';">취소</button>
-    </div>
-</div>
-
-<div id="scenario-list-modal" class="overlay-base">
-    <div class="modal-box" style="padding: 25px; max-width: 380px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h3 style="margin:0; font-size:22px; font-weight:900; color:var(--text-main);">🧠 이미지 트레이닝</h3>
-            <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); document.getElementById('scenario-list-modal').style.display='none'; document.body.style.overflow='';">✖</button>
-        </div>
-        <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px; font-weight: 600;">상황을 선택하고 시뮬레이션을 시작하세요!</p>
-        <div id="scenario-btn-container" style="display: flex; flex-direction: column; gap: 12px;"></div>
-    </div>
-</div>
-
-<div id="sim-player-modal" class="overlay-base">
-    <div class="modal-box" style="padding: 30px 20px; max-width: 400px; background: var(--bg); display: flex; flex-direction: column;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h3 id="sim-title" style="margin:0; font-size:18px; font-weight:900; color:var(--text-main);">시뮬레이션</h3>
-            <button style="background:#e2e8f0; color:#475569; border:none; width:32px; height:32px; border-radius:50%; font-size:14px; cursor:pointer; font-weight:bold;" onclick="SFX.play('tap'); closeSimulation()">✖</button>
-        </div>
-        <div class="sim-progress-bar">
-            <div id="sim-progress-fill" class="sim-progress-fill"></div>
-        </div>
-        <div id="sim-time-badge" style="display:inline-block; align-self:flex-start; background:#1e293b; color:white; padding:6px 12px; border-radius:20px; font-size:14px; font-weight:900; margin-bottom:15px; font-variant-numeric:tabular-nums; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-            ⏰ 00:00
-        </div>
-        <div id="sim-situation-text" style="font-size: 17px; font-weight: 800; color: var(--text-main); line-height: 1.5; margin-bottom: 25px; word-break: keep-all;">
-            상황 설명이 여기에 나옵니다.
-        </div>
-        <div id="sim-action-area" style="display:flex; flex-direction:column;"></div>
-        <div id="sim-result-area" class="sim-result-box">
-            <div id="sim-result-text" style="font-size: 14.5px; color: #047857; font-weight: 600; line-height: 1.5; margin-bottom: 15px;"></div>
-            <button id="sim-next-btn" class="btn-primary" style="background:#10b981; box-shadow:0 4px 12px rgba(16,185,129,0.3); padding:14px; font-size:15px;"></button>
         </div>
     </div>
 </div>
@@ -547,8 +541,8 @@
     // ==========================================
     // 📦 1. 시스템 설정 및 전역 변수
     // ==========================================
-    const APP_VERSION = "0.6.5 동시접속 완벽 하이브리드 패치"; 
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWentq5xmJFB_UL4EWPL7KEknxY9Em9eIYX5CoWfDMh_WooUKk1n63-8gbLFpcu8Oe/exec";
+    const APP_VERSION = "0.8.1 에디터 & 안정화 패치"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyiW3ndi5ay7sqa1p-mE1caZvnOClQ0St0Xfqgwdw2xDyJQYdr6A_s8pLGUw9bceNvZ/exec";
     
     let activeUser = localStorage.getItem('activeUser');
     let activePw = localStorage.getItem('activePw');
@@ -558,6 +552,7 @@
     let lastTickTime = 0, syncTimer = null;
     let isSyncing = false, pendingSync = false;
     let tickFrameId = null; 
+    let notificationIntervalId = null; 
     
     let blockSeconds = [], targetBlocks = [], backupSeconds = [], dailyRecords = {}, alarmedBlocks = [];
     let ddayConfig = { title: "", date: "" }; 
@@ -573,6 +568,18 @@
     const Utils = {
         pad: (num) => String(num).padStart(2, '0'),
         escapeHTML: (str) => typeof str !== 'string' ? str : str.replace(/[&<>'"]/g, match => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[match])),
+        sanitizeHTML: (str) => {
+            if (!str) return "";
+            let s = str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            s = s.replace(/&lt;(b|u|div|br|\/b|\/u|\/div|\/span|\/font)&gt;/gi, '<$1>');
+            s = s.replace(/&lt;br\/?&gt;/gi, '<br>');
+            s = s.replace(/&lt;font color="([^"]+)"&gt;/gi, '<font color="$1">');
+            s = s.replace(/&lt;font size="([^"]+)"&gt;/gi, '<font size="$1">');
+            s = s.replace(/&lt;span style="([^"]+)"&gt;/gi, function(match, p1) {
+                if(p1.includes('color')) return `<span style="${p1}">`; return '<span>';
+            });
+            return s;
+        },
         getAbsMins: (h, m) => (Number(h) < 5 ? Number(h) + 24 : Number(h)) * 60 + Number(m),
         getKoreaDate: () => {
             const d = new Date();
@@ -629,7 +636,7 @@
     document.body.addEventListener('touchstart', () => { SFX.init(); if(SFX.ctx && SFX.ctx.state === 'suspended') SFX.ctx.resume(); }, { passive: true });
 
     window.addEventListener('click', (e) => {
-        if(e.target.classList.contains('overlay-base') && e.target.id !== 'loading-overlay' && e.target.id !== 'capture-modal' && e.target.id !== 'sim-player-modal') {
+        if(e.target.classList.contains('overlay-base') && e.target.id !== 'loading-overlay' && e.target.id !== 'capture-modal') {
             SFX.play('tap');
             if(e.target.id === 'diary-modal') { saveTextData('diary'); }
             else if(e.target.id === 'todo-modal') { saveTextData('todo'); }
@@ -658,6 +665,30 @@
     }
 
     function playChime() { if (!isSoundOn) return; SFX.play('success'); }
+
+    // ==========================================
+    // 📝 리치 텍스트 에디터 도구
+    // ==========================================
+    function formatText(command, value = null) {
+        SFX.play('tap');
+        document.execCommand(command, false, value);
+    }
+    
+    function insertEmojiAtCursor(text) {
+        SFX.play('tap');
+        document.execCommand('insertText', false, text);
+    }
+
+    function loadRichText(elId, rawData) {
+        let el = document.getElementById(elId);
+        if (!rawData) { el.innerHTML = ""; return; }
+        // 예전 버전에서 쓴 일반 텍스트(엔터 포함)를 HTML로 변환하여 에디터에 로드
+        if (!/<[a-z][\s\S]*>/i.test(rawData)) {
+            el.innerHTML = rawData.replace(/\n/g, '<br>');
+        } else {
+            el.innerHTML = rawData;
+        }
+    }
 
     // ==========================================
     // 💾 3. 로컬 DB 엔진
@@ -713,7 +744,6 @@
     function getL(k) { return memCache[activeUser + '_' + k] || localStorage.getItem(activeUser + '_' + k) || null; }
     function removeL(k) { try { delete memCache[activeUser + '_' + k]; DBEngine.remove(activeUser + '_' + k); localStorage.removeItem(activeUser + '_' + k); } catch(e) {} }
 
-   // [심층 패치 1] Null 폭발 방어 적용 완료
     function saveUserLocalData(d) {
         if (!d) return;
 
@@ -816,12 +846,9 @@
         return backup;
     }
 
-// [네트워크 안정성 강화 v2] CORS 보안 오류 해결 및 무적 캐시 우회(Cache-Buster) 적용
     async function fetchServer(action, dataObj = null, customId = null, retries = 3) {
         const uid = customId || activeUser;
         const body = { userId: uid, password: activePw, action: action, data: dataObj };
-        
-        // 🚀 [핵심 패치] URL 끝에 현재 시간을 붙여서 구글 서버의 CORS 차단을 피하면서 모바일 캐시를 완벽히 뚫어냅니다.
         const noCacheUrl = SCRIPT_URL + "?t=" + Date.now();
 
         for (let i = 0; i < retries; i++) {
@@ -831,7 +858,6 @@
                 const res = await fetch(noCacheUrl, { 
                     redirect: "follow", 
                     method: "POST", 
-                    // 구글 서버가 튕겨내지 않도록 헤더는 가장 순수한 상태로 유지합니다.
                     headers: { "Content-Type": "text/plain;charset=utf-8" }, 
                     body: JSON.stringify(body), 
                     signal: controller.signal
@@ -887,6 +913,51 @@
             return { success: true, data: fullStr };
         } 
         return { success: true, data: res.data };
+    }
+
+    // 🛡️ 서버 데이터 방어 로직 (비어있는 값이 덮어씌워지는 것 차단)
+    function applyCloudData(parsedData, silent, skipSync = false) {
+        if (!parsedData || typeof parsedData !== 'object' || Object.keys(parsedData).length === 0 || !parsedData.lastUpdateTime) {
+            console.error("서버 데이터 파손 감지. 로컬을 보호합니다.");
+            if(!silent) showToast("❌ 서버 통신 오류. 안전을 위해 오프라인 기록을 유지합니다.");
+            return;
+        }
+
+        const currentLogicalDate = Utils.getLogicalDateString();
+        const cloudLogicalDate = parsedData.lastLogicalDate || currentLogicalDate;
+
+        saveUserLocalData(parsedData); 
+        initLocalState(); 
+
+        let batonTaken = false;
+        if (parsedData.runningState) {
+            const rState = JSON.parse(parsedData.runningState);
+            if (rState.isRunning && rState.startTime > 0) {
+                if (!isRunning) { 
+                    const passedSecs = Math.floor((Date.now() - rState.startTime) / 1000);
+                    if (passedSecs > 0 && passedSecs < 57600) { distributeTime(rState.startTime, passedSecs); batonTaken = true; startStopwatch(); }
+                    else { stopStopwatch(); }
+                }
+            } else { if (isRunning) stopStopwatch(); }
+        }
+
+        if (cloudLogicalDate !== currentLogicalDate) {
+            syncTodayRecord(cloudLogicalDate); 
+            blockSeconds = Array(48).fill(0); targetBlocks = Array(48).fill(false); backupSeconds = Array(48).fill(0); alarmedBlocks = Array(48).fill(false); 
+            for(let i=0; i<48; i++) { removeL(`note_${i}`); if(domCache.notes[i]) domCache.notes[i].value = ""; }
+            setL('targetBlocks', JSON.stringify(targetBlocks)); setL('backupSeconds', JSON.stringify(backupSeconds)); setL('alarmedBlocks', JSON.stringify(alarmedBlocks));
+            setL('blockSeconds', JSON.stringify(blockSeconds)); setL('lastLogicalDate', currentLogicalDate); 
+            if (isRunning) stopStopwatch();
+            showToast("📅 어제 기록을 백업하고 보드를 초기화했습니다.");
+        } else { setL('lastLogicalDate', currentLogicalDate); }
+
+        updateUI(true); 
+        syncTodayRecord(); 
+        renderCalendar(); 
+        updateHighlight(); updateDashboardTodoAlert(); updateDdayUI();
+        
+        if (batonTaken && !skipSync) { triggerAutoSync(); if(!silent) showToast("🔥 타임워프! 바통을 이어받았습니다."); } 
+        else if(!silent && !skipSync) { SFX.play('success'); showToast("✅ 동기화 완료!"); }
     }
 
     async function loadFromCloud(silent = false) {
@@ -960,7 +1031,7 @@
             
             const finalData = safeDataParse(res.data);
 
-            if(res.success && finalData) {
+            if(res.success && finalData && Object.keys(finalData).length > 0) {
                 localStorage.setItem('activeUser', activeUser); localStorage.setItem('activePw', activePw); 
                 document.getElementById('login-view').style.display = 'none';
                 applyCloudData(finalData, true);
@@ -975,6 +1046,7 @@
                 statusEl.innerText = res.message || "서버 통신에 실패했습니다."; SFX.play('tap');
                 activeUser = null; activePw = null; 
             } else {
+                // 신규 유저 또는 데이터가 완전 초기화된 경우
                 localStorage.setItem('activeUser', activeUser); localStorage.setItem('activePw', activePw); 
                 document.getElementById('login-view').style.display = 'none';
                 initLocalState(); 
@@ -1046,7 +1118,7 @@
 
                 const finalData = safeDataParse(res.data);
 
-                if(res.success && finalData) {
+                if(res.success && finalData && Object.keys(finalData).length > 0) {
                     applyCloudData(finalData, true);
                     startDashboard();
                 } else if (!res.success && dbData.length > 0) {
@@ -1076,7 +1148,6 @@
         if (activeUser) { showToast("🌐 네트워크가 복구되었습니다."); triggerAutoSync(true); }
     });
 
-   // [심층 패치 3] 새벽 5시 타임머신 오염 방어 (데이터 잘림 방지)
     function checkNewDay() {
         const currentLogicDate = Utils.getLogicalDateString(); 
         const lastLogicDate = getL('lastLogicalDate');
@@ -1086,7 +1157,6 @@
             const wasRunning = isRunning;
             if(wasRunning) {
                 const now = Date.now();
-                // 5 AM 경계선 계산
                 let cutoff = new Date(); cutoff.setHours(5,0,0,0);
                 if (now > cutoff.getTime() && lastTickTime < cutoff.getTime()) {
                     let passedBefore5 = Math.floor((cutoff.getTime() - lastTickTime) / 1000);
@@ -1114,9 +1184,6 @@
         }
     }
 
-    // ==========================================
-    // 🎨 6. UI 업데이트 및 렌더링 함수들
-    // ==========================================
     function updateSpacers() {
         const h1 = document.getElementById('main-header'); const s1 = document.getElementById('study-spacer');
         if(h1 && s1) s1.style.height = h1.offsetHeight + 'px';
@@ -1136,7 +1203,8 @@
         for(let i=0; i<=2; i++) { 
             let dStr = Utils.getRelativeDateString(i);
             if (dailyRecords[dStr] && dailyRecords[dStr].todo && dailyRecords[dStr].todo.trim() !== "") {
-                foundTodo = dailyRecords[dStr].todo.trim(); targetDStr = dStr;
+                // 리치 텍스트 적용으로 HTML 태그가 포함될 수 있으므로 태그를 제거하고 미리보기 표시
+                foundTodo = dailyRecords[dStr].todo.replace(/<[^>]*>?/gm, ' ').trim(); targetDStr = dStr;
                 if (i === 0) dateLabel = "오늘"; else if (i === 1) dateLabel = "내일"; else dateLabel = dStr.slice(5).replace('-', '/'); 
                 break;
             }
@@ -1159,7 +1227,7 @@
         popupBadge.innerText = dString; popupBadge.style.display = 'inline-block';
     }
 
-    function openDdayModal() { document.body.style.overflow = 'hidden'; document.getElementById('dday-title-input').value = ddayConfig.title || ""; document.getElementById('dday-date-input').value = ddayConfig.date || ""; document.getElementById('dday-modal').style.display = 'flex'; }
+    function openDdayModal() { document.body.style.overflow = 'hidden'; document.getElementById('dday-title-input').value = ddayConfig.title || ""; document.getElementById('dday-date-input').value = ddayConfig.date || ""; document.getElementById('dday-modal').style.display = 'block'; }
     function saveDday() {
         const t = document.getElementById('dday-title-input').value.trim(); const d = document.getElementById('dday-date-input').value;
         if(!d) { showToast("날짜를 선택해주세요."); return; }
@@ -1178,6 +1246,20 @@
         document.getElementById('dash-user-name').innerText = activeUser; 
         const setUid = document.getElementById('settings-userid'); if(setUid) setUid.innerText = activeUser;
         checkNewDay(); updateDashboardTodoAlert(); switchView('dashboard');
+
+        if ("Notification" in window && Notification.permission !== "denied" && Notification.permission !== "granted") {
+            Notification.requestPermission();
+        }
+        if(!notificationIntervalId) {
+            notificationIntervalId = setInterval(() => {
+                if ("Notification" in window && Notification.permission === "granted") {
+                    new Notification("페이스메이커 진도 알림", {
+                        body: `🎯 목표시간: ${targetStudyString}\n🔥 누적시간: ${totalStudyString}\n꾸준히 목표를 향해 달려보세요!`,
+                        icon: "icon-512.png"
+                    });
+                }
+            }, 21600000); 
+        }
     }
 
     function initLocalState() {
@@ -1215,45 +1297,6 @@
         }
     }
 
-   // [심층 패치 2] 고스트 캘린더(달력 렌더링 누락) 현상 해결
-    function applyCloudData(parsedData, silent, skipSync = false) {
-        const currentLogicalDate = Utils.getLogicalDateString();
-        const cloudLogicalDate = parsedData.lastLogicalDate || currentLogicalDate;
-
-        saveUserLocalData(parsedData); 
-        initLocalState(); 
-
-        let batonTaken = false;
-        if (parsedData.runningState) {
-            const rState = JSON.parse(parsedData.runningState);
-            if (rState.isRunning && rState.startTime > 0) {
-                if (!isRunning) { 
-                    const passedSecs = Math.floor((Date.now() - rState.startTime) / 1000);
-                    if (passedSecs > 0 && passedSecs < 57600) { distributeTime(rState.startTime, passedSecs); batonTaken = true; startStopwatch(); }
-                    else { stopStopwatch(); }
-                }
-            } else { if (isRunning) stopStopwatch(); }
-        }
-
-        if (cloudLogicalDate !== currentLogicalDate) {
-            syncTodayRecord(cloudLogicalDate); 
-            blockSeconds = Array(48).fill(0); targetBlocks = Array(48).fill(false); backupSeconds = Array(48).fill(0); alarmedBlocks = Array(48).fill(false); 
-            for(let i=0; i<48; i++) { removeL(`note_${i}`); if(domCache.notes[i]) domCache.notes[i].value = ""; }
-            setL('targetBlocks', JSON.stringify(targetBlocks)); setL('backupSeconds', JSON.stringify(backupSeconds)); setL('alarmedBlocks', JSON.stringify(alarmedBlocks));
-            setL('blockSeconds', JSON.stringify(blockSeconds)); setL('lastLogicalDate', currentLogicalDate); 
-            if (isRunning) stopStopwatch();
-            showToast("📅 어제 기록을 백업하고 보드를 초기화했습니다.");
-        } else { setL('lastLogicalDate', currentLogicalDate); }
-
-        updateUI(true); 
-        syncTodayRecord(); // 추가됨: 화면에 그리기 전 데이터 강제 정산
-        renderCalendar(); 
-        updateHighlight(); updateDashboardTodoAlert(); updateDdayUI();
-        
-        if (batonTaken && !skipSync) { triggerAutoSync(); if(!silent) showToast("🔥 타임워프! 바통을 이어받았습니다."); } 
-        else if(!silent && !skipSync) { SFX.play('success'); showToast("✅ 동기화 완료!"); }
-    }
-
     function syncTodayRecord(targetDateStr = null) {
         let dStr = targetDateStr || Utils.getLogicalDateString(); let has = false, det = [];
         let tSecs = 0; targetBlocks.forEach(b => { if(b) tSecs += 1800; });
@@ -1276,21 +1319,29 @@
         try { setL('dailyRecords', JSON.stringify(dailyRecords)); } catch (e) {}
     }
 
+    // 모달을 열 때 리치 에디터에 기존 내용을 HTML로 로드
     function openTextModal(type, targetDateStr = null) {
         document.body.style.overflow = 'hidden'; 
         let dStr = targetDateStr || Utils.getLogicalDateString();
         document.getElementById(type + '-date-input').value = dStr;
         let titlePrefix = (dStr === Utils.getLogicalDateString()) ? "오늘의" : dStr;
         document.getElementById(type + '-modal-title').innerText = (type==='diary' ? `📝 ` : `✅ `) + `${titlePrefix} ${type==='diary'?'일기':'할 일'}`;
-        document.getElementById(type + '-input').value = (dailyRecords[dStr] && dailyRecords[dStr][type]) ? dailyRecords[dStr][type] : "";
-        document.getElementById(type + '-modal').style.display = 'flex';
+        
+        loadRichText(type + '-input', (dailyRecords[dStr] && dailyRecords[dStr][type]) ? dailyRecords[dStr][type] : "");
+        document.getElementById(type + '-modal').style.display = 'block'; // flex 대신 block (내부 모달 구조상)
     }
 
+    // 모달 저장 시 innerHTML 값 저장
     function saveTextData(type, silent = false) {
         if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
         let dStr = document.getElementById(type + '-date-input').value || Utils.getLogicalDateString();
-        let text = document.getElementById(type + '-input').value.replace(/\r\n/g, '\n').trim();
-        let exText = (dailyRecords[dStr] && dailyRecords[dStr][type]) ? String(dailyRecords[dStr][type]).replace(/\r\n/g, '\n').trim() : "";
+        
+        let editorEl = document.getElementById(type + '-input');
+        let text = editorEl.innerHTML.trim();
+        // 비어있는 p 태그나 br 만 있는 경우 완벽히 비우기
+        if (text === '<br>' || text === '<p><br></p>') text = "";
+
+        let exText = (dailyRecords[dStr] && dailyRecords[dStr][type]) ? String(dailyRecords[dStr][type]).trim() : "";
 
         if (text === exText) { 
             if(document.getElementById(type + '-modal').style.display !== 'none') {
@@ -1314,7 +1365,7 @@
         if(!silent) {
             SFX.play('success'); showToast(`${type==='diary'?'📝 일기':'✅ 할 일'}가 저장되었습니다!`);
             if(document.getElementById('calendar-view').style.display === 'flex') {
-                renderCalendar(); if(document.getElementById('record-modal').style.display === 'flex') showModal(dStr);
+                renderCalendar(); if(document.getElementById('record-modal').style.display === 'block') showModal(dStr);
             }
             updateDashboardTodoAlert(); triggerAutoSync(); 
         }
@@ -1514,8 +1565,8 @@
         const btn = document.getElementById('btn-manual-save');
         if(btn) { btn.innerText = "저장중..."; btn.style.opacity = 0.7; }
         
-        if(document.getElementById('diary-modal').style.display === 'flex') saveTextData('diary', true);
-        if(document.getElementById('todo-modal').style.display === 'flex') saveTextData('todo', true);
+        if(document.getElementById('diary-modal').style.display === 'block') saveTextData('diary', true);
+        if(document.getElementById('todo-modal').style.display === 'block') saveTextData('todo', true);
         
         if(syncTimer) clearTimeout(syncTimer); syncTodayRecord(); showLoading(true, "서버에 강제 저장 중..."); 
         try {
@@ -1567,25 +1618,37 @@
         grid.innerHTML = newHtml;
     }
     
+    window.switchTab = function(tabName) {
+        SFX.play('pop');
+        ['timeline', 'todo', 'diary'].forEach(t => {
+            let contentDiv = document.getElementById('tab-content-' + t);
+            let btnDiv = document.getElementById('tab-btn-' + t);
+            if(contentDiv && btnDiv) {
+                contentDiv.style.display = (t === tabName) ? 'block' : 'none';
+                btnDiv.className = (t === tabName) ? 'action-pill action-pill-blue' : 'action-pill action-pill-gray';
+            }
+        });
+    }
+
     function showModal(dStr) {
         const rec = dailyRecords[dStr] || { totalTime: "00h 00m", targetTime: "00h 00m", details: [], diary: "", todo: "" }; 
         document.getElementById('modal-title').innerText = `📅 ${dStr}`;
-        let html = `<div class="modal-total-time"><div><span>목표 시간</span><strong class="target-text">${rec.targetTime || "00h 00m"}</strong></div><div><span>집중 시간</span><strong>${rec.totalTime}</strong></div></div>`;
+        let html = `<div class="modal-total-time" style="margin-bottom:15px; padding-bottom:15px;"><div><span>목표 시간</span><strong class="target-text">${rec.targetTime || "00h 00m"}</strong></div><div><span>집중 시간</span><strong>${rec.totalTime}</strong></div></div>`;
         
-        html += `<div style="background:#f0f9ff; border:1px solid #bae6fd; padding:15px; border-radius:16px; margin-bottom:15px; position:relative;">
-                <div style="font-size:14px; font-weight:800; color:#0284c7; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
-                    <span>✅ 할 일 (To-Do)</span><button style="background:none; border:none; color:#0ea5e9; font-weight:bold; cursor:pointer; font-size:13px; padding:0;" onclick="SFX.play('pop'); openTextModal('todo', '${dStr}')">✏️ 작성/수정</button>
-                </div><div style="font-size:13.5px; color:var(--text-muted); line-height:1.6; white-space:pre-wrap; word-break:break-word;">${rec.todo ? Utils.escapeHTML(rec.todo) : '<span style="color:#94a3b8; font-style:italic;">등록된 할 일이 없습니다.</span>'}</div></div>`;
+        // 탭 메뉴
+        html += `
+        <div style="display:flex; gap:6px; margin-bottom:15px;">
+            <button id="tab-btn-timeline" class="action-pill action-pill-blue" style="flex:1; padding:10px 0;" onclick="switchTab('timeline')">🔥 시간표</button>
+            <button id="tab-btn-todo" class="action-pill action-pill-gray" style="flex:1; padding:10px 0;" onclick="switchTab('todo')">✅ 할 일</button>
+            <button id="tab-btn-diary" class="action-pill action-pill-gray" style="flex:1; padding:10px 0;" onclick="switchTab('diary')">📝 일기</button>
+        </div>
+        `;
 
-        html += `<div style="background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:16px; margin-bottom:20px;">
-                <div style="font-size:14px; font-weight:800; color:var(--text-main); margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
-                    <span>📝 나의 일기</span><button style="background:none; border:none; color:#8b5cf6; font-weight:bold; cursor:pointer; font-size:13px; padding:0;" onclick="SFX.play('pop'); openTextModal('diary', '${dStr}')">✏️ 작성/수정</button>
-                </div><div style="font-size:13.5px; color:var(--text-muted); line-height:1.6; white-space:pre-wrap; word-break:break-word;">${rec.diary && rec.diary.trim() !== '' ? Utils.escapeHTML(rec.diary) : '<span style="color:#94a3b8; font-style:italic;">등록된 일기가 없습니다.</span>'}</div></div>`;
-        
+        // 1. 타임라인 탭
         let valid = rec.details ? rec.details.filter(d => d.min > 0 || d.isTarget || (d.note && d.note !== "null" && d.note.trim() !== "")) : [];
-        if(valid.length === 0) { html += `<div class="tl-empty-state">세부 타임라인 기록이 없습니다.</div>`; } 
-        else {
-            html += `<div class="timeline">`;
+        html += `<div id="tab-content-timeline" style="display:block; background:#fff; border:1px solid #e2e8f0; padding:15px; border-radius:16px; min-height: 200px;">`;
+        if(valid.length > 0) {
+            html += `<div class="timeline" style="max-height: 250px; overflow-y: auto; padding-right:10px; margin-left:0;">`;
             valid.forEach(d => {
                 let isFocused = d.min > 0; let isPlanned = d.isTarget && !isFocused; 
                 let n = (d.note && d.note !== "null" && d.note.trim() !== "") ? Utils.escapeHTML(d.note.trim()) : "";
@@ -1596,8 +1659,143 @@
                 html += `<div class="timeline-item ${isFocused ? 'focused' : (isPlanned ? 'planned' : '')}"><div class="tl-time">${d.time}</div><div class="tl-content" ${n === '' ? 'style="padding: 10px 14px;"' : ''}>${contentInner}</div></div>`;
             });
             html += `</div>`;
+        } else {
+             html += `<div class="tl-empty-state" style="padding:15px 0;">세부 기록이 없습니다.</div>`;
         }
-        document.getElementById('modal-body').innerHTML = html; document.getElementById('record-modal').style.display = 'flex';
+        html += `</div>`;
+
+        // 2. 할 일 탭 (리치 텍스트 HTML 렌더링 지원)
+        let renderTodo = rec.todo ? Utils.sanitizeHTML(rec.todo) : '<span style="color:#94a3b8; font-style:italic;">등록된 할 일이 없습니다.</span>';
+        html += `<div id="tab-content-todo" style="display:none; background:#f0f9ff; border:1px solid #bae6fd; padding:15px; border-radius:16px; min-height: 200px; position:relative;">
+                <div style="font-size:14px; font-weight:800; color:#0284c7; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
+                    <span>✅ 체크리스트</span><button style="background:none; border:none; color:#0ea5e9; font-weight:bold; cursor:pointer; font-size:13px; padding:0;" onclick="SFX.play('pop'); document.getElementById('record-modal').style.display='none'; openTextModal('todo', '${dStr}')">✏️ 수정하기</button>
+                </div><div style="max-height: 220px; overflow-y: auto; font-size:14px; color:var(--text-main); line-height:1.7; word-break:break-word; padding-right:5px;">${renderTodo}</div></div>`;
+
+        // 3. 일기 탭 (리치 텍스트 HTML 렌더링 지원)
+        let renderDiary = (rec.diary && rec.diary.trim() !== '') ? Utils.sanitizeHTML(rec.diary) : '<span style="color:#94a3b8; font-style:italic;">등록된 일기가 없습니다.</span>';
+        html += `<div id="tab-content-diary" style="display:none; background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:16px; min-height: 200px; position:relative;">
+                <div style="font-size:14px; font-weight:800; color:var(--text-main); margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
+                    <span>📝 오늘 하루 요약</span><button style="background:none; border:none; color:#8b5cf6; font-weight:bold; cursor:pointer; font-size:13px; padding:0;" onclick="SFX.play('pop'); document.getElementById('record-modal').style.display='none'; openTextModal('diary', '${dStr}')">✏️ 수정하기</button>
+                </div><div style="max-height: 220px; overflow-y: auto; font-size:14px; color:var(--text-main); line-height:1.7; word-break:break-word; padding-right:5px;">${renderDiary}</div></div>`;
+        
+        document.getElementById('modal-body').innerHTML = html; document.getElementById('record-modal').style.display = 'block';
+    }
+
+    // ==========================================
+    // 📢 네이버 카페형 게시판 로직 (에디터 포함)
+    // ==========================================
+    function openBoardModal() {
+        document.body.style.overflow = 'hidden';
+        document.getElementById('board-modal').style.display = 'flex';
+        renderBoardList();
+    }
+
+    function closeBoardModal() {
+        document.getElementById('board-modal').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    async function renderBoardList() {
+        const area = document.getElementById('board-content-area');
+        area.innerHTML = "<div style='text-align:center; padding:40px; color:#64748b; font-weight:bold;'>서버에서 게시글을 불러오는 중... ⏳</div>";
+        try {
+            let res = await fetchServer("board_list");
+            if (res.success && res.data) {
+                let html = `<div style="padding:15px;"><div style="display:flex; justify-content:flex-end; margin-bottom:15px;">
+                                <button class="btn-primary" style="width:auto; padding:10px 20px; font-size:14px;" onclick="SFX.play('pop'); renderBoardWrite()">✏️ 글쓰기</button>
+                            </div><div style="background:#fff; border-radius:12px; border:1px solid #e2e8f0; overflow:hidden;">`;
+                
+                if (res.data.length > 0) {
+                    res.data.forEach(item => {
+                        html += `<div style="padding:15px; border-bottom:1px solid #f1f5f9; cursor:pointer;" onclick="SFX.play('tap'); renderBoardRead('${item.id}')">
+                                    <div style="font-size:15px; font-weight:800; color:var(--text-main); margin-bottom:6px;">${Utils.escapeHTML(item.title)}</div>
+                                    <div style="font-size:12px; color:#94a3b8; display:flex; justify-content:space-between;">
+                                        <span>👤 ${Utils.escapeHTML(item.author)} | 👁️ ${item.views}</span>
+                                        <span>${item.date}</span>
+                                    </div>
+                                 </div>`;
+                    });
+                } else {
+                    html += `<div style="padding:30px; text-align:center; color:#94a3b8;">등록된 글이 없습니다. 첫 글을 남겨보세요!</div>`;
+                }
+                html += `</div></div>`;
+                area.innerHTML = html;
+            } else { area.innerHTML = "<div style='text-align:center; color:#94a3b8; padding:30px;'>불러오지 못했습니다.</div>"; }
+        } catch(e) { area.innerHTML = "<div style='text-align:center; color:#ef4444; padding:30px;'>통신 오류가 발생했습니다.</div>"; }
+    }
+
+    async function renderBoardRead(id) {
+        const area = document.getElementById('board-content-area');
+        area.innerHTML = "<div style='text-align:center; padding:40px; color:#64748b; font-weight:bold;'>글을 불러오는 중... ⏳</div>";
+        try {
+            let res = await fetchServer("board_read", { id: id });
+            if (res.success && res.data) {
+                const item = res.data;
+                // 리치 텍스트 HTML 보안 렌더링
+                const safeHTML = Utils.sanitizeHTML(item.content);
+                area.innerHTML = `
+                    <div style="padding:15px;">
+                        <div style="background:#fff; padding:20px; border-radius:12px; border:1px solid #e2e8f0; min-height: 350px; display:flex; flex-direction:column;">
+                            <h4 style="margin:0 0 10px 0; font-size:18px; color:var(--text-main); line-height:1.4;">${Utils.escapeHTML(item.title)}</h4>
+                            <div style="font-size:12px; color:#94a3b8; padding-bottom:12px; border-bottom:1px solid #f1f5f9; margin-bottom:15px; display:flex; justify-content:space-between;">
+                                <span>👤 ${Utils.escapeHTML(item.author)}</span>
+                                <span>${item.date} | 👁️ ${item.views}</span>
+                            </div>
+                            <div style="font-size:14.5px; color:#334155; line-height:1.7; word-break:break-word; flex-grow:1;">${safeHTML}</div>
+                        </div>
+                        <button class="btn-primary" style="margin-top:15px; background:#64748b; box-shadow:none;" onclick="SFX.play('tap'); renderBoardList()">⬅️ 목록으로 돌아가기</button>
+                    </div>
+                `;
+            } else { area.innerHTML = "<div style='text-align:center; padding:30px;'>글을 찾을 수 없습니다.</div><button class='btn-primary' onclick='renderBoardList()'>목록으로</button>"; }
+        } catch(e) { area.innerHTML = "<div style='text-align:center; color:#ef4444; padding:30px;'>오류 발생</div>"; }
+    }
+
+    function renderBoardWrite() {
+        const area = document.getElementById('board-content-area');
+        area.innerHTML = `
+            <div class="sticky-toolbar-wrap" style="padding:15px 15px 0 15px; background:var(--bg);">
+                <div class="editor-toolbar">
+                    <button class="ed-btn" onclick="formatText('bold')"><b>B</b></button>
+                    <button class="ed-btn" onclick="formatText('underline')"><u>U</u></button>
+                    <button class="ed-btn" onclick="formatText('fontSize', '4')">크게</button>
+                    <div style="width:1px; background:#cbd5e1; margin:0 4px;"></div>
+                    <button class="ed-btn" style="color:#ef4444;" onclick="formatText('foreColor', '#ef4444')">●</button>
+                    <button class="ed-btn" style="color:#3b82f6;" onclick="formatText('foreColor', '#3b82f6')">●</button>
+                </div>
+            </div>
+            <div style="padding:10px 15px 15px 15px;">
+                <input type="text" id="board-write-title" class="input-field" placeholder="제목을 입력하세요 (최대 30자)" maxlength="30" style="margin-bottom:12px; font-weight:bold;">
+                <div id="board-write-content" class="rich-editor" contenteditable="true" placeholder="내용을 자유롭게 남겨주세요." style="min-height: 250px;"></div>
+                
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button class="btn-primary" style="background:#f1f5f9; color:#475569; box-shadow:none;" onclick="SFX.play('tap'); renderBoardList()">취소</button>
+                    <button class="btn-primary" id="board-submit-btn" onclick="SFX.play('success'); submitBoardPost()">등록하기</button>
+                </div>
+            </div>
+        `;
+    }
+
+    async function submitBoardPost() {
+        const titleInput = document.getElementById('board-write-title');
+        const contentInput = document.getElementById('board-write-content');
+        const btn = document.getElementById('board-submit-btn');
+        
+        const title = titleInput.value.trim();
+        const content = contentInput.innerHTML.trim();
+        
+        if (!title) return showToast("제목을 입력해주세요.");
+        if (!content || content === '<br>') return showToast("내용을 입력해주세요.");
+        
+        btn.innerText = "등록 중..."; btn.disabled = true;
+        
+        const now = new Date();
+        const timeStr = `${now.getFullYear()}.${Utils.pad(now.getMonth()+1)}.${Utils.pad(now.getDate())} ${Utils.pad(now.getHours())}:${Utils.pad(now.getMinutes())}`;
+        
+        try {
+            let res = await fetchServer("board_write", { title: title, content: content, author: activeUser, date: timeStr });
+            if (res.success) { showToast("게시글이 등록되었습니다."); renderBoardList(); } 
+            else { showToast("등록 실패. 다시 시도해주세요."); btn.innerText = "등록하기"; btn.disabled = false; }
+        } catch(e) { showToast("네트워크 오류 발생"); btn.innerText = "등록하기"; btn.disabled = false; }
     }
 
     const THEMES = {
@@ -1640,240 +1838,6 @@
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(reg => console.log('SW Ready!')).catch(err => console.log('SW Fail:', err)); });
     }
-
-    // ==========================================
-    // 🧠 7. 시뮬레이터 로직
-    // ==========================================
-    window.SCENARIO_PASSWORD = "036003";
-
-    function shuffleArray(array) {
-        let newArr = [...array];
-        for (let i = newArr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [newArr[i], newArr[j]] = [newArr[j], newArr[i]]; }
-        return newArr;
-    }
-
-    let simCurrentScenarioId = null;
-    let simCurrentStep = 0;
-    let currentSimSteps = [];
-
-    function openPasswordModal() {
-        const input = document.getElementById('scenario-pw-input'); if(input) input.value = "";
-        document.body.style.overflow = 'hidden'; document.getElementById('pw-modal').style.display = 'flex';
-        setTimeout(() => { if(input) input.focus(); }, 100);
-    }
-
-    function checkScenarioPw() {
-        const inputVal = document.getElementById('scenario-pw-input').value;
-        if (inputVal === window.SCENARIO_PASSWORD) {
-            SFX.play('success'); document.getElementById('pw-modal').style.display = 'none'; renderScenarioList();
-        } else {
-            SFX.play('tap'); showToast("❌ 비밀번호가 틀렸습니다."); document.getElementById('scenario-pw-input').value = "";
-        }
-    }
-
-    function renderScenarioList() {
-        const container = document.getElementById('scenario-btn-container'); if(!container) return; container.innerHTML = "";
-        SCENARIOS.forEach((scenario, index) => {
-            const btn = document.createElement('button');
-            btn.style.cssText = `width: 100%; padding: 18px; border-radius: 16px; font-size: 16px; font-weight: 900; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; background: ${scenario.btnColor}; color: white; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);`;
-            btn.innerHTML = `<span style="font-size: 17px;">${scenario.title}</span><span style="font-size: 12px; opacity: 0.8;">${scenario.subtitle}</span>`;
-            btn.onclick = () => { SFX.play('tap'); startSimulation(index); };
-            container.appendChild(btn);
-        });
-        document.getElementById('scenario-list-modal').style.display = 'flex';
-    }
-
-    function startSimulation(id) {
-        simCurrentScenarioId = id; simCurrentStep = 0; const scenario = SCENARIOS[id];
-        let stepsCopy = JSON.parse(JSON.stringify(scenario.steps));
-        currentSimSteps = (scenario.isRandom && scenario.pickCount) ? shuffleArray(stepsCopy).slice(0, scenario.pickCount) : stepsCopy;
-        document.getElementById('scenario-list-modal').style.display = 'none'; document.getElementById('sim-player-modal').style.display = 'flex';
-        renderSimStep();
-    }
-
-    function renderSimStep() {
-        const scenario = SCENARIOS[simCurrentScenarioId]; const step = currentSimSteps[simCurrentStep];
-        if(!step) return closeSimulation();
-
-        const prog = (simCurrentStep / currentSimSteps.length) * 100;
-        document.getElementById('sim-progress-fill').style.width = prog + "%";
-        document.getElementById('sim-title').innerText = scenario.title;
-        document.getElementById('sim-time-badge').innerText = "⏰ " + step.time;
-        document.getElementById('sim-situation-text').innerText = step.situation;
-
-        const area = document.getElementById('sim-action-area'); area.innerHTML = ""; area.style.display = "flex";
-        document.getElementById('sim-result-area').style.display = "none";
-
-        let choices = shuffleArray(step.choices);
-        choices.forEach(c => {
-            const btn = document.createElement('button'); btn.className = "sim-action-btn";
-            btn.style.borderColor = scenario.btnColor; btn.style.color = scenario.btnColor; btn.innerHTML = "👉 " + Utils.escapeHTML(c.label);
-            btn.onclick = () => handleChoice(c); area.appendChild(btn);
-        });
-    }
-
-    function handleChoice(choice) {
-        const area = document.getElementById('sim-result-area'); const text = document.getElementById('sim-result-text'); const nextBtn = document.getElementById('sim-next-btn');
-        document.getElementById('sim-action-area').style.display = "none"; area.style.display = "block";
-
-        let cleanResult = choice.result.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-
-        if (choice.isCorrect) {
-            SFX.play('success'); area.style.background = "#ecfdf5"; area.style.borderColor = "#10b981";
-            text.innerHTML = `<b style="color:#059669;font-size:18px;">🎉 정답!</b><br><br>${cleanResult}`;
-            nextBtn.innerText = (simCurrentStep === currentSimSteps.length - 1) ? "📝 총정리 및 종료" : "다음 상황으로 ➡️";
-            nextBtn.onclick = (simCurrentStep === currentSimSteps.length - 1) ? showFinalSummary : () => { simCurrentStep++; renderSimStep(); };
-        } else {
-            SFX.play('tap'); area.style.background = "#fef2f2"; area.style.borderColor = "#ef4444";
-            text.innerHTML = `<b style="color:#dc2626;font-size:18px;">🚨 오답 (주의!)</b><br><br>${cleanResult}`;
-            nextBtn.innerText = "🔄 다시 선택하기";
-            nextBtn.onclick = () => { area.style.display = "none"; document.getElementById('sim-action-area').style.display = "flex"; };
-        }
-    }
-
-    function showFinalSummary() {
-        const scenario = SCENARIOS[simCurrentScenarioId]; document.getElementById('sim-progress-fill').style.width = "100%";
-        document.getElementById('sim-situation-text').innerHTML = `<div style="background:#f8fafc; padding:20px; border-radius:12px; line-height:1.6; white-space:pre-wrap;">${Utils.escapeHTML(scenario.summary || "")}</div>`;
-        document.getElementById('sim-result-area').style.display = "none";
-        document.getElementById('sim-action-area').innerHTML = `<button class="btn-primary" style="background:${scenario.btnColor}" onclick="closeSimulation()">훈련 종료 (목록으로)</button>`;
-        document.getElementById('sim-action-area').style.display = "flex";
-    }
-
-    function closeSimulation() {
-        document.getElementById('sim-player-modal').style.display = 'none'; document.getElementById('scenario-list-modal').style.display = 'flex'; simCurrentStep = 0;
-    }
-
-    const SCENARIOS = [
-        {
-            id: 0,
-            btnColor: "#10b981", title: "🟢 비운동일 (13.5H 완주)", subtitle: "화, 수, 금, 토 극한의 몰입 스케줄", isRandom: false,
-            summary: "🔥 [비운동일 13.5H 요약]\n1. 침대 공부로 마찰력 제로 시동\n2. 빵/맥모닝으로 식곤증 방어\n3. 17시 고비 눈팩+커피 냅 리부팅",
-            steps: [
-                {
-                    time: "07:00", situation: "아침 7시. 침대 밖으로 나가기엔 몸이 너무 무겁습니다.", choices: [
-                        { label: "세수부터 하고 책상에 앉으려 노력한다.", isCorrect: false, result: "💀 [오답 노트]\n'침대에서 책상으로 이동'하는 물리적 마찰력이 너무 커서 포기할 확률이 80%입니다.\n\n✅ [정답 해설] (신뢰도 98%)\n**[작업 흥분 이론]** 일단 눈뜨자마자 누운 채로 탭을 켜서 가장 쉬운 암기 과목을 보세요. 뇌의 측좌핵이 예열되어 스스로 일어나게 만듭니다." },
-                        { label: "🛏️ 누운 상태로 탭을 켜서 가장 쉬운 암기 과목을 본다.", isCorrect: true, result: "✅ [정답 해설] (신뢰도 98%)\n**[실행 마찰력 최소화]** 누워서 공부하는 것은 죄가 아닙니다. 가장 저항이 적은 행동으로 뇌를 깨우는 최고 효율의 시동법입니다.\n\n❌ [오답 노트]\n완벽한 세팅(샤워, 책상 정리)을 고집하면 시작 자체가 지연됩니다." }
-                    ]
-                },
-                {
-                    time: "13:30", situation: "점심시간, 든든한 한식을 먹을지 가벼운 빵을 먹을지 고민됩니다.", choices: [
-                        { label: "국밥이나 찌개류로 배를 든든하게 채운다.", isCorrect: false, result: "💀 [오답 노트]\n탄수화물과 나트륨의 과다 결합은 오후 내내 극심한 식곤증(브레인 포그)을 유발합니다.\n\n✅ [정답 해설] (신뢰도 94%)\n**[혈당 스파이크 방어]** 가벼운 빵(정제 탄수화물)으로 뇌에 필요한 당만 빠르게 공급하고 포만감을 낮추는 것이 오후 4시간 집중의 비결입니다." },
-                        { label: "🥐 가벼운 빵을 먹고 즉시 온열안대 20분 휴식을 취한다.", isCorrect: true, result: "✅ [정답 해설] (신뢰도 94%)\n**[NASA식 피로 리셋]** 소식을 통한 혈당 방어 + 시각 정보 차단(눈팩)은 오후 집중력을 오전 수준으로 끌어올리는 치트키입니다.\n\n❌ [오답 노트]\n배부른 한식은 소화 기관으로 혈류를 쏠리게 해 뇌를 멍하게 만듭니다." }
-                    ]
-                },
-                {
-                    time: "17:00", situation: "가장 고비인 17시. 체력이 바닥나고 집중력이 박살 났습니다.", choices: [
-                        { label: "초인적인 의지력으로 참고 야간 스퍼트를 준비한다.", isCorrect: false, result: "💀 [오답 노트]\n의지력은 이미 소진되었습니다. 이대로 버티면 19시쯤 완전히 붕괴되어 조기 퇴근하게 됩니다.\n\n✅ [정답 해설] (신뢰도 99%)\n**[아데노신 클리어]** 커피 1잔을 마시고 눈팩과 함께 20분 자는 '커피 냅'만이 야간 5시간을 버티게 할 유일한 생물학적 동력입니다." },
-                        { label: "☕ 커피 1잔 + 눈팩 2회차 + 20분 수면(커피 냅)을 실행한다.", isCorrect: true, result: "✅ [정답 해설] (신뢰도 99%)\n**[커피 냅 프로토콜]** 카페인이 뇌에 도달하는 20분 동안 가수면을 취해 피로 물질을 비워내면, 각성 효과가 200% 증폭됩니다.\n\n❌ [오답 노트]\n무작정 버티는 것은 활자만 쳐다보는 가짜 공부를 유발합니다." }
-                    ]
-                },
-                {
-                    time: "18:00", situation: "야간 5.5시간 스퍼트를 시작합니다. 뇌가 지루해합니다.", choices: [
-                        { label: "완전한 적막 속에서 법학 이론을 깊게 판다.", isCorrect: false, result: "💀 [오답 노트]\n야간에 인지 부하가 높은 새로운 이론을 파면 뇌가 거부 반응을 일으켜 딴짓을 찾습니다.\n\n✅ [정답 해설] (신뢰도 92%)\n**[맥락 전환 기법]** 프리렌 BGM 같은 백색소음을 켜고, 이미 아는 것을 뱉어내는 '오답 정리/인출'을 해야 텐션이 유지됩니다." },
-                        { label: "🎧 프리렌 BGM을 켜고 오답 정리 및 출력 학습을 한다.", isCorrect: true, result: "✅ [정답 해설] (신뢰도 92%)\n**[상태 조절 효과]** 지루한 야간에는 적절한 청각적 자극(가사 없는 BGM)과 '아웃풋(출력)' 중심의 공부가 뇌의 도파민을 유지시킵니다.\n\n❌ [오답 노트]\n조용한 곳에서의 인풋(이론 읽기)은 수면제와 같습니다." }
-                    ]
-                }
-            ]
-        },
-        {
-            id: 1,
-            btnColor: "#3b82f6", title: "🏃‍♂️ 운동일 (10H 에너지 세이브)", subtitle: "운동 전 목표 완수 및 수면 최적화", isRandom: false,
-            summary: "🏃‍♂️ [운동일 요약]\n1. 19시 30분 전까지 10H 달성\n2. 운동 가는 마찰력 완벽 제거\n3. 즉시 샤워 후 칼취침",
-            steps: [
-                {
-                    time: "18:30", situation: "야간 마무리 1시간 전, 뇌가 완전히 지쳤습니다.", choices: [
-                        { label: "어려운 판례나 복잡한 계산 문제를 푼다.", isCorrect: false, result: "💀 [오답 노트]\n에너지가 고갈된 상태에서 고난도 작업은 좌절감을 유발해 내일의 공부 동기까지 꺾어버립니다.\n\n✅ [정답 해설] (신뢰도 95%)\n**[마무리 엔도르핀]** 가벼운 두문자 암기나 쉬운 OX 문제로 '오늘 다 해냈다'는 성취감을 뇌에 각인시키며 끝내야 합니다." },
-                        { label: "📖 가볍고 쉬운 두문자 암기나 OX 문제를 풀며 성취감을 챙긴다.", isCorrect: true, result: "✅ [정답 해설] (신뢰도 95%)\n**[피크-엔드 법칙]** 뇌는 경험의 '마지막 순간'을 강렬하게 기억합니다. 쉬운 걸로 기분 좋게 끝내야 내일 책상에 앉기 싫은 마음이 사라집니다.\n\n❌ [오답 노트]\n마지막에 어려운 걸 풀다 틀리면 스트레스 호르몬 상태로 퇴실하게 됩니다." }
-                    ]
-                },
-                {
-                    time: "21:00", situation: "운동 갈 시간입니다. 오늘 하루 10시간이나 해서 너무 피곤합니다.", choices: [
-                        { label: "침대에 누워서 갈까 말까 5분만 고민해 본다.", isCorrect: false, result: "💀 [오답 노트]\n인간의 뇌는 피곤할 때 무조건 '안 하는 쪽'으로 합리화의 천재가 됩니다. 고민하는 순간 지는 겁니다.\n\n✅ [정답 해설] (신뢰도 97%)\n**[실행 의도 설계]** 생각할 틈을 주지 마세요. 아침에 미리 세팅해 둔 수건과 옷을 들고 바로 화장실로 직행해야 합니다." },
-                        { label: "🏋️ 생각 스위치를 끄고, 미리 세팅해 둔 옷을 입고 나간다.", isCorrect: true, result: "✅ [정답 해설] (신뢰도 97%)\n**[마찰력 제거의 법칙]** 환경을 미리 세팅해 두면 행동 개시 에너지가 1/10로 줄어듭니다. 운동은 신체 피로를 푸는 '적극적 휴식'입니다.\n\n❌ [오답 노트]\n누워서 고민하는 에너지가 운동하는 에너지보다 큽니다." }
-                    ]
-                }
-            ]
-        },
-        {
-            id: 4,
-            btnColor: "#8b5cf6", title: "🚨 돌발/퐁당퐁당 (무작위 훈련)", subtitle: "8시간-3시간 패턴(자아고갈) 완벽 방어", isRandom: true, pickCount: 3,
-            steps: [
-                {
-                    time: "돌발", situation: "어제 9시간을 넘겼더니, 오늘 아침엔 1분도 책상에 앉기가 싫습니다. (퐁당퐁당 패턴)", choices: [
-                        { label: "어제 많이 했으니 오늘은 스카에 가지 않고 집에서 쉰다.", isCorrect: false, result: "💀 [오답 노트]\n공부 리듬이 끊어지는 전형적인 패배 루트입니다. 내일은 스카 가기가 3배 더 힘들어집니다.\n\n✅ [정답 해설] (신뢰도 98%)\n**[관성 유지의 법칙]** 공부 시간은 줄이더라도 '스카에 출석하는 행위' 자체는 유지해야 뇌의 관성이 깨지지 않습니다." },
-                        { label: "🚶 일단 무조건 스카에 가서 딱 2시간만 제일 좋아하는 과목을 한다.", isCorrect: true, result: "✅ [정답 해설] (신뢰도 98%)\n**[최소 정체성 방어]** '나는 매일 스카에 가는 사람'이라는 정체성을 지키는 게 핵심입니다. 가서 2시간만 쉬운 걸 하고 오면 내일 리듬이 복구됩니다." }
-                    ]
-                },
-                {
-                    time: "돌발", situation: "점심 먹고 스카에 돌아왔는데, 폰으로 유튜브를 켜버렸습니다.", choices: [
-                        { label: "이왕 켠 거, 딱 10분만 보고 끈다.", isCorrect: false, result: "💀 [오답 노트]\n도파민 알고리즘 앞에서 인간의 자제력은 무용지물입니다. 10분이 2시간이 되는 마법을 겪게 됩니다." },
-                        { label: "📱 즉시 폰 전원을 끄고 사물함 깊숙한 곳에 던져 넣는다.", isCorrect: true, result: "✅ [정답 해설] (신뢰도 96%)\n**[환경 통제 이론]** 의지력은 소모품입니다. 유혹을 '참는 데' 에너지를 쓰지 말고, 유혹 자체를 눈앞에서 물리적으로 치워버리세요." }
-                    ]
-                },
-                {
-                    time: "돌발", situation: "시험이 다가오는데 모의고사 점수가 안 올라 불안감에 심장이 뜁니다.", choices: [
-                        { label: "불안감을 잊기 위해 잠을 줄이고 문제풀이 양을 2배로 늘린다.", isCorrect: false, result: "💀 [오답 노트]\n수면 부족 + 스트레스는 코르티솔 수치를 급증시켜 해마를 마비시킵니다. 밑빠진 독에 물 붓기입니다." },
-                        { label: "✍️ 백지를 꺼내 내 감정과 약점을 5분간 객관적으로 쏟아내 적는다.", isCorrect: true, result: "✅ [정답 해설] (신뢰도 94%)\n**[제임스 페네베이커 연구]** 억눌린 감정을 글로 시각화하면, 뇌는 이를 '통제 가능한 문제'로 인식하여 즉각적으로 편도체(불안 센터) 진정시킵니다." }
-                    ]
-                }
-            ]
-        },
-        {
-            id: 5,
-            btnColor: "#0ea5e9", title: "📚 칼럼 퀴즈 (심화 학습)", subtitle: "전 세계 석학들의 뇌 과학 & 장기 고시생 데이터", isRandom: true, pickCount: 8,
-            steps: [
-                {
-                    time: "칼럼", situation: "[에빙하우스 연구] 암기 효율이 극대화되는 가장 과학적인 복습 타이밍은?", choices: [
-                        { label: "외운 즉시 10번 반복해서 소리 내어 읽기", isCorrect: false, result: "💀 [오답: 신뢰도 94%]\n**착각적 유창성**: 눈에 익은 것을 머리에 들어왔다고 뇌가 거짓말을 하게 됩니다." },
-                        { label: "살짝 가물가물하여 기억하기 고통스러울 때 다시 꺼내기", isCorrect: true, result: "✅ [해설: 신뢰도 99%]\n**바람직한 어려움(Desirable Difficulty)**: 뇌가 정보를 끄집어내려고 애쓸 때 신경 시냅스가 가장 강력하게 연결됩니다." }
-                    ]
-                },
-                {
-                    time: "칼럼", situation: "[울트라디안 리듬] 13.5시간 레이스를 완주하기 위한 효율적인 휴식 주기는?", choices: [
-                        { label: "흐름이 끊기지 않게 4시간 연속으로 공부하고 길게 쉰다.", isCorrect: false, result: "💀 [오답: 신뢰도 91%]\n**초집중의 역설**입니다. 2시간이 넘어가면 뇌는 의미를 파악하지 못하는 '가짜 집중' 상태에 빠집니다." },
-                        { label: "90분 집중 후, 10분간 눈을 감고 시각 자극을 차단한다.", isCorrect: true, result: "✅ [심층 해설: 신뢰도 97%]\n**기초 휴식-활동 주기(BRAC)**: 파동이 끝날 때 10분간 쉬어주지 않으면 뇌에 피로 물질인 아데노신이 쌓입니다. 눈을 감는 것만으로 전두엽 부하를 크게 낮출 수 있습니다." }
-                    ]
-                },
-                {
-                    time: "칼럼", situation: "[100% 원칙] '오늘은 힘드니까 30분 일찍 접을까?'라는 유혹이 위험한 이유는?", choices: [
-                        { label: "30분 공부량이 합격에 큰 지장을 줄 것이라 걱정하는 것", isCorrect: false, result: "💀 [오답: 신뢰도 91%]\n30분의 지식 양보다 무서운 것은 **'나와의 약속을 어기는 회로'**가 뇌에 생성되는 것입니다." },
-                        { label: "98%보다 100%가 지키기 쉽다는 사실을 망각하는 것", isCorrect: true, result: "✅ [심층 해설: 신뢰도 96%]\n**클레이튼 크리스텐슨의 '100% 원칙'**: '이번 한 번만'을 허용하는 순간, 다음 위기 때마다 '타협할지 말지' 결정하는 데 엄청난 전두엽 에너지를 소모하게 됩니다." }
-                    ]
-                },
-                {
-                    time: "칼럼", situation: "[실행 의도] 오늘따라 공부 시작 버튼을 누르기가 너무 싫을 때, 실행력을 높이는 주문은?", choices: [
-                        { label: "합격 후의 모습을 상상하며 긍정적인 에너지를 끌어올린다.", isCorrect: false, result: "💀 [오답: 신뢰도 85%]\n과도한 낙관적 상상은 뇌가 이미 목표를 이룬 것으로 착각하게 만들어 행동 에너지를 감소시킵니다." },
-                        { label: "📍 '만약 탭을 켜면(If), 트리노트 1페이지부터 읽겠다(Then)'고 구체화한다.", isCorrect: true, result: "✅ [심층 해설: 신뢰도 98%]\n**실행 의도(Implementation Intentions)**: 뇌는 막연한 의지보다 'If-Then' 명령어에 전두엽의 부하 없이 즉각적인 행동을 개시합니다." }
-                    ]
-                },
-                {
-                    time: "칼럼", situation: "[도파민 항상성] 13.5시간 레이스 중 유튜브 시청 시 '절대 피해야 할' 영상은?", choices: [
-                        { label: "애니메이션 리뷰 등 10분 이상의 긴 영상", isCorrect: false, result: "💀 [오답: 신뢰도 92%]\n긴 영상은 숏폼보다 자극 상승 속도가 완만하여 공부 복귀 시 뇌가 받는 충격이 덜합니다." },
-                        { label: "숏폼(Shorts, 릴스) 등 1분 이내의 고자극 영상", isCorrect: true, result: "✅ [심층 해설: 신뢰도 98%]\n**애나 렘키의 '도파민네이션'**: 숏폼은 도파민을 비정상적으로 급상승시킵니다. 이후 상대적으로 지루한 책을 견디지 못하고 포그 현상을 일으킵니다." }
-                    ]
-                },
-                {
-                    time: "칼럼", situation: "[사전 전념] 계속 새로운 애니를 찾아보는 본능적 폭주를 막는 경제학적 대책은?", choices: [
-                        { label: "유혹이 닥쳤을 때 합격 수기를 떠올리며 정신력으로 참는다.", isCorrect: false, result: "💀 [오답: 신뢰도 12%]\n유혹이 눈앞에 있을 때 이성(전두엽)은 감정(변연계)을 이길 수 없습니다." },
-                        { label: "🛡️ 의지력이 높은 아침에 유혹 앱을 잠그거나 삭제한다.", isCorrect: true, result: "✅ [심층 해설: 신뢰도 98%]\n**사전 전념(Precommitment)**: 오디세우스가 스스로를 돛대에 묶은 것과 같습니다. 유혹이 발생할 '환경'을 미리 제거하는 것만이 유일한 승리법입니다." }
-                    ]
-                },
-                {
-                    time: "칼럼", situation: "[미엘린화] 8시간을 넘겨 공부할 때 머리가 타들어 가듯 고통스럽다면?", choices: [
-                        { label: "뇌세포가 파괴되고 있으므로 즉시 공부를 멈춰야 한다는 신호다.", isCorrect: false, result: "💀 [오답: 신뢰도 82%]\n단순 졸음과 집중의 고통은 구분해야 합니다. 튕겨 나가는 활자를 붙잡는 순간이 뇌 가소성의 골든타임입니다." },
-                        { label: "🧠 회로가 절연체(미엘린)로 감싸지며 '초고속 합격 회로'가 구축되는 중이다.", isCorrect: true, result: "✅ [심층 해설: 신뢰도 96%]\n고통스럽다는 것은 지식 전달 경로에 **미엘린(Myelin)** 층이 쌓이고 있다는 증거입니다. 이 고통을 견뎌야 기계적인 암기왕이 됩니다." }
-                    ]
-                },
-                {
-                    time: "칼럼", situation: "[공간 분리] 공부하던 스카 책상에서 유튜브를 보면 치명적인 이유는?", choices: [
-                        { label: "규칙 위반으로 퇴실 조치될 수 있기 때문", isCorrect: false, result: "💀 [오답]\n규칙 위반보다 무서운 건 **'뇌 각인 시스템'**이 무너지는 것입니다." },
-                        { label: "스카 책상을 뇌가 '노는 곳'으로 오인하여 집중력을 떨어뜨리기 때문", isCorrect: true, result: "✅ [심층 해설: 신뢰도 93%]\n**조건반사 이론**: 공간은 특정 행동과 결합합니다. 책상에서 놀면 뇌는 그곳을 '보상 기대 장소'로 재정의해 자꾸 딴생각을 유발합니다." }
-                    ]
-                }
-            ]
-        }
-    ];
-
 </script>
 </body>
 </html>
