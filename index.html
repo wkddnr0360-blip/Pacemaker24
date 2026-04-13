@@ -34,20 +34,26 @@
     .input-field { width: 100%; box-sizing: border-box; padding: 14px; margin-bottom: 16px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 15px; background: var(--bg); transition: all 0.2s; font-family: inherit; }
     .input-field:focus { outline: none; border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 4px rgba(59,130,246,0.1); }
     
-    /* 🚀 리치 텍스트 에디터 (자동 확장형) CSS */
+    /* 🚀 리치 텍스트 에디터 & 통합 툴바 CSS */
+    .unified-toolbar { display:flex; gap:8px; flex-wrap:wrap; background:var(--surface); padding:10px 15px; border-bottom:1px solid #e2e8f0; z-index:50; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+    .ed-btn { background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:6px 12px; font-size:14px; font-weight:800; cursor:pointer; color:var(--text-main); display:flex; align-items:center; justify-content:center; transition:0.1s; touch-action: manipulation;}
+    .ed-btn:active { background:#e2e8f0; transform: scale(0.95); }
+    .color-btn { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: 0.1s; box-sizing:border-box; }
+    .color-btn:active { transform: scale(0.85); }
+    .color-black { background: #1e293b; }
+    .color-red { background: #ef4444; }
+    .color-blue { background: #3b82f6; }
+    .color-yellow { background: #fef08a; border: 1px solid #cbd5e1; }
+    
     .rich-editor {
-        width: 100%; min-height: 180px; padding: 15px; border-radius: 12px;
-        border: 1.5px solid #e2e8f0; font-family: inherit; font-size: 14.5px;
-        box-sizing: border-box; background: var(--bg); color: var(--text-main);
+        width: 100%; min-height: 250px; padding: 15px; border-radius: 12px;
+        border: 1.5px solid transparent; font-family: inherit; font-size: 15px;
+        box-sizing: border-box; background: var(--surface); color: var(--text-main);
         line-height: 1.7; outline: none; transition: all 0.2s; cursor: text;
         word-break: break-word; white-space: pre-wrap;
     }
-    .rich-editor:focus { border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 4px rgba(59,130,246,0.1); }
+    .rich-editor:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(59,130,246,0.05); }
     .rich-editor:empty:before { content: attr(placeholder); color: #94a3b8; pointer-events: none; display: block; font-style: italic;}
-    .editor-toolbar { display:flex; gap:6px; flex-wrap:wrap; background:var(--surface); padding:8px; border-radius:10px; border:1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
-    .ed-btn { background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:6px 12px; font-size:13px; font-weight:800; cursor:pointer; color:var(--text-main); display:flex; align-items:center; justify-content:center; transition:0.1s; touch-action: manipulation;}
-    .ed-btn:active { background:#e2e8f0; transform: scale(0.95); }
-    .sticky-toolbar-wrap { position:sticky; top:0; background:var(--bg); z-index:10; padding-bottom:12px; }
 
     .btn-primary { background: var(--primary); color: white; border: none; padding: 16px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 12px rgba(59,130,246,0.3); touch-action: manipulation; }
     .btn-primary:active { transform: scale(0.98); }
@@ -147,9 +153,9 @@
 
     .overlay-base { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px); z-index: 2000; cursor: pointer; }
     .modal-box { background: var(--surface); width: 100%; max-width: 450px; border-radius: 24px; max-height: 85vh; display:flex; flex-direction:column; box-shadow: 0 25px 50px rgba(0,0,0,0.3); box-sizing: border-box; cursor: default; overflow: hidden; }
-    .modal-header { padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: var(--surface); z-index: 20; }
-    .modal-content-scroll { flex-grow: 1; overflow-y: auto; padding: 20px; background: var(--bg); position: relative; }
-    .modal-footer { padding: 15px 20px; background: var(--surface); border-top: 1px solid #e2e8f0; z-index: 20; }
+    .modal-header { padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: var(--surface); z-index: 20; flex-shrink: 0; }
+    .modal-content-scroll { flex-grow: 1; overflow-y: auto; padding: 15px; background: var(--bg); position: relative; }
+    .modal-footer { padding: 15px 20px; background: var(--surface); border-top: 1px solid #e2e8f0; z-index: 20; flex-shrink: 0; }
 
     #loading-overlay { background: rgba(255,255,255,0.95); flex-direction: column; gap: 10px; color: var(--primary); font-weight: bold; z-index: 9999; font-size: 18px; cursor: default; }
     #toast-notification { position: fixed; top: -60px; left: 50%; transform: translateX(-50%); background: var(--surface); color: var(--text-main); padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 800; box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 9999; transition: top 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); border: 2px solid var(--primary); pointer-events: none; }
@@ -378,10 +384,10 @@
         </div>
         <div style="max-height: 55vh; overflow-y: auto; padding-right: 5px;">
             <div class="guide-box primary">
-                <div class="guide-title">🚀 0.8.1 리치 에디터 & 안정화 패치</div>
-                <div class="guide-desc">• 📝 글 작성 시 창이 스스로 길어지는 <b>리치 텍스트 에디터</b> 도입 (스크롤 불편 해소).<br>• 🎨 툴바를 이용해 <b>굵기, 폰트 크기, 색상 등 문서 꾸미기</b> 지원.<br>• 🛡️ 다중 접속 시 빈 데이터가 로컬을 덮어씌우는 현상을 막는 <b>서버 보호막 로직</b> 적용.</div>
+                <div class="guide-title">🚀 0.8.2 통합 에디터 & 최적화 패치</div>
+                <div class="guide-desc">• 📝 모든 작성 영역(일기/할일/게시판)에 <b>공통 서식 도구(색상, 리스트, 굵기 등)</b> 적용.<br>• 🎨 글씨가 길어져도 <b>도구 모음(툴바) 영역과 겹치지 않도록</b> 레이아웃 전면 개선.<br>• 🛡️ 서버 통신 및 HTML 서식 보존 안전망 강화.</div>
             </div>
-            <div class="guide-box purple">
+            <div class="guide-box success">
                 <div class="guide-title">🚀 0.8.0 캘린더 UI & 알람 패치</div>
                 <div class="guide-desc">• ⏰ 앱이 열려있으면 <b>6시간 주기 알람</b> 자동 전송.<br>• 🎨 캘린더 상세 모달 <b>3단 탭(Tab) UI</b> 적용 (타임라인/할일/일기).</div>
             </div>
@@ -393,7 +399,7 @@
 <div id="guide-modal" class="overlay-base">
     <div class="modal-box" style="padding: 25px; max-width: 450px; background: var(--bg); display:block;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h3 style="margin:0; font-size:22px; font-weight:900; color:var(--text-main);">🙋‍♀️ 초보 가이드 (v0.8.1)</h3>
+            <h3 style="margin:0; font-size:22px; font-weight:900; color:var(--text-main);">🙋‍♀️ 초보 가이드 (v0.8.2)</h3>
             <button style="background:var(--surface); color:#64748b; border:1px solid #e2e8f0; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); document.getElementById('guide-modal').style.display='none'; document.body.style.overflow='';">✖</button>
         </div>
         <div style="max-height: 60vh; overflow-y: auto; padding-right: 5px;">
@@ -414,7 +420,7 @@
             </div>
             <div class="guide-box success">
                 <div class="guide-title">📝 4단계. 메모와 일기 (저장은 자동!)</div>
-                <div class="guide-desc">메모, 할 일, 일기를 새롭게 도입된 <b>리치 에디터</b>로 작성하세요. 글이 길어져도 끊김 없이 편하게 적고 꾸밀 수 있습니다.</div>
+                <div class="guide-desc">메모, 할 일, 일기를 새롭게 도입된 <b>통합 에디터</b>로 작성하세요. 형광펜과 글씨 색상을 자유롭게 꾸며보세요.</div>
             </div>
             <div class="guide-box info">
                 <div class="guide-title">📢 5단계. 실시간 스터디 라운지</div>
@@ -446,18 +452,21 @@
             <h3 id="diary-modal-title" style="margin:0; font-size:18px; font-weight:800; color:var(--text-main);">📝 오늘의 일기</h3>
             <button style="background:#f1f5f9; color:#64748b; border:none; width:32px; height:32px; border-radius:50%; font-weight:bold; cursor:pointer;" onclick="SFX.play('tap'); saveTextData('diary', true); document.getElementById('diary-modal').style.display='none'; document.body.style.overflow='';">✖</button>
         </div>
+        <div class="unified-toolbar">
+            <button class="ed-btn" onclick="formatText('bold')" title="굵게"><b>B</b></button>
+            <button class="ed-btn" onclick="formatText('italic')" title="기울임"><i>I</i></button>
+            <button class="ed-btn" onclick="formatText('underline')" title="밑줄"><u>U</u></button>
+            <button class="ed-btn" onclick="formatText('strikeThrough')" title="취소선"><s>S</s></button>
+            <div style="width:1px; background:#cbd5e1; margin:0 2px;"></div>
+            <button class="ed-btn" onclick="formatText('insertUnorderedList')" title="리스트">점</button>
+            <button class="ed-btn" onclick="formatText('removeFormat')" title="서식 지우기">🧹</button>
+            <div style="width:1px; background:#cbd5e1; margin:0 2px;"></div>
+            <button class="color-btn color-black" onclick="formatText('foreColor', '#1e293b')"></button>
+            <button class="color-btn color-red" onclick="formatText('foreColor', '#ef4444')"></button>
+            <button class="color-btn color-blue" onclick="formatText('foreColor', '#3b82f6')"></button>
+            <button class="color-btn color-yellow" onclick="formatText('hiliteColor', '#fef08a')" title="형광펜"></button>
+        </div>
         <div class="modal-content-scroll">
-            <div class="sticky-toolbar-wrap">
-                <div class="editor-toolbar">
-                    <button class="ed-btn" onclick="formatText('bold')"><b>B</b></button>
-                    <button class="ed-btn" onclick="formatText('underline')"><u>U</u></button>
-                    <button class="ed-btn" onclick="formatText('fontSize', '4')">크게</button>
-                    <div style="width:1px; background:#cbd5e1; margin:0 2px;"></div>
-                    <button class="ed-btn" style="color:#ef4444;" onclick="formatText('foreColor', '#ef4444')">●</button>
-                    <button class="ed-btn" style="color:#3b82f6;" onclick="formatText('foreColor', '#3b82f6')">●</button>
-                    <button class="ed-btn" style="color:#1e293b;" onclick="formatText('foreColor', '#1e293b')">●</button>
-                </div>
-            </div>
             <input type="hidden" id="diary-date-input">
             <div id="diary-input" class="rich-editor" contenteditable="true" placeholder="오늘 하루는 어땠나요? 자유롭게 적어보세요!"></div>
         </div>
@@ -473,17 +482,17 @@
             <h3 id="todo-modal-title" style="margin:0; font-size:18px; font-weight:800; color:var(--text-main);">✅ 오늘의 할 일</h3>
             <button style="background:#f1f5f9; color:#64748b; border:none; width:32px; height:32px; border-radius:50%; font-weight:bold; cursor:pointer;" onclick="SFX.play('tap'); saveTextData('todo', true); document.getElementById('todo-modal').style.display='none'; document.body.style.overflow='';">✖</button>
         </div>
+        <div class="unified-toolbar">
+            <button class="ed-btn" style="color:#0ea5e9;" onclick="insertEmojiAtCursor('⬜ ')">⬜ 할일</button>
+            <button class="ed-btn" style="color:#10b981;" onclick="insertEmojiAtCursor('✅ ')">✅ 완료</button>
+            <div style="width:1px; background:#cbd5e1; margin:0 2px;"></div>
+            <button class="ed-btn" onclick="formatText('bold')" title="굵게"><b>B</b></button>
+            <button class="ed-btn" onclick="formatText('strikeThrough')" title="취소선"><s>S</s></button>
+            <button class="color-btn color-red" onclick="formatText('foreColor', '#ef4444')"></button>
+            <button class="color-btn color-blue" onclick="formatText('foreColor', '#3b82f6')"></button>
+            <button class="color-btn color-yellow" onclick="formatText('hiliteColor', '#fef08a')" title="형광펜"></button>
+        </div>
         <div class="modal-content-scroll">
-            <div class="sticky-toolbar-wrap">
-                <div class="editor-toolbar">
-                    <button class="ed-btn" onclick="insertEmojiAtCursor('⬜ ')">⬜ 할일 추가</button>
-                    <button class="ed-btn" onclick="insertEmojiAtCursor('✅ ')">✅ 완료 처리</button>
-                    <div style="width:1px; background:#cbd5e1; margin:0 2px;"></div>
-                    <button class="ed-btn" onclick="formatText('bold')"><b>B</b></button>
-                    <button class="ed-btn" style="color:#ef4444;" onclick="formatText('foreColor', '#ef4444')">●</button>
-                    <button class="ed-btn" style="color:#3b82f6;" onclick="formatText('foreColor', '#3b82f6')">●</button>
-                </div>
-            </div>
             <input type="hidden" id="todo-date-input">
             <div id="todo-input" class="rich-editor" contenteditable="true" placeholder="오늘의 할 일을 리스트업 해보세요!"></div>
         </div>
@@ -509,7 +518,7 @@
             <h3 id="board-header-title" style="margin:0; font-size:18px; font-weight:900; color:var(--text-main);">📢 스터디 라운지</h3>
             <button style="background:#f1f5f9; color:#64748b; border:none; width:32px; height:32px; border-radius:50%; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); closeBoardModal()">✖</button>
         </div>
-        <div id="board-content-area" class="modal-content-scroll" style="position: relative;"></div>
+        <div id="board-content-area" style="flex-grow:1; display:flex; flex-direction:column; overflow:hidden;"></div>
     </div>
 </div>
 
@@ -541,7 +550,7 @@
     // ==========================================
     // 📦 1. 시스템 설정 및 전역 변수
     // ==========================================
-    const APP_VERSION = "0.8.1 에디터 & 안정화 패치"; 
+    const APP_VERSION = "0.8.2 에디터 통합 패치"; 
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyiW3ndi5ay7sqa1p-mE1caZvnOClQ0St0Xfqgwdw2xDyJQYdr6A_s8pLGUw9bceNvZ/exec";
     
     let activeUser = localStorage.getItem('activeUser');
@@ -571,12 +580,16 @@
         sanitizeHTML: (str) => {
             if (!str) return "";
             let s = str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            s = s.replace(/&lt;(b|u|div|br|\/b|\/u|\/div|\/span|\/font)&gt;/gi, '<$1>');
+            // 안전망 갱신: 리치 텍스트 에디터에서 사용하는 태그 허용 (bold, italic, color, list 등)
+            s = s.replace(/&lt;(b|i|u|s|em|strong|strike|div|br|ul|ol|li|p|h[1-6]|\/b|\/i|\/u|\/s|\/em|\/strong|\/strike|\/div|\/ul|\/ol|\/li|\/p|\/h[1-6]|\/span|\/font)&gt;/gi, '<$1>');
             s = s.replace(/&lt;br\/?&gt;/gi, '<br>');
             s = s.replace(/&lt;font color="([^"]+)"&gt;/gi, '<font color="$1">');
             s = s.replace(/&lt;font size="([^"]+)"&gt;/gi, '<font size="$1">');
             s = s.replace(/&lt;span style="([^"]+)"&gt;/gi, function(match, p1) {
-                if(p1.includes('color')) return `<span style="${p1}">`; return '<span>';
+                if(p1.includes('background-color') || p1.includes('color')) {
+                    return `<span style="${p1}">`; 
+                }
+                return '<span>';
             });
             return s;
         },
@@ -1046,7 +1059,6 @@
                 statusEl.innerText = res.message || "서버 통신에 실패했습니다."; SFX.play('tap');
                 activeUser = null; activePw = null; 
             } else {
-                // 신규 유저 또는 데이터가 완전 초기화된 경우
                 localStorage.setItem('activeUser', activeUser); localStorage.setItem('activePw', activePw); 
                 document.getElementById('login-view').style.display = 'none';
                 initLocalState(); 
@@ -1203,7 +1215,6 @@
         for(let i=0; i<=2; i++) { 
             let dStr = Utils.getRelativeDateString(i);
             if (dailyRecords[dStr] && dailyRecords[dStr].todo && dailyRecords[dStr].todo.trim() !== "") {
-                // 리치 텍스트 적용으로 HTML 태그가 포함될 수 있으므로 태그를 제거하고 미리보기 표시
                 foundTodo = dailyRecords[dStr].todo.replace(/<[^>]*>?/gm, ' ').trim(); targetDStr = dStr;
                 if (i === 0) dateLabel = "오늘"; else if (i === 1) dateLabel = "내일"; else dateLabel = dStr.slice(5).replace('-', '/'); 
                 break;
@@ -1319,7 +1330,6 @@
         try { setL('dailyRecords', JSON.stringify(dailyRecords)); } catch (e) {}
     }
 
-    // 모달을 열 때 리치 에디터에 기존 내용을 HTML로 로드
     function openTextModal(type, targetDateStr = null) {
         document.body.style.overflow = 'hidden'; 
         let dStr = targetDateStr || Utils.getLogicalDateString();
@@ -1328,17 +1338,15 @@
         document.getElementById(type + '-modal-title').innerText = (type==='diary' ? `📝 ` : `✅ `) + `${titlePrefix} ${type==='diary'?'일기':'할 일'}`;
         
         loadRichText(type + '-input', (dailyRecords[dStr] && dailyRecords[dStr][type]) ? dailyRecords[dStr][type] : "");
-        document.getElementById(type + '-modal').style.display = 'block'; // flex 대신 block (내부 모달 구조상)
+        document.getElementById(type + '-modal').style.display = 'flex';
     }
 
-    // 모달 저장 시 innerHTML 값 저장
     function saveTextData(type, silent = false) {
         if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
         let dStr = document.getElementById(type + '-date-input').value || Utils.getLogicalDateString();
         
         let editorEl = document.getElementById(type + '-input');
         let text = editorEl.innerHTML.trim();
-        // 비어있는 p 태그나 br 만 있는 경우 완벽히 비우기
         if (text === '<br>' || text === '<p><br></p>') text = "";
 
         let exText = (dailyRecords[dStr] && dailyRecords[dStr][type]) ? String(dailyRecords[dStr][type]).trim() : "";
@@ -1565,8 +1573,8 @@
         const btn = document.getElementById('btn-manual-save');
         if(btn) { btn.innerText = "저장중..."; btn.style.opacity = 0.7; }
         
-        if(document.getElementById('diary-modal').style.display === 'block') saveTextData('diary', true);
-        if(document.getElementById('todo-modal').style.display === 'block') saveTextData('todo', true);
+        if(document.getElementById('diary-modal').style.display === 'flex') saveTextData('diary', true);
+        if(document.getElementById('todo-modal').style.display === 'flex') saveTextData('todo', true);
         
         if(syncTimer) clearTimeout(syncTimer); syncTodayRecord(); showLoading(true, "서버에 강제 저장 중..."); 
         try {
@@ -1669,14 +1677,14 @@
         html += `<div id="tab-content-todo" style="display:none; background:#f0f9ff; border:1px solid #bae6fd; padding:15px; border-radius:16px; min-height: 200px; position:relative;">
                 <div style="font-size:14px; font-weight:800; color:#0284c7; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
                     <span>✅ 체크리스트</span><button style="background:none; border:none; color:#0ea5e9; font-weight:bold; cursor:pointer; font-size:13px; padding:0;" onclick="SFX.play('pop'); document.getElementById('record-modal').style.display='none'; openTextModal('todo', '${dStr}')">✏️ 수정하기</button>
-                </div><div style="max-height: 220px; overflow-y: auto; font-size:14px; color:var(--text-main); line-height:1.7; word-break:break-word; padding-right:5px;">${renderTodo}</div></div>`;
+                </div><div style="max-height: 220px; overflow-y: auto; font-size:14.5px; color:var(--text-main); line-height:1.7; word-break:break-word; padding-right:5px;">${renderTodo}</div></div>`;
 
         // 3. 일기 탭 (리치 텍스트 HTML 렌더링 지원)
         let renderDiary = (rec.diary && rec.diary.trim() !== '') ? Utils.sanitizeHTML(rec.diary) : '<span style="color:#94a3b8; font-style:italic;">등록된 일기가 없습니다.</span>';
         html += `<div id="tab-content-diary" style="display:none; background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:16px; min-height: 200px; position:relative;">
                 <div style="font-size:14px; font-weight:800; color:var(--text-main); margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
                     <span>📝 오늘 하루 요약</span><button style="background:none; border:none; color:#8b5cf6; font-weight:bold; cursor:pointer; font-size:13px; padding:0;" onclick="SFX.play('pop'); document.getElementById('record-modal').style.display='none'; openTextModal('diary', '${dStr}')">✏️ 수정하기</button>
-                </div><div style="max-height: 220px; overflow-y: auto; font-size:14px; color:var(--text-main); line-height:1.7; word-break:break-word; padding-right:5px;">${renderDiary}</div></div>`;
+                </div><div style="max-height: 220px; overflow-y: auto; font-size:14.5px; color:var(--text-main); line-height:1.7; word-break:break-word; padding-right:5px;">${renderDiary}</div></div>`;
         
         document.getElementById('modal-body').innerHTML = html; document.getElementById('record-modal').style.display = 'block';
     }
@@ -1701,7 +1709,7 @@
         try {
             let res = await fetchServer("board_list");
             if (res.success && res.data) {
-                let html = `<div style="padding:15px;"><div style="display:flex; justify-content:flex-end; margin-bottom:15px;">
+                let html = `<div style="padding:15px; overflow-y:auto; flex-grow:1;"><div style="display:flex; justify-content:flex-end; margin-bottom:15px;">
                                 <button class="btn-primary" style="width:auto; padding:10px 20px; font-size:14px;" onclick="SFX.play('pop'); renderBoardWrite()">✏️ 글쓰기</button>
                             </div><div style="background:#fff; border-radius:12px; border:1px solid #e2e8f0; overflow:hidden;">`;
                 
@@ -1731,10 +1739,9 @@
             let res = await fetchServer("board_read", { id: id });
             if (res.success && res.data) {
                 const item = res.data;
-                // 리치 텍스트 HTML 보안 렌더링
                 const safeHTML = Utils.sanitizeHTML(item.content);
                 area.innerHTML = `
-                    <div style="padding:15px;">
+                    <div style="padding:15px; overflow-y:auto; flex-grow:1; display:flex; flex-direction:column;">
                         <div style="background:#fff; padding:20px; border-radius:12px; border:1px solid #e2e8f0; min-height: 350px; display:flex; flex-direction:column;">
                             <h4 style="margin:0 0 10px 0; font-size:18px; color:var(--text-main); line-height:1.4;">${Utils.escapeHTML(item.title)}</h4>
                             <div style="font-size:12px; color:#94a3b8; padding-bottom:12px; border-bottom:1px solid #f1f5f9; margin-bottom:15px; display:flex; justify-content:space-between;">
@@ -1743,7 +1750,7 @@
                             </div>
                             <div style="font-size:14.5px; color:#334155; line-height:1.7; word-break:break-word; flex-grow:1;">${safeHTML}</div>
                         </div>
-                        <button class="btn-primary" style="margin-top:15px; background:#64748b; box-shadow:none;" onclick="SFX.play('tap'); renderBoardList()">⬅️ 목록으로 돌아가기</button>
+                        <button class="btn-primary" style="margin-top:15px; background:#64748b; box-shadow:none; flex-shrink:0;" onclick="SFX.play('tap'); renderBoardList()">⬅️ 목록으로 돌아가기</button>
                     </div>
                 `;
             } else { area.innerHTML = "<div style='text-align:center; padding:30px;'>글을 찾을 수 없습니다.</div><button class='btn-primary' onclick='renderBoardList()'>목록으로</button>"; }
@@ -1753,21 +1760,22 @@
     function renderBoardWrite() {
         const area = document.getElementById('board-content-area');
         area.innerHTML = `
-            <div class="sticky-toolbar-wrap" style="padding:15px 15px 0 15px; background:var(--bg);">
-                <div class="editor-toolbar">
-                    <button class="ed-btn" onclick="formatText('bold')"><b>B</b></button>
-                    <button class="ed-btn" onclick="formatText('underline')"><u>U</u></button>
-                    <button class="ed-btn" onclick="formatText('fontSize', '4')">크게</button>
-                    <div style="width:1px; background:#cbd5e1; margin:0 4px;"></div>
-                    <button class="ed-btn" style="color:#ef4444;" onclick="formatText('foreColor', '#ef4444')">●</button>
-                    <button class="ed-btn" style="color:#3b82f6;" onclick="formatText('foreColor', '#3b82f6')">●</button>
-                </div>
+            <div class="unified-toolbar" style="border-radius:0;">
+                <button class="ed-btn" onclick="formatText('bold')" title="굵게"><b>B</b></button>
+                <button class="ed-btn" onclick="formatText('italic')" title="기울임"><i>I</i></button>
+                <button class="ed-btn" onclick="formatText('underline')" title="밑줄"><u>U</u></button>
+                <button class="ed-btn" onclick="formatText('strikeThrough')" title="취소선"><s>S</s></button>
+                <div style="width:1px; background:#cbd5e1; margin:0 2px;"></div>
+                <button class="color-btn color-black" onclick="formatText('foreColor', '#1e293b')"></button>
+                <button class="color-btn color-red" onclick="formatText('foreColor', '#ef4444')"></button>
+                <button class="color-btn color-blue" onclick="formatText('foreColor', '#3b82f6')"></button>
+                <button class="color-btn color-yellow" onclick="formatText('hiliteColor', '#fef08a')"></button>
             </div>
-            <div style="padding:10px 15px 15px 15px;">
-                <input type="text" id="board-write-title" class="input-field" placeholder="제목을 입력하세요 (최대 30자)" maxlength="30" style="margin-bottom:12px; font-weight:bold;">
-                <div id="board-write-content" class="rich-editor" contenteditable="true" placeholder="내용을 자유롭게 남겨주세요." style="min-height: 250px;"></div>
+            <div style="padding:15px; flex-grow:1; overflow-y:auto; display:flex; flex-direction:column;">
+                <input type="text" id="board-write-title" class="input-field" placeholder="제목을 입력하세요 (최대 30자)" maxlength="30" style="margin-bottom:12px; font-weight:bold; flex-shrink:0;">
+                <div id="board-write-content" class="rich-editor" contenteditable="true" placeholder="내용을 자유롭게 남겨주세요." style="flex-grow:1; min-height: 200px; background:#fff;"></div>
                 
-                <div style="display:flex; gap:10px; margin-top:20px;">
+                <div style="display:flex; gap:10px; margin-top:20px; flex-shrink:0;">
                     <button class="btn-primary" style="background:#f1f5f9; color:#475569; box-shadow:none;" onclick="SFX.play('tap'); renderBoardList()">취소</button>
                     <button class="btn-primary" id="board-submit-btn" onclick="SFX.play('success'); submitBoardPost()">등록하기</button>
                 </div>
