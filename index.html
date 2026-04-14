@@ -34,7 +34,6 @@
     .input-field { width: 100%; box-sizing: border-box; padding: 14px; margin-bottom: 16px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 15px; background: var(--bg); transition: all 0.2s; font-family: inherit; }
     .input-field:focus { outline: none; border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 4px rgba(59,130,246,0.1); }
     
-    /* 🚀 리치 텍스트 에디터 & 통합 툴바 CSS */
     .unified-toolbar { display:flex; gap:8px; flex-wrap:wrap; background:var(--surface); padding:10px 15px; border-bottom:1px solid #e2e8f0; z-index:50; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
     .ed-btn { background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:6px 12px; font-size:14px; font-weight:800; cursor:pointer; color:var(--text-main); display:flex; align-items:center; justify-content:center; transition:0.1s; touch-action: manipulation;}
     .ed-btn:active { background:#e2e8f0; transform: scale(0.95); }
@@ -348,7 +347,7 @@
 </div>
 
 <div id="settings-modal" class="overlay-base">
-    <div class="modal-box" style="padding: 25px; max-width: 360px; display:block;">
+    <div class="modal-box" style="padding: 25px; max-width: 380px; display:block; overflow-y:auto; max-height:90vh;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <h3 style="margin:0; font-size:22px; font-weight:900; color:var(--text-main);">⚙️ 시스템 설정</h3>
             <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); document.getElementById('settings-modal').style.display='none'; document.body.style.overflow='';">✖</button>
@@ -358,13 +357,27 @@
             <div style="font-size:18px; font-weight:900; color:var(--text-main);" id="settings-userid">User</div>
         </div>
         <div class="setting-item">
-            <span>⏰ 목표 달성 팝업 알림</span>
+            <span>⏰ 기본 달성 팝업 알림</span>
             <button id="set-btn-alarm" class="setting-btn" onclick="SFX.play('tap'); toggleSetting('alarm')">켜짐</button>
         </div>
         <div class="setting-item">
             <span>🔔 시스템 효과음(SFX)</span>
             <button id="set-btn-sound" class="setting-btn" onclick="SFX.play('tap'); toggleSetting('sound')">켜짐</button>
         </div>
+
+        <div class="setting-item" style="flex-direction:column; align-items:flex-start; gap:10px; background:#f5f3ff; border:1px solid #ddd6fe;">
+            <div style="display:flex; justify-content:space-between; width:100%;">
+                <span style="color:#6d28d9;">⏰ 나만의 브라우저 알람</span>
+                <button class="setting-btn" style="background:#10b981; padding:6px 12px;" onclick="SFX.play('tap'); triggerBrowserAlarm(true)">즉시 테스트</button>
+            </div>
+            <div style="font-size:12px; color:#8b5cf6; font-weight:normal;">설정한 시간이 되면 재밌는 격려 메시지와 함께 브라우저 알림이 뜹니다.</div>
+            <div style="display:flex; gap:8px; width:100%; align-items:center;">
+                <input type="time" id="new-alarm-time" class="input-field" style="margin-bottom:0; padding:10px; font-weight:bold;">
+                <button class="btn-primary" style="width:auto; padding:10px 16px; font-size:14px; background:#8b5cf6;" onclick="SFX.play('tap'); addCustomAlarm()">추가</button>
+            </div>
+            <div id="custom-alarm-list" style="width:100%; display:flex; flex-wrap:wrap; gap:8px; margin-top:5px;"></div>
+        </div>
+
         <div class="setting-item" style="background:#fef2f2;">
             <span style="color:#ef4444;">🧹 오늘의 보드 초기화</span>
             <button style="background:#ef4444; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:bold; font-size:13px; cursor:pointer;" onclick="SFX.play('tap'); manualClearBoard()">초기화</button>
@@ -383,13 +396,13 @@
             <button style="background:var(--surface); color:#64748b; border:1px solid #e2e8f0; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; transition: background 0.2s;" onclick="SFX.play('tap'); document.getElementById('patch-note-modal').style.display='none'; document.body.style.overflow='';">✖</button>
         </div>
         <div style="max-height: 55vh; overflow-y: auto; padding-right: 5px;">
+            <div class="guide-box purple">
+                <div class="guide-title">🚀 0.8.4 게시판 및 알람 업데이트 (NEW)</div>
+                <div class="guide-desc">• 📢 <b>게시판 수정/삭제/댓글</b> 기능 완벽 지원!<br>• ⏰ 설정에서 <b>원하는 시간 브라우저 알람</b> 추가 가능 (공부 시간에 따라 재밌는 멘트가 나옵니다)<br>• 🛡️ <b>기기 동접 방어 시스템</b>: 모바일 켜두고 PC 접속시 데이터 꼬임 없이 폰 타이머 자동차단!</div>
+            </div>
             <div class="guide-box primary">
                 <div class="guide-title">🚀 0.8.2 통합 에디터 & 최적화 패치</div>
-                <div class="guide-desc">• 📝 모든 작성 영역(일기/할일/게시판)에 <b>공통 서식 도구(색상, 리스트, 굵기 등)</b> 적용.<br>• 🎨 글씨가 길어져도 <b>도구 모음(툴바) 영역과 겹치지 않도록</b> 레이아웃 전면 개선.<br>• 🛡️ 서버 통신 및 HTML 서식 보존 안전망 강화.</div>
-            </div>
-            <div class="guide-box success">
-                <div class="guide-title">🚀 0.8.0 캘린더 UI & 알람 패치</div>
-                <div class="guide-desc">• ⏰ 앱이 열려있으면 <b>6시간 주기 알람</b> 자동 전송.<br>• 🎨 캘린더 상세 모달 <b>3단 탭(Tab) UI</b> 적용 (타임라인/할일/일기).</div>
+                <div class="guide-desc">• 📝 모든 작성 영역에 공통 서식 도구 적용.<br>• 🛡️ 서버 통신 및 HTML 서식 보존 안전망 강화.</div>
             </div>
         </div>
         <button class="btn-primary" style="margin-top:15px; padding:14px; border-radius:12px; font-size:15px;" onclick="SFX.play('tap'); document.getElementById('patch-note-modal').style.display='none'; document.body.style.overflow='';">확인 완료</button>
@@ -399,7 +412,7 @@
 <div id="guide-modal" class="overlay-base">
     <div class="modal-box" style="padding: 25px; max-width: 450px; background: var(--bg); display:block;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h3 style="margin:0; font-size:22px; font-weight:900; color:var(--text-main);">🙋‍♀️ 초보 가이드 (v0.8.2)</h3>
+            <h3 style="margin:0; font-size:22px; font-weight:900; color:var(--text-main);">🙋‍♀️ 초보 가이드 (v0.8.4)</h3>
             <button style="background:var(--surface); color:#64748b; border:1px solid #e2e8f0; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); document.getElementById('guide-modal').style.display='none'; document.body.style.overflow='';">✖</button>
         </div>
         <div style="max-height: 60vh; overflow-y: auto; padding-right: 5px;">
@@ -412,7 +425,7 @@
             </div>
             <div class="guide-box purple">
                 <div class="guide-title">🎯 2단계. 코스 계획 & 정기 알람</div>
-                <div class="guide-desc"><b>[🎯 계획]</b> 아이콘을 눌러 구간을 설정하세요. 브라우저 알람을 켜두면 스톱워치를 안 켜도 6시간마다 알람이 갑니다!</div>
+                <div class="guide-desc"><b>[🎯 계획]</b> 아이콘을 눌러 구간을 설정하세요. 브라우저 알람을 켜두면 스톱워치를 안 켜도 6시간마다 알람이 갑니다! 맞춤 알람은 설정(⚙️)에서!</div>
             </div>
             <div class="guide-box primary">
                 <div class="guide-title">▶️ 3단계. 스톱워치 실행</div>
@@ -424,11 +437,11 @@
             </div>
             <div class="guide-box info">
                 <div class="guide-title">📢 5단계. 실시간 스터디 라운지</div>
-                <div class="guide-desc">홈 화면의 <b>[스터디 라운지]</b>에 들어가 다짐이나 메모를 자유롭게 남기세요. 모두와 함께 달리는 기분을 느낄 수 있습니다.</div>
+                <div class="guide-desc">홈 화면의 <b>[스터디 라운지]</b>에 들어가 다짐이나 메모를 자유롭게 남기세요. 모두와 함께 달리는 기분을 느낄 수 있습니다. 내 글은 삭제/수정도 가능!</div>
             </div>
             <div class="guide-box orange">
                 <div class="guide-title">🛡️ 6단계. 절대 안전망 (새벽 5시 리셋)</div>
-                <div class="guide-desc">우리의 하루는 밤 12시가 아니라 <b>매일 새벽 5시에 리셋</b>됩니다. 데이터는 서버에 3중으로 안전하게 보관됩니다.</div>
+                <div class="guide-desc">우리의 하루는 밤 12시가 아니라 <b>매일 새벽 5시에 리셋</b>됩니다. 여러 기기 동시 접속 시 똑똑하게 방어해줍니다!</div>
             </div>
         </div>
         <button class="btn-primary" style="margin-top:20px; padding:16px; border-radius:12px; font-size:16px;" onclick="SFX.play('success'); document.getElementById('guide-modal').style.display='none'; document.body.style.overflow='';">와, 진짜 쉽네요! 이제 시작할게요 🔥</button>
@@ -550,11 +563,17 @@
     // ==========================================
     // 📦 1. 시스템 설정 및 전역 변수
     // ==========================================
-    const APP_VERSION = "0.8.2 에디터 통합 패치"; 
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyiW3ndi5ay7sqa1p-mE1caZvnOClQ0St0Xfqgwdw2xDyJQYdr6A_s8pLGUw9bceNvZ/exec";
+    const APP_VERSION = "0.8.4 게시판 및 알람 업데이트"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz44IxYKNNHOxY3RlfCCCHxyVhSH4taIpN_8R1FMZ_7be6J9g8IFT3ecyvTn2-yWbYC/exec";
     
     let activeUser = localStorage.getItem('activeUser');
     let activePw = localStorage.getItem('activePw');
+    let myDeviceToken = localStorage.getItem('deviceToken');
+    if(!myDeviceToken) {
+        myDeviceToken = "DEV_" + Date.now() + "_" + Math.floor(Math.random()*10000);
+        localStorage.setItem('deviceToken', myDeviceToken);
+    }
+
     let memCache = {}; 
     
     let isAlarmOn = true, isSoundOn = true, isRunning = false;
@@ -565,11 +584,16 @@
     
     let blockSeconds = [], targetBlocks = [], backupSeconds = [], dailyRecords = {}, alarmedBlocks = [];
     let ddayConfig = { title: "", date: "" }; 
+    let customAlarms = []; 
+    let triggeredAlarms = {}; 
     
     const domCache = { items: [], timeTexts: [], checks: [], targets: [], notes: [] };
     let totalStudyString = "00h 00m";
     let targetStudyString = "00h 00m";
     let currentRenderDate = new Date();
+    
+    let editingPostId = null; // 게시판 수정용 플래그
+    let currentBoardItem = null;
 
     // ==========================================
     // 🛠️ 2. 유틸리티 및 시스템 함수
@@ -580,16 +604,12 @@
         sanitizeHTML: (str) => {
             if (!str) return "";
             let s = str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            // 안전망 갱신: 리치 텍스트 에디터에서 사용하는 태그 허용 (bold, italic, color, list 등)
             s = s.replace(/&lt;(b|i|u|s|em|strong|strike|div|br|ul|ol|li|p|h[1-6]|\/b|\/i|\/u|\/s|\/em|\/strong|\/strike|\/div|\/ul|\/ol|\/li|\/p|\/h[1-6]|\/span|\/font)&gt;/gi, '<$1>');
             s = s.replace(/&lt;br\/?&gt;/gi, '<br>');
             s = s.replace(/&lt;font color="([^"]+)"&gt;/gi, '<font color="$1">');
             s = s.replace(/&lt;font size="([^"]+)"&gt;/gi, '<font size="$1">');
             s = s.replace(/&lt;span style="([^"]+)"&gt;/gi, function(match, p1) {
-                if(p1.includes('background-color') || p1.includes('color')) {
-                    return `<span style="${p1}">`; 
-                }
-                return '<span>';
+                if(p1.includes('background-color') || p1.includes('color')) { return `<span style="${p1}">`; } return '<span>';
             });
             return s;
         },
@@ -665,9 +685,7 @@
             document.getElementById('loading-text').innerText = text; 
             overlay.style.display = 'flex'; 
             loadingTimeout = setTimeout(() => { overlay.style.display = 'none'; showToast("⏳ 지연되어 백그라운드 모드로 전환합니다."); }, 15000);
-        } else {
-            overlay.style.display = 'none'; 
-        }
+        } else { overlay.style.display = 'none'; }
     }
 
     let toastTimeout = null;
@@ -682,25 +700,12 @@
     // ==========================================
     // 📝 리치 텍스트 에디터 도구
     // ==========================================
-    function formatText(command, value = null) {
-        SFX.play('tap');
-        document.execCommand(command, false, value);
-    }
-    
-    function insertEmojiAtCursor(text) {
-        SFX.play('tap');
-        document.execCommand('insertText', false, text);
-    }
-
+    function formatText(command, value = null) { SFX.play('tap'); document.execCommand(command, false, value); }
+    function insertEmojiAtCursor(text) { SFX.play('tap'); document.execCommand('insertText', false, text); }
     function loadRichText(elId, rawData) {
         let el = document.getElementById(elId);
         if (!rawData) { el.innerHTML = ""; return; }
-        // 예전 버전에서 쓴 일반 텍스트(엔터 포함)를 HTML로 변환하여 에디터에 로드
-        if (!/<[a-z][\s\S]*>/i.test(rawData)) {
-            el.innerHTML = rawData.replace(/\n/g, '<br>');
-        } else {
-            el.innerHTML = rawData;
-        }
+        if (!/<[a-z][\s\S]*>/i.test(rawData)) { el.innerHTML = rawData.replace(/\n/g, '<br>'); } else { el.innerHTML = rawData; }
     }
 
     // ==========================================
@@ -730,20 +735,12 @@
         },
         set: function(id, value) {
             if(!this.db) return;
-            try {
-                let tx = this.db.transaction(["store"], "readwrite");
-                tx.objectStore("store").put({ id: id, value: value });
-            } catch(e) {}
+            try { let tx = this.db.transaction(["store"], "readwrite"); tx.objectStore("store").put({ id: id, value: value }); } catch(e) {}
         },
         remove: function(id) {
             return new Promise((resolve) => {
                 if(!this.db) return resolve(false);
-                try {
-                    let tx = this.db.transaction(["store"], "readwrite");
-                    let req = tx.objectStore("store").delete(id);
-                    req.onsuccess = () => resolve(true);
-                    req.onerror = () => resolve(false);
-                } catch(e) { resolve(false); }
+                try { let tx = this.db.transaction(["store"], "readwrite"); let req = tx.objectStore("store").delete(id); req.onsuccess = () => resolve(true); req.onerror = () => resolve(false); } catch(e) { resolve(false); }
             });
         }
     };
@@ -775,8 +772,7 @@
             const updateTime = () => {
                 let now = Date.now();
                 if (now - lastIoTime > 2000) {
-                    lastIoTime = now;
-                    let nowStr = now.toString();
+                    lastIoTime = now; let nowStr = now.toString();
                     memCache[activeUser + '_lastUpdateTime'] = nowStr;
                     try { localStorage.setItem(activeUser + '_lastUpdateTime', nowStr); } catch(e){}
                 }
@@ -791,8 +787,7 @@
 
         if(d['ddayConfig']) { 
             let parsedDday = safeParse(d['ddayConfig'], {title:"", date:""});
-            ddayConfig = parsedDday; 
-            setL('ddayConfig', JSON.stringify(parsedDday));
+            ddayConfig = parsedDday; setL('ddayConfig', JSON.stringify(parsedDday));
         }
         
         const currentLogicDate = Utils.getLogicalDateString();
@@ -810,7 +805,7 @@
             setL('targetBlocks', JSON.stringify(targetBlocks)); 
         }
 
-        ['backupSeconds', 'alarmedBlocks', 'settings', 'lastLogicalDate'].forEach(k => { 
+        ['backupSeconds', 'alarmedBlocks', 'settings', 'lastLogicalDate', 'customAlarms'].forEach(k => { 
             if (d[k] !== undefined && d[k] !== "") {
                 if (isCloudNewer || !getL(k)) setL(k, typeof d[k] === 'object' ? JSON.stringify(d[k]) : d[k]); 
             }
@@ -831,12 +826,9 @@
                     if (date === currentLogicDate) {
                         mergedRec[date] = l; 
                         if (isCloudNewer) { mergedRec[date].diary = c.diary; mergedRec[date].todo = c.todo; }
-                    } else {
-                        mergedRec[date] = isCloudNewer ? c : l;
-                    }
+                    } else { mergedRec[date] = isCloudNewer ? c : l; }
                 });
-                dailyRecords = mergedRec;
-                setL('dailyRecords', JSON.stringify(mergedRec));
+                dailyRecords = mergedRec; setL('dailyRecords', JSON.stringify(mergedRec));
             } catch(e) {}
         }
         
@@ -851,10 +843,13 @@
     }
 
     function getUserLocalData() {
-        const backup = { runningState: JSON.stringify({ isRunning: isRunning, startTime: isRunning ? lastTickTime : 0 }) };
+        const backup = { 
+            runningState: JSON.stringify({ isRunning: isRunning, startTime: isRunning ? lastTickTime : 0 }),
+            deviceToken: myDeviceToken // 동접 방어용 토큰
+        };
         backup['lastUpdateTime'] = getL('lastUpdateTime') || Date.now().toString(); 
         backup['ddayConfig'] = getL('ddayConfig') || "";
-        ['blockSeconds', 'targetBlocks', 'backupSeconds', 'dailyRecords', 'alarmedBlocks', 'settings', 'lastLogicalDate'].forEach(k => { backup[k] = getL(k) || ""; });
+        ['blockSeconds', 'targetBlocks', 'backupSeconds', 'dailyRecords', 'alarmedBlocks', 'settings', 'lastLogicalDate', 'customAlarms'].forEach(k => { backup[k] = getL(k) || ""; });
         for (let i=0; i<48; i++) { let n = getL(`note_${i}`); backup[`note_${i}`] = (!n || n === "null" || n.trim() === "") ? "" : n; }
         return backup;
     }
@@ -869,11 +864,8 @@
             const timeoutId = setTimeout(() => controller.abort(), 15000); 
             try {
                 const res = await fetch(noCacheUrl, { 
-                    redirect: "follow", 
-                    method: "POST", 
-                    headers: { "Content-Type": "text/plain;charset=utf-8" }, 
-                    body: JSON.stringify(body), 
-                    signal: controller.signal
+                    redirect: "follow", method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+                    body: JSON.stringify(body), signal: controller.signal
                 });
                 clearTimeout(timeoutId);
                 const text = await res.text();
@@ -908,9 +900,7 @@
         if (!res.success || !res.data) return res;
         
         let dataObj = typeof res.data === 'string' ? null : res.data;
-        if (!dataObj) {
-            try { dataObj = JSON.parse(res.data); } catch(e) { return { success: true, data: res.data }; }
-        }
+        if (!dataObj) { try { dataObj = JSON.parse(res.data); } catch(e) { return { success: true, data: res.data }; } }
 
         if (dataObj && dataObj.type === "single") { 
             return { success: true, data: dataObj.content }; 
@@ -928,13 +918,25 @@
         return { success: true, data: res.data };
     }
 
-    // 🛡️ 서버 데이터 방어 로직 (비어있는 값이 덮어씌워지는 것 차단)
+    // 🛡️ 서버 데이터 방어 & 동접 제어 로직
     function applyCloudData(parsedData, silent, skipSync = false) {
         if (!parsedData || typeof parsedData !== 'object' || Object.keys(parsedData).length === 0 || !parsedData.lastUpdateTime) {
             console.error("서버 데이터 파손 감지. 로컬을 보호합니다.");
             if(!silent) showToast("❌ 서버 통신 오류. 안전을 위해 오프라인 기록을 유지합니다.");
             return;
         }
+
+        // --- 동접 방어 시스템 ---
+        let cloudToken = parsedData.deviceToken;
+        if (cloudToken && cloudToken !== myDeviceToken) {
+            if (isRunning) {
+                stopStopwatch();
+                if (!silent) showToast("🚨 다른 기기(PC/모바일)에서 접속이 감지되어 현재 기기의 타이머를 안전을 위해 정지합니다.", true);
+            } else if (!silent) {
+                showToast("🔄 다른 기기에서 기록된 최신 데이터를 불러왔습니다.");
+            }
+        }
+        // -------------------------
 
         const currentLogicalDate = Utils.getLogicalDateString();
         const cloudLogicalDate = parsedData.lastLogicalDate || currentLogicalDate;
@@ -945,13 +947,17 @@
         let batonTaken = false;
         if (parsedData.runningState) {
             const rState = JSON.parse(parsedData.runningState);
-            if (rState.isRunning && rState.startTime > 0) {
+            // 만약 클라우드 토큰이 나와 다르다면 내가 남의 타이머를 이어받아 덮어쓰면 안됨.
+            if (rState.isRunning && rState.startTime > 0 && (!cloudToken || cloudToken === myDeviceToken)) {
                 if (!isRunning) { 
                     const passedSecs = Math.floor((Date.now() - rState.startTime) / 1000);
                     if (passedSecs > 0 && passedSecs < 57600) { distributeTime(rState.startTime, passedSecs); batonTaken = true; startStopwatch(); }
                     else { stopStopwatch(); }
                 }
-            } else { if (isRunning) stopStopwatch(); }
+            } else if (!rState.isRunning || (cloudToken && cloudToken !== myDeviceToken)) { 
+                // 클라우드가 정지상태이거나 남의 기기가 돌고있다면 내 기기는 멈춰있어야 함.
+                if (isRunning) stopStopwatch(); 
+            }
         }
 
         if (cloudLogicalDate !== currentLogicalDate) {
@@ -1011,13 +1017,10 @@
     function triggerAutoSync(immediate = false) {
         const ind = document.getElementById('sync-indicator');
         if (!navigator.onLine) {
-            if(ind) ind.innerText = "📴 기기 임시 저장됨";
-            setTimeout(() => { if(ind && ind.innerText.includes("임시")) ind.innerText = ""; }, 3000);
-            return;
+            if(ind) ind.innerText = "📴 기기 임시 저장됨"; setTimeout(() => { if(ind && ind.innerText.includes("임시")) ind.innerText = ""; }, 3000); return;
         }
         if(syncTimer) clearTimeout(syncTimer); 
-        if (immediate) performSync();
-        else syncTimer = setTimeout(() => performSync(), 3000); 
+        if (immediate) performSync(); else syncTimer = setTimeout(() => performSync(), 3000); 
     }
 
     const safeDataParse = (data) => {
@@ -1033,43 +1036,36 @@
         if(!activeUser || !rawPw) { statusEl.innerText = "정보를 입력해주세요."; return; }
         
         showLoading(true, "보안 인증 및 로그인 중... 🔐"); 
-        activePw = await hashSHA256(rawPw);
-        memCache = {};
+        activePw = await hashSHA256(rawPw); memCache = {};
         let dbData = await DBEngine.getAll(activeUser + '_');
         dbData.forEach(item => memCache[item.id] = item.value);
 
         try {
             const res = await loadAllDataFromServer();
             showLoading(false);
-            
             const finalData = safeDataParse(res.data);
 
             if(res.success && finalData && Object.keys(finalData).length > 0) {
                 localStorage.setItem('activeUser', activeUser); localStorage.setItem('activePw', activePw); 
                 document.getElementById('login-view').style.display = 'none';
-                applyCloudData(finalData, true);
-                startDashboard();
+                applyCloudData(finalData, true); startDashboard();
             } else if (!res.success && dbData.length > 0) {
                 localStorage.setItem('activeUser', activeUser); localStorage.setItem('activePw', activePw); 
                 document.getElementById('login-view').style.display = 'none';
                 showToast("🌐 서버 지연. 안전한 오프라인 모드로 실행됩니다.");
-                initLocalState();
-                startDashboard();
+                initLocalState(); startDashboard();
             } else if (!res.success && dbData.length === 0) {
                 statusEl.innerText = res.message || "서버 통신에 실패했습니다."; SFX.play('tap');
                 activeUser = null; activePw = null; 
             } else {
                 localStorage.setItem('activeUser', activeUser); localStorage.setItem('activePw', activePw); 
                 document.getElementById('login-view').style.display = 'none';
-                initLocalState(); 
-                startDashboard();
+                initLocalState(); startDashboard();
             }
         } catch(err) {
-            showLoading(false);
-            document.getElementById('login-view').style.display = 'none';
+            showLoading(false); document.getElementById('login-view').style.display = 'none';
             showToast("🌐 구글 서버 지연. 로컬 데이터로 접속합니다.");
-            initLocalState();
-            startDashboard();
+            initLocalState(); startDashboard();
         }
     }
 
@@ -1097,13 +1093,12 @@
             if (isRunning) {
                 const now = Date.now(); const passedSecs = Math.floor((now - lastTickTime) / 1000);
                 if (passedSecs >= 1) { 
-                    distributeTime(lastTickTime, passedSecs); 
-                    lastTickTime += passedSecs * 1000; 
+                    distributeTime(lastTickTime, passedSecs); lastTickTime += passedSecs * 1000; 
                     setL('runningState', JSON.stringify({ isRunning: true, startTime: lastTickTime }));
                     saveAndRefresh(); 
                 }
             } else if (activeUser && activePw && navigator.onLine && !isSyncing) {
-                triggerAutoSync(); 
+                loadFromCloud(true); // 복귀 시 클라우드 체크 (동접 방어)
             }
             checkNewDay(); updateDashboardTodoAlert(); 
         }
@@ -1121,44 +1116,29 @@
             let dbData = await DBEngine.getAll(activeUser + '_');
             dbData.forEach(item => memCache[item.id] = item.value);
 
-            document.getElementById('login-view').style.display = 'none';
-            showLoading(true, "데이터 불러오는 중... 🛰️");
-            
+            document.getElementById('login-view').style.display = 'none'; showLoading(true, "데이터 불러오는 중... 🛰️");
             try {
                 const res = await loadAllDataFromServer();
                 showLoading(false);
-
                 const finalData = safeDataParse(res.data);
 
                 if(res.success && finalData && Object.keys(finalData).length > 0) {
-                    applyCloudData(finalData, true);
-                    startDashboard();
+                    applyCloudData(finalData, true); startDashboard();
                 } else if (!res.success && dbData.length > 0) {
                     showToast("🌐 구글 서버 지연. 로컬 데이터로 접속합니다.");
-                    initLocalState();
-                    startDashboard();
+                    initLocalState(); startDashboard();
                 } else if (!res.success && dbData.length === 0) {
                     document.getElementById('login-view').style.display = 'flex';
                     document.getElementById('login-status').innerText = "통신 실패. 네트워크 연결 후 로그인해주세요.";
                     activeUser = null; activePw = null;
-                } else {
-                    initLocalState(); 
-                    startDashboard();
-                }
+                } else { initLocalState(); startDashboard(); }
             } catch(err) {
-                showLoading(false);
-                initLocalState();
-                startDashboard();
+                showLoading(false); initLocalState(); startDashboard();
             }
-        } else { 
-            document.getElementById('loading-overlay').style.display = 'none'; 
-            document.getElementById('login-view').style.display = 'flex'; 
-        }
+        } else { document.getElementById('loading-overlay').style.display = 'none'; document.getElementById('login-view').style.display = 'flex'; }
     }
 
-    window.addEventListener('online', () => { 
-        if (activeUser) { showToast("🌐 네트워크가 복구되었습니다."); triggerAutoSync(true); }
-    });
+    window.addEventListener('online', () => { if (activeUser) { showToast("🌐 네트워크가 복구되었습니다."); triggerAutoSync(true); } });
 
     function checkNewDay() {
         const currentLogicDate = Utils.getLogicalDateString(); 
@@ -1177,8 +1157,7 @@
                     let passedSecs = Math.floor((now - lastTickTime) / 1000);
                     if (passedSecs > 0) distributeTime(lastTickTime, passedSecs);
                 }
-                setL('blockSeconds', JSON.stringify(blockSeconds));
-                stopStopwatch(); 
+                setL('blockSeconds', JSON.stringify(blockSeconds)); stopStopwatch(); 
                 showToast("📅 새벽 5시 리셋으로 타이머가 일시 정지되었습니다.");
             }
 
@@ -1191,8 +1170,7 @@
             setL('blockSeconds', JSON.stringify(blockSeconds)); setL('lastLogicalDate', currentLogicDate); 
             
             updateUI(true); updateHighlight(); renderCalendar(); updateDashboardTodoAlert(); updateDdayUI();
-            triggerAutoSync(true); 
-            showToast("🌅 새로운 하루가 시작되었습니다! 보드가 리셋되었습니다."); 
+            triggerAutoSync(true); showToast("🌅 새로운 하루가 시작되었습니다! 보드가 리셋되었습니다."); 
         }
     }
 
@@ -1204,9 +1182,7 @@
     }
     window.addEventListener('resize', updateSpacers);
 
-    function teleportToTodo(targetDStr) {
-        switchView('calendar'); currentRenderDate = new Date(targetDStr); renderCalendar(); showModal(targetDStr); 
-    }
+    function teleportToTodo(targetDStr) { switchView('calendar'); currentRenderDate = new Date(targetDStr); renderCalendar(); showModal(targetDStr); }
 
     function updateDashboardTodoAlert() {
         let alertEl = document.getElementById('todo-alert-banner'); let textEl = document.getElementById('todo-alert-text');
@@ -1216,8 +1192,7 @@
             let dStr = Utils.getRelativeDateString(i);
             if (dailyRecords[dStr] && dailyRecords[dStr].todo && dailyRecords[dStr].todo.trim() !== "") {
                 foundTodo = dailyRecords[dStr].todo.replace(/<[^>]*>?/gm, ' ').trim(); targetDStr = dStr;
-                if (i === 0) dateLabel = "오늘"; else if (i === 1) dateLabel = "내일"; else dateLabel = dStr.slice(5).replace('-', '/'); 
-                break;
+                if (i === 0) dateLabel = "오늘"; else if (i === 1) dateLabel = "내일"; else dateLabel = dStr.slice(5).replace('-', '/'); break;
             }
         }
         if (foundTodo) { alertEl.style.display = 'block'; textEl.innerText = `${dateLabel}: ${foundTodo}`; alertEl.dataset.targetDStr = targetDStr; } 
@@ -1264,14 +1239,65 @@
         if(!notificationIntervalId) {
             notificationIntervalId = setInterval(() => {
                 if ("Notification" in window && Notification.permission === "granted") {
-                    new Notification("페이스메이커 진도 알림", {
-                        body: `🎯 목표시간: ${targetStudyString}\n🔥 누적시간: ${totalStudyString}\n꾸준히 목표를 향해 달려보세요!`,
-                        icon: "icon-512.png"
-                    });
+                    new Notification("페이스메이커 기본 알림", { body: `🎯 목표: ${targetStudyString}\n🔥 누적: ${totalStudyString}\n꾸준히 목표를 향해 달려보세요!`, icon: "icon-512.png" });
                 }
             }, 21600000); 
         }
     }
+
+    // ==========================================
+    // ⏰ 커스텀 알람 로직
+    // ==========================================
+    function getFunAlarmMessage() {
+        let totalSecs = 0; blockSeconds.forEach(s => totalSecs+=s);
+        let h = Math.floor(totalSecs / 3600);
+        if (h === 0) return "아직 시작도 안 하셨다구요? 빨리 일어나서 책상으로 가세요! 🔥";
+        if (h < 3) return `현재 ${h}시간째... 웜업은 끝났죠? 이제 본격적으로 달려봅시다! 🏃‍♂️`;
+        if (h < 6) return `벌써 ${h}시간 돌파! 순조롭습니다. 조금만 더 페이스를 올려봐요! 🚀`;
+        if (h < 10) return `와, ${h}시간이나! 당신의 열정에 박수를 보냅니다. 목표가 눈앞이에요! 👏`;
+        return `미쳤다... ${h}시간 달성! 오늘 하루를 완벽하게 찢으셨습니다! 👑`;
+    }
+
+    function triggerBrowserAlarm(isTest = false) {
+        if (!("Notification" in window)) { alert("브라우저 알림을 지원하지 않는 환경입니다."); return; }
+        let msg = getFunAlarmMessage();
+        if (Notification.permission === "granted") {
+            new Notification(isTest ? "🔔 [테스트] 맞춤 알람" : "🔔 페이스메이커 맞춤 알람", { body: msg + `\n🎯 목표: ${targetStudyString} | ⏱ 현재: ${totalStudyString}`, icon: "icon-512.png" });
+        } else if (Notification.permission !== "denied") {
+            Notification.requestPermission().then(permission => { if (permission === "granted") triggerBrowserAlarm(isTest); });
+        } else if (isTest) {
+            alert("알림 권한이 차단되어 있습니다. 브라우저 설정에서 알림을 허용해주세요.");
+        }
+    }
+
+    function addCustomAlarm() {
+        let t = document.getElementById('new-alarm-time').value;
+        if(!t) return;
+        if(!customAlarms.includes(t)) {
+            customAlarms.push(t); customAlarms.sort();
+            setL('customAlarms', JSON.stringify(customAlarms)); renderCustomAlarms(); showToast(t + " 알람이 추가되었습니다.");
+        }
+    }
+    
+    function removeCustomAlarm(t) {
+        customAlarms = customAlarms.filter(a => a !== t);
+        setL('customAlarms', JSON.stringify(customAlarms)); renderCustomAlarms();
+    }
+    
+    function renderCustomAlarms() {
+        const list = document.getElementById('custom-alarm-list');
+        list.innerHTML = customAlarms.map(t => `<div style="background:#e2e8f0; padding:6px 12px; border-radius:20px; font-size:14px; font-weight:bold; color:#475569; display:flex; align-items:center; gap:8px;">${t} <button style="background:none;border:none;color:#ef4444;cursor:pointer;font-weight:900;padding:0;font-size:14px;" onclick="SFX.play('pop'); removeCustomAlarm('${t}')">X</button></div>`).join('');
+    }
+
+    // 커스텀 알람 체커 (매 10초)
+    setInterval(() => {
+        let n = new Date(); let hhmm = Utils.pad(n.getHours()) + ":" + Utils.pad(n.getMinutes());
+        let dateKey = Utils.getLogicalDateString() + "-" + hhmm;
+        if (customAlarms.includes(hhmm) && !triggeredAlarms[dateKey]) {
+            triggeredAlarms[dateKey] = true; triggerBrowserAlarm(false);
+        }
+    }, 10000);
+
 
     function initLocalState() {
         blockSeconds = JSON.parse(getL('blockSeconds')) || Array(48).fill(0); 
@@ -1280,6 +1306,9 @@
         backupSeconds = JSON.parse(getL('backupSeconds')) || Array(48).fill(0); 
         alarmedBlocks = JSON.parse(getL('alarmedBlocks')) || Array(48).fill(false); 
         dailyRecords = JSON.parse(getL('dailyRecords')) || {}; 
+        customAlarms = JSON.parse(getL('customAlarms') || '[]');
+        renderCustomAlarms();
+
         const settings = JSON.parse(getL('settings') || '{"isAlarmOn":true, "isSoundOn":true}');
         isAlarmOn = settings.isAlarmOn ?? true; isSoundOn = settings.isSoundOn ?? true; updateSettingsUI();
         
@@ -1336,7 +1365,6 @@
         document.getElementById(type + '-date-input').value = dStr;
         let titlePrefix = (dStr === Utils.getLogicalDateString()) ? "오늘의" : dStr;
         document.getElementById(type + '-modal-title').innerText = (type==='diary' ? `📝 ` : `✅ `) + `${titlePrefix} ${type==='diary'?'일기':'할 일'}`;
-        
         loadRichText(type + '-input', (dailyRecords[dStr] && dailyRecords[dStr][type]) ? dailyRecords[dStr][type] : "");
         document.getElementById(type + '-modal').style.display = 'flex';
     }
@@ -1344,17 +1372,13 @@
     function saveTextData(type, silent = false) {
         if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
         let dStr = document.getElementById(type + '-date-input').value || Utils.getLogicalDateString();
-        
         let editorEl = document.getElementById(type + '-input');
         let text = editorEl.innerHTML.trim();
         if (text === '<br>' || text === '<p><br></p>') text = "";
 
         let exText = (dailyRecords[dStr] && dailyRecords[dStr][type]) ? String(dailyRecords[dStr][type]).trim() : "";
-
         if (text === exText) { 
-            if(document.getElementById(type + '-modal').style.display !== 'none') {
-                document.getElementById(type + '-modal').style.display = 'none'; document.body.style.overflow = '';
-            }
+            if(document.getElementById(type + '-modal').style.display !== 'none') { document.getElementById(type + '-modal').style.display = 'none'; document.body.style.overflow = ''; }
             return; 
         }
         
@@ -1366,15 +1390,10 @@
         if (!text && hasNoStudy && (!dailyRecords[dStr][otherType] || dailyRecords[dStr][otherType].trim() === "")) delete dailyRecords[dStr];
         try { setL('dailyRecords', JSON.stringify(dailyRecords)); } catch (e) {}
         
-        if(document.getElementById(type + '-modal').style.display !== 'none') {
-            document.getElementById(type + '-modal').style.display = 'none'; document.body.style.overflow = ''; 
-        }
-        
+        if(document.getElementById(type + '-modal').style.display !== 'none') { document.getElementById(type + '-modal').style.display = 'none'; document.body.style.overflow = ''; }
         if(!silent) {
             SFX.play('success'); showToast(`${type==='diary'?'📝 일기':'✅ 할 일'}가 저장되었습니다!`);
-            if(document.getElementById('calendar-view').style.display === 'flex') {
-                renderCalendar(); if(document.getElementById('record-modal').style.display === 'block') showModal(dStr);
-            }
+            if(document.getElementById('calendar-view').style.display === 'flex') { renderCalendar(); if(document.getElementById('record-modal').style.display === 'block') showModal(dStr); }
             updateDashboardTodoAlert(); triggerAutoSync(); 
         }
     }
@@ -1385,30 +1404,20 @@
             const now = Date.now(); const passedSecs = Math.floor((now - lastTickTime) / 1000); 
             if (passedSecs >= 1) {
                 distributeTime(lastTickTime, passedSecs); lastTickTime += passedSecs * 1000; 
-                setL('runningState', JSON.stringify({ isRunning: true, startTime: lastTickTime })); 
-                saveAndRefresh();
+                setL('runningState', JSON.stringify({ isRunning: true, startTime: lastTickTime })); saveAndRefresh();
             }
         } catch(e) {}
         tickFrameId = requestAnimationFrame(tick);
     }
 
     function distributeTime(startTimeMs, passedSecs) {
-        if (passedSecs <= 0) return;
-        let maxSecs = Math.min(passedSecs, 57600); 
-        
-        let d = new Date(startTimeMs);
-        let kstTimeMs = d.getTime() + (d.getTimezoneOffset() * 60000) + (9 * 3600000);
-        let kstDate = new Date(kstTimeMs);
+        if (passedSecs <= 0) return; let maxSecs = Math.min(passedSecs, 57600); 
+        let d = new Date(startTimeMs); let kstTimeMs = d.getTime() + (d.getTimezoneOffset() * 60000) + (9 * 3600000); let kstDate = new Date(kstTimeMs);
         let h = kstDate.getHours(), m = kstDate.getMinutes(), sec = kstDate.getSeconds();
 
         for (let s = 0; s < maxSecs; s++) {
-            sec++;
-            if (sec >= 60) { sec = 0; m++; }
-            if (m >= 60) { m = 0; h++; }
-            if (h >= 24) { h = 0; }
-
-            let absMins = (h < 5 ? h + 24 : h) * 60 + m;
-            let idx = Math.floor((absMins - 300) / 30);
+            sec++; if (sec >= 60) { sec = 0; m++; } if (m >= 60) { m = 0; h++; } if (h >= 24) { h = 0; }
+            let absMins = (h < 5 ? h + 24 : h) * 60 + m; let idx = Math.floor((absMins - 300) / 30);
             if (idx >= 0 && idx < 48 && blockSeconds[idx] < 1800) {
                 blockSeconds[idx]++;
                 if(blockSeconds[idx] === 1800 && isAlarmOn && !alarmedBlocks[idx]) {
@@ -1422,32 +1431,25 @@
     function saveAndRefresh() { setL('blockSeconds', JSON.stringify(blockSeconds)); updateUI(false); syncTodayRecord(); }
 
     function switchView(viewName) {
-        document.body.style.overflow = ''; 
-        document.querySelectorAll('.view-layer').forEach(el => el.style.display = 'none');
+        document.body.style.overflow = ''; document.querySelectorAll('.view-layer').forEach(el => el.style.display = 'none');
         if (viewName === 'dashboard') {
-            document.getElementById('stopwatch-popup').style.display = 'none'; 
-            document.getElementById('dashboard-view').style.display = 'flex';
-            document.getElementById('dash-today-time').innerText = totalStudyString;
-            document.getElementById('dash-today-target').innerText = targetStudyString;
+            document.getElementById('stopwatch-popup').style.display = 'none'; document.getElementById('dashboard-view').style.display = 'flex';
+            document.getElementById('dash-today-time').innerText = totalStudyString; document.getElementById('dash-today-target').innerText = targetStudyString;
             updateDashboardTodoAlert(); window.scrollTo(0, 0); updateDdayUI();
         } else if (viewName === 'calendar') {
-            document.getElementById('stopwatch-popup').style.display = 'none'; 
-            document.getElementById('calendar-view').style.display = 'flex';
+            document.getElementById('stopwatch-popup').style.display = 'none'; document.getElementById('calendar-view').style.display = 'flex';
             syncTodayRecord(); renderCalendar(); setTimeout(updateSpacers, 50); window.scrollTo(0, 0);
         } else if (viewName === 'study') {
-            document.getElementById('stopwatch-popup').style.display = 'flex'; 
-            document.getElementById('study-view').style.display = 'flex';
+            document.getElementById('stopwatch-popup').style.display = 'flex'; document.getElementById('study-view').style.display = 'flex';
             setTimeout(updateSpacers, 50); setTimeout(scrollToCurrent, 150);
         }
     }
 
     function scrollToCurrent() {
-        updateHighlight(); 
-        const targetElement = document.querySelector('.list-item.current'); const headerElement = document.getElementById('main-header');
+        updateHighlight(); const targetElement = document.querySelector('.list-item.current'); const headerElement = document.getElementById('main-header');
         if (targetElement && headerElement) {
             requestAnimationFrame(() => {
-                const dynamicOffset = headerElement.offsetHeight + 15; 
-                const elementPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
+                const dynamicOffset = headerElement.offsetHeight + 15; const elementPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
                 window.scrollTo({ top: elementPosition - dynamicOffset, behavior: 'smooth' });
             });
         }
@@ -1457,8 +1459,7 @@
         const n = Utils.getKoreaDate(); const cur = Utils.getAbsMins(n.getHours(), n.getMinutes());
         document.getElementById('clock-display').innerText = `현재 시각 ${Utils.pad(n.getHours())}:${Utils.pad(n.getMinutes())}`;
         domCache.items.forEach((item) => {
-            let s = parseInt(item.dataset.absMins);
-            if (cur >= s && cur < s + 30) item.classList.add('current'); else item.classList.remove('current');
+            let s = parseInt(item.dataset.absMins); if (cur >= s && cur < s + 30) item.classList.add('current'); else item.classList.remove('current');
         });
     }
 
@@ -1643,7 +1644,6 @@
         document.getElementById('modal-title').innerText = `📅 ${dStr}`;
         let html = `<div class="modal-total-time" style="margin-bottom:15px; padding-bottom:15px;"><div><span>목표 시간</span><strong class="target-text">${rec.targetTime || "00h 00m"}</strong></div><div><span>집중 시간</span><strong>${rec.totalTime}</strong></div></div>`;
         
-        // 탭 메뉴
         html += `
         <div style="display:flex; gap:6px; margin-bottom:15px;">
             <button id="tab-btn-timeline" class="action-pill action-pill-blue" style="flex:1; padding:10px 0;" onclick="switchTab('timeline')">🔥 시간표</button>
@@ -1652,7 +1652,6 @@
         </div>
         `;
 
-        // 1. 타임라인 탭
         let valid = rec.details ? rec.details.filter(d => d.min > 0 || d.isTarget || (d.note && d.note !== "null" && d.note.trim() !== "")) : [];
         html += `<div id="tab-content-timeline" style="display:block; background:#fff; border:1px solid #e2e8f0; padding:15px; border-radius:16px; min-height: 200px;">`;
         if(valid.length > 0) {
@@ -1667,19 +1666,15 @@
                 html += `<div class="timeline-item ${isFocused ? 'focused' : (isPlanned ? 'planned' : '')}"><div class="tl-time">${d.time}</div><div class="tl-content" ${n === '' ? 'style="padding: 10px 14px;"' : ''}>${contentInner}</div></div>`;
             });
             html += `</div>`;
-        } else {
-             html += `<div class="tl-empty-state" style="padding:15px 0;">세부 기록이 없습니다.</div>`;
-        }
+        } else { html += `<div class="tl-empty-state" style="padding:15px 0;">세부 기록이 없습니다.</div>`; }
         html += `</div>`;
 
-        // 2. 할 일 탭 (리치 텍스트 HTML 렌더링 지원)
         let renderTodo = rec.todo ? Utils.sanitizeHTML(rec.todo) : '<span style="color:#94a3b8; font-style:italic;">등록된 할 일이 없습니다.</span>';
         html += `<div id="tab-content-todo" style="display:none; background:#f0f9ff; border:1px solid #bae6fd; padding:15px; border-radius:16px; min-height: 200px; position:relative;">
                 <div style="font-size:14px; font-weight:800; color:#0284c7; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
                     <span>✅ 체크리스트</span><button style="background:none; border:none; color:#0ea5e9; font-weight:bold; cursor:pointer; font-size:13px; padding:0;" onclick="SFX.play('pop'); document.getElementById('record-modal').style.display='none'; openTextModal('todo', '${dStr}')">✏️ 수정하기</button>
                 </div><div style="max-height: 220px; overflow-y: auto; font-size:14.5px; color:var(--text-main); line-height:1.7; word-break:break-word; padding-right:5px;">${renderTodo}</div></div>`;
 
-        // 3. 일기 탭 (리치 텍스트 HTML 렌더링 지원)
         let renderDiary = (rec.diary && rec.diary.trim() !== '') ? Utils.sanitizeHTML(rec.diary) : '<span style="color:#94a3b8; font-style:italic;">등록된 일기가 없습니다.</span>';
         html += `<div id="tab-content-diary" style="display:none; background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:16px; min-height: 200px; position:relative;">
                 <div style="font-size:14px; font-weight:800; color:var(--text-main); margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
@@ -1690,20 +1685,13 @@
     }
 
     // ==========================================
-    // 📢 네이버 카페형 게시판 로직 (에디터 포함)
+    // 📢 스터디 라운지 게시판 (댓글, 수정, 삭제)
     // ==========================================
-    function openBoardModal() {
-        document.body.style.overflow = 'hidden';
-        document.getElementById('board-modal').style.display = 'flex';
-        renderBoardList();
-    }
-
-    function closeBoardModal() {
-        document.getElementById('board-modal').style.display = 'none';
-        document.body.style.overflow = '';
-    }
+    function openBoardModal() { document.body.style.overflow = 'hidden'; document.getElementById('board-modal').style.display = 'flex'; renderBoardList(); }
+    function closeBoardModal() { document.getElementById('board-modal').style.display = 'none'; document.body.style.overflow = ''; editingPostId = null; }
 
     async function renderBoardList() {
+        editingPostId = null; // 초기화
         const area = document.getElementById('board-content-area');
         area.innerHTML = "<div style='text-align:center; padding:40px; color:#64748b; font-weight:bold;'>서버에서 게시글을 불러오는 중... ⏳</div>";
         try {
@@ -1716,16 +1704,14 @@
                 if (res.data.length > 0) {
                     res.data.forEach(item => {
                         html += `<div style="padding:15px; border-bottom:1px solid #f1f5f9; cursor:pointer;" onclick="SFX.play('tap'); renderBoardRead('${item.id}')">
-                                    <div style="font-size:15px; font-weight:800; color:var(--text-main); margin-bottom:6px;">${Utils.escapeHTML(item.title)}</div>
+                                    <div style="font-size:15px; font-weight:800; color:var(--text-main); margin-bottom:6px;">${Utils.escapeHTML(item.title)} <span style="color:#0ea5e9;font-size:13px;">[${item.commentsCount||0}]</span></div>
                                     <div style="font-size:12px; color:#94a3b8; display:flex; justify-content:space-between;">
                                         <span>👤 ${Utils.escapeHTML(item.author)} | 👁️ ${item.views}</span>
                                         <span>${item.date}</span>
                                     </div>
                                  </div>`;
                     });
-                } else {
-                    html += `<div style="padding:30px; text-align:center; color:#94a3b8;">등록된 글이 없습니다. 첫 글을 남겨보세요!</div>`;
-                }
+                } else { html += `<div style="padding:30px; text-align:center; color:#94a3b8;">등록된 글이 없습니다. 첫 글을 남겨보세요!</div>`; }
                 html += `</div></div>`;
                 area.innerHTML = html;
             } else { area.innerHTML = "<div style='text-align:center; color:#94a3b8; padding:30px;'>불러오지 못했습니다.</div>"; }
@@ -1738,26 +1724,86 @@
         try {
             let res = await fetchServer("board_read", { id: id });
             if (res.success && res.data) {
-                const item = res.data;
+                const item = res.data; currentBoardItem = item;
                 const safeHTML = Utils.sanitizeHTML(item.content);
+                
+                // 댓글 렌더링
+                let commentsHtml = `<div style="margin-top:25px; border-top:2px dashed #e2e8f0; padding-top:20px;">
+                                    <h5 style="margin:0 0 15px 0; font-size:15px; color:var(--text-main);">💬 댓글 (${item.comments ? item.comments.length : 0})</h5>`;
+                if (item.comments && item.comments.length > 0) {
+                    item.comments.forEach(c => {
+                        commentsHtml += `<div style="background:#f8fafc; padding:12px; border-radius:10px; margin-bottom:10px; border:1px solid #f1f5f9;">
+                            <div style="font-weight:900; color:var(--primary-dark); font-size:13px; margin-bottom:4px;">${Utils.escapeHTML(c.author)} <span style="font-size:11px; color:#94a3b8; font-weight:normal;">${c.date}</span></div>
+                            <div style="font-size:14px; color:var(--text-main); line-height:1.5;">${Utils.escapeHTML(c.text)}</div>
+                        </div>`;
+                    });
+                }
+                commentsHtml += `<div style="display:flex; gap:8px; margin-top:15px;">
+                    <input type="text" id="board-comment-input" class="input-field" style="margin-bottom:0; flex-grow:1; font-size:14px; padding:10px;" placeholder="따뜻한 댓글을 남겨주세요...">
+                    <button class="btn-primary" style="width:auto; padding:10px 18px; font-size:14px;" onclick="SFX.play('tap'); submitBoardComment('${item.id}')">등록</button>
+                </div></div>`;
+
+                // 수정/삭제 버튼 (본인인 경우)
+                let actionButtons = '';
+                if (item.author === activeUser) {
+                    actionButtons = `
+                        <button class="btn-primary" style="background:#f59e0b; padding:10px; font-size:14px;" onclick="SFX.play('tap'); renderBoardEdit()">✏️ 수정</button>
+                        <button class="btn-primary" style="background:#ef4444; padding:10px; font-size:14px;" onclick="SFX.play('tap'); deleteBoardPost('${item.id}')">🗑️ 삭제</button>
+                    `;
+                }
+
                 area.innerHTML = `
                     <div style="padding:15px; overflow-y:auto; flex-grow:1; display:flex; flex-direction:column;">
-                        <div style="background:#fff; padding:20px; border-radius:12px; border:1px solid #e2e8f0; min-height: 350px; display:flex; flex-direction:column;">
+                        <div style="background:#fff; padding:20px; border-radius:12px; border:1px solid #e2e8f0; min-height: 250px; display:flex; flex-direction:column;">
                             <h4 style="margin:0 0 10px 0; font-size:18px; color:var(--text-main); line-height:1.4;">${Utils.escapeHTML(item.title)}</h4>
                             <div style="font-size:12px; color:#94a3b8; padding-bottom:12px; border-bottom:1px solid #f1f5f9; margin-bottom:15px; display:flex; justify-content:space-between;">
                                 <span>👤 ${Utils.escapeHTML(item.author)}</span>
                                 <span>${item.date} | 👁️ ${item.views}</span>
                             </div>
                             <div style="font-size:14.5px; color:#334155; line-height:1.7; word-break:break-word; flex-grow:1;">${safeHTML}</div>
+                            ${commentsHtml}
                         </div>
-                        <button class="btn-primary" style="margin-top:15px; background:#64748b; box-shadow:none; flex-shrink:0;" onclick="SFX.play('tap'); renderBoardList()">⬅️ 목록으로 돌아가기</button>
+                        <div style="display:flex; gap:10px; margin-top:15px; flex-shrink:0;">
+                            <button class="btn-primary" style="background:#64748b; box-shadow:none; flex:1;" onclick="SFX.play('tap'); renderBoardList()">⬅️ 목록으로</button>
+                            ${actionButtons}
+                        </div>
                     </div>
                 `;
             } else { area.innerHTML = "<div style='text-align:center; padding:30px;'>글을 찾을 수 없습니다.</div><button class='btn-primary' onclick='renderBoardList()'>목록으로</button>"; }
         } catch(e) { area.innerHTML = "<div style='text-align:center; color:#ef4444; padding:30px;'>오류 발생</div>"; }
     }
 
-    function renderBoardWrite() {
+    async function submitBoardComment(postId) {
+        const input = document.getElementById('board-comment-input');
+        const text = input.value.trim();
+        if (!text) return showToast("댓글 내용을 입력해주세요.");
+        
+        input.disabled = true;
+        const now = new Date(); const timeStr = `${now.getFullYear()}.${Utils.pad(now.getMonth()+1)}.${Utils.pad(now.getDate())} ${Utils.pad(now.getHours())}:${Utils.pad(now.getMinutes())}`;
+        
+        showLoading(true, "댓글 등록 중...");
+        try {
+            let res = await fetchServer("board_comment", { postId: postId, text: text, date: timeStr });
+            showLoading(false);
+            if (res.success) { showToast("댓글이 등록되었습니다."); renderBoardRead(postId); } 
+            else { showToast("등록 실패"); input.disabled = false; }
+        } catch(e) { showLoading(false); showToast("네트워크 오류"); input.disabled = false; }
+    }
+
+    async function deleteBoardPost(postId) {
+        if(!confirm("정말 이 게시글을 삭제하시겠습니까? 삭제된 글은 복구할 수 없습니다.")) return;
+        showLoading(true, "게시글 삭제 중...");
+        try {
+            let res = await fetchServer("board_delete", { id: postId });
+            showLoading(false);
+            if(res.success) { showToast("게시글이 삭제되었습니다."); renderBoardList(); }
+            else { showToast("삭제 실패: " + res.message); }
+        } catch(e) { showLoading(false); showToast("네트워크 오류가 발생했습니다."); }
+    }
+
+    function renderBoardEdit() {
+        if(!currentBoardItem) return;
+        editingPostId = currentBoardItem.id;
         const area = document.getElementById('board-content-area');
         area.innerHTML = `
             <div class="unified-toolbar" style="border-radius:0;">
@@ -1773,7 +1819,36 @@
             </div>
             <div style="padding:15px; flex-grow:1; overflow-y:auto; display:flex; flex-direction:column;">
                 <input type="text" id="board-write-title" class="input-field" placeholder="제목을 입력하세요 (최대 30자)" maxlength="30" style="margin-bottom:12px; font-weight:bold; flex-shrink:0;">
-                <div id="board-write-content" class="rich-editor" contenteditable="true" placeholder="내용을 자유롭게 남겨주세요." style="flex-grow:1; min-height: 200px; background:#fff;"></div>
+                <div id="board-write-content" class="rich-editor" contenteditable="true" placeholder="내용을 수정해주세요." style="flex-grow:1; min-height: 200px; background:#fff;"></div>
+                
+                <div style="display:flex; gap:10px; margin-top:20px; flex-shrink:0;">
+                    <button class="btn-primary" style="background:#f1f5f9; color:#475569; box-shadow:none;" onclick="SFX.play('tap'); renderBoardRead('${currentBoardItem.id}')">수정 취소</button>
+                    <button class="btn-primary" id="board-submit-btn" onclick="SFX.play('success'); submitBoardPost()">수정 완료</button>
+                </div>
+            </div>
+        `;
+        document.getElementById('board-write-title').value = currentBoardItem.title;
+        document.getElementById('board-write-content').innerHTML = currentBoardItem.content;
+    }
+
+    function renderBoardWrite() {
+        editingPostId = null;
+        const area = document.getElementById('board-content-area');
+        area.innerHTML = `
+            <div class="unified-toolbar" style="border-radius:0;">
+                <button class="ed-btn" onclick="formatText('bold')" title="굵게"><b>B</b></button>
+                <button class="ed-btn" onclick="formatText('italic')" title="기울임"><i>I</i></button>
+                <button class="ed-btn" onclick="formatText('underline')" title="밑줄"><u>U</u></button>
+                <button class="ed-btn" onclick="formatText('strikeThrough')" title="취소선"><s>S</s></button>
+                <div style="width:1px; background:#cbd5e1; margin:0 2px;"></div>
+                <button class="color-btn color-black" onclick="formatText('foreColor', '#1e293b')"></button>
+                <button class="color-btn color-red" onclick="formatText('foreColor', '#ef4444')"></button>
+                <button class="color-btn color-blue" onclick="formatText('foreColor', '#3b82f6')"></button>
+                <button class="color-btn color-yellow" onclick="formatText('hiliteColor', '#fef08a')"></button>
+            </div>
+            <div style="padding:15px; flex-grow:1; overflow-y:auto; display:flex; flex-direction:column;">
+                <input type="text" id="board-write-title" class="input-field" placeholder="제목을 입력하세요 (최대 30자)" maxlength="30" style="margin-bottom:12px; font-weight:bold; flex-shrink:0;">
+                <div id="board-write-content" class="rich-editor" contenteditable="true" placeholder="다짐이나 질문을 자유롭게 남겨주세요." style="flex-grow:1; min-height: 200px; background:#fff;"></div>
                 
                 <div style="display:flex; gap:10px; margin-top:20px; flex-shrink:0;">
                     <button class="btn-primary" style="background:#f1f5f9; color:#475569; box-shadow:none;" onclick="SFX.play('tap'); renderBoardList()">취소</button>
@@ -1788,22 +1863,25 @@
         const contentInput = document.getElementById('board-write-content');
         const btn = document.getElementById('board-submit-btn');
         
-        const title = titleInput.value.trim();
-        const content = contentInput.innerHTML.trim();
+        const title = titleInput.value.trim(); const content = contentInput.innerHTML.trim();
         
         if (!title) return showToast("제목을 입력해주세요.");
         if (!content || content === '<br>') return showToast("내용을 입력해주세요.");
         
-        btn.innerText = "등록 중..."; btn.disabled = true;
-        
-        const now = new Date();
-        const timeStr = `${now.getFullYear()}.${Utils.pad(now.getMonth()+1)}.${Utils.pad(now.getDate())} ${Utils.pad(now.getHours())}:${Utils.pad(now.getMinutes())}`;
+        btn.innerText = "처리 중..."; btn.disabled = true;
+        const now = new Date(); const timeStr = `${now.getFullYear()}.${Utils.pad(now.getMonth()+1)}.${Utils.pad(now.getDate())} ${Utils.pad(now.getHours())}:${Utils.pad(now.getMinutes())}`;
         
         try {
-            let res = await fetchServer("board_write", { title: title, content: content, author: activeUser, date: timeStr });
-            if (res.success) { showToast("게시글이 등록되었습니다."); renderBoardList(); } 
-            else { showToast("등록 실패. 다시 시도해주세요."); btn.innerText = "등록하기"; btn.disabled = false; }
-        } catch(e) { showToast("네트워크 오류 발생"); btn.innerText = "등록하기"; btn.disabled = false; }
+            let res;
+            if (editingPostId) {
+                res = await fetchServer("board_edit", { id: editingPostId, title: title, content: content });
+            } else {
+                res = await fetchServer("board_write", { title: title, content: content, author: activeUser, date: timeStr });
+            }
+
+            if (res.success) { showToast(editingPostId ? "수정되었습니다." : "등록되었습니다."); renderBoardList(); } 
+            else { showToast("실패했습니다: " + (res.message || "다시 시도해주세요.")); btn.innerText = "완료"; btn.disabled = false; }
+        } catch(e) { showToast("네트워크 오류 발생"); btn.innerText = "완료"; btn.disabled = false; }
     }
 
     const THEMES = {
