@@ -2636,35 +2636,43 @@
         return { success: false, message: "서버 혼잡" };
     }
 
-    async function saveAllDataToServer() {
-        let fullStr = JSON.stringify(getUserLocalData());
+    async function saveCategoryToServer(dataObj, baseId) {
+        let fullStr = JSON.stringify(dataObj);
         const CHUNK_SIZE = 40000; 
         if (fullStr.length <= CHUNK_SIZE) {
-            return await fetchServer("save", { type: "single", content: fullStr });
+            return await fetchServer("save", { type: "single", content: fullStr }, baseId);
         } else {
             let chunks = [];
             for (let i = 0; i < fullStr.length; i += CHUNK_SIZE) chunks.push(fullStr.substring(i, i + CHUNK_SIZE));
             for (let i = 0; i < chunks.length; i++) {
-                let res = await fetchServer("save", { type: "chunk", index: i, content: chunks[i] }, activeUser + "_p" + i);
+                let res = await fetchServer("save", { type: "chunk", index: i, content: chunks[i] }, baseId + "_p" + i);
                 if (!res.success) return res;
             }
-            return await fetchServer("save", { type: "master", chunkCount: chunks.length });
+            return await fetchServer("save", { type: "master", chunkCount: chunks.length }, baseId);
         }
     }
 
-    async function loadAllDataFromServer() {
-        let res = await fetchServer("login_load");
-        if (!res.success || !res.data) return res;
+    async function loadCategoryFromServer(baseId) {
+        let res = await fetchServer("login_load", null, baseId);
+        if (!res.success || !res.data) return { success: true, data: "{}" };
         
         let dataObj = typeof res.data === 'string' ? null : res.data;
-        if (!dataObj) { try { dataObj = JSON.parse(res.data); } catch(e) { console.error("Cloud JSON Error", e); return { success: false, message: "클라우드 데이터 파싱 오류" }; } }
+        if (!dataObj) { 
+            try { 
+                if (res.data === "") return { success: true, data: "{}" };
+                dataObj = JSON.parse(res.data); 
+            } catch(e) { 
+                console.error("Cloud JSON Error for " + baseId, e); 
+                return { success: false, message: "클라우드 데이터 파싱 오류" }; 
+            } 
+        }
 
         if (dataObj && dataObj.type === "single") { 
             return { success: true, data: dataObj.content }; 
         } else if (dataObj && dataObj.type === "master") {
             let count = dataObj.chunkCount; let fullStr = "";
             for (let i = 0; i < count; i++) {
-                let cRes = await fetchServer("login_load", null, activeUser + "_p" + i);
+                let cRes = await fetchServer("login_load", null, baseId + "_p" + i);
                 if (cRes.success && cRes.data) { 
                     let cParsed = typeof cRes.data === 'string' ? JSON.parse(cRes.data) : cRes.data; 
                     fullStr += (cParsed.content || ""); 
@@ -2673,6 +2681,80 @@
             return { success: true, data: fullStr };
         } 
         return { success: true, data: res.data };
+    }
+
+    async function saveAllDataToServer() {
+        let allData = getUserLocalData();
+        
+        let dailyParsed = {};
+        try { dailyParsed = allData.dailyRecords ? JSON.parse(allData.dailyRecords) : {}; } catch(e) {}
+        
+        let diaryRecords = {};
+        let todoRecords = {};
+
+        for (let dateStr in dailyParsed) {
+            if (dailyParsed[dateStr].diary) { diaryRecords[dateStr] = dailyParsed[dateStr].diary; delete dailyParsed[dateStr].diary; }
+            if (dailyParsed[dateStr].todo) { todoRecords[dateStr] = dailyParsed[dateStr].todo; delete dailyParsed[dateStr].todo; }
+        }
+        allData.dailyRecords = JSON.stringify(dailyParsed);
+
+        let diaryData = { diaryRecords: JSON.stringify(diaryRecords) };
+        let todoData = { todoRecords: JSON.stringify(todoRecords) };
+        let monsterData = { monsterData: allData.monsterData || "" };
+        
+        delete allData.monsterData;
+        
+        let [resMain, resDiary, resTodo, resMon] = await Promise.all([
+            saveCategoryToServer(allData, activeUser),
+            saveCategoryToServer(diaryData, activeUser + "_diary"),
+            saveCategoryToServer(todoData, activeUser + "_todo"),
+            saveCategoryToServer(monsterData, activeUser + "_mon")
+        ]);
+
+        if (!resMain.success) return resMain;
+        if (!resDiary.success) return resDiary;
+        if (!resTodo.success) return resTodo;
+        if (!resMon.success) return resMon;
+
+        return { success: true };
+    }
+
+    async function loadAllDataFromServer() {
+        let [resMain, resDiary, resTodo, resMon] = await Promise.all([
+            loadCategoryFromServer(activeUser),
+            loadCategoryFromServer(activeUser + "_diary"),
+            loadCategoryFromServer(activeUser + "_todo"),
+            loadCategoryFromServer(activeUser + "_mon")
+        ]);
+
+        if (!resMain.success) return resMain;
+
+        let mainParsed = {}; try { mainParsed = resMain.data === "{}" ? {} : JSON.parse(resMain.data); } catch(e){}
+        let diaryParsed = {}; try { diaryParsed = resDiary.data === "{}" ? {} : JSON.parse(resDiary.data); } catch(e){}
+        let todoParsed = {}; try { todoParsed = resTodo.data === "{}" ? {} : JSON.parse(resTodo.data); } catch(e){}
+        let monParsed = {}; try { monParsed = resMon.data === "{}" ? {} : JSON.parse(resMon.data); } catch(e){}
+
+        let dailyRecords = {};
+        try { dailyRecords = mainParsed.dailyRecords ? JSON.parse(mainParsed.dailyRecords) : {}; } catch(e){}
+
+        let diaryRecs = {};
+        try { diaryRecs = diaryParsed.diaryRecords ? JSON.parse(diaryParsed.diaryRecords) : {}; } catch(e){}
+        let todoRecs = {};
+        try { todoRecs = todoParsed.todoRecords ? JSON.parse(todoParsed.todoRecords) : {}; } catch(e){}
+
+        for (let dateStr in diaryRecs) {
+            if (!dailyRecords[dateStr]) dailyRecords[dateStr] = {};
+            dailyRecords[dateStr].diary = diaryRecs[dateStr];
+        }
+        for (let dateStr in todoRecs) {
+            if (!dailyRecords[dateStr]) dailyRecords[dateStr] = {};
+            dailyRecords[dateStr].todo = todoRecs[dateStr];
+        }
+        
+        mainParsed.dailyRecords = JSON.stringify(dailyRecords);
+        if (monParsed.monsterData) mainParsed.monsterData = monParsed.monsterData;
+
+        return { success: true, data: JSON.stringify(mainParsed) };
     }
 
     function applyCloudData(parsedData, silent, skipSync = false) {
