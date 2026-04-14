@@ -3065,6 +3065,12 @@
                 } catch(e) {
                     btn.innerText = "❌ 환경 오류"; btn.style.background = "var(--border-color)"; btn.style.color = "var(--text-muted)";
             }
+        } catch(e) {
+            if(btn) {
+                btn.innerText = "❌ 환경 오류"; btn.style.background = "var(--border-color)"; btn.style.color = "var(--text-muted)";
+            }
+        }
+    };
         }
     };
 
