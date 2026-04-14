@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#1e293b">
+<meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
 
 <title>24H 전력질주 페이스메이커</title>
@@ -20,181 +20,189 @@
 
 <style>
     :root { 
-        --primary: #3b82f6; --primary-dark: #2563eb; --bg: #f8fafc; 
-        --surface: #ffffff; --text-main: #1e293b; --text-muted: #64748b; 
-        --success: #10b981; --warning: #fef08a; --warning-text: #b45309; 
-        --target: #8b5cf6; 
-        --target-light: #f5f3ff;
+        --primary: #3b82f6; --primary-dark: #2563eb; --bg: #fafafa; /* 인스타 느낌의 부드러운 배경 */
+        --surface: #ffffff; --text-main: #262626; --text-muted: #737373; /* 명도 조절 */
+        --success: #10b981; --warning: #f59e0b; --warning-text: #b45309; 
+        --target: #8b5cf6; --target-light: #f5f3ff;
+        --border-color: #dbdbdb; /* 인스타 특유의 연한 테두리 */
     }
     html, body { overscroll-behavior: none; overflow-x: hidden; width: 100%; margin: 0; padding: 0; scroll-behavior: smooth; }
     body { font-family: 'Pretendard', sans-serif; background-color: var(--bg); display: flex; flex-direction: column; align-items: center; padding-bottom: 180px; -webkit-user-select: none; }
     .view-layer { width: 100%; display: none; flex-direction: column; align-items: center; }
-    .container { background: var(--surface); width: 100%; max-width: 600px; min-height: 100vh; box-shadow: 0 4px 20px rgba(0,0,0,0.05); position: relative; overflow-x: hidden; }
+    .container { background: var(--surface); width: 100%; max-width: 600px; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.03); position: relative; overflow-x: hidden; border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); }
 
-    .input-field { width: 100%; box-sizing: border-box; padding: 14px; margin-bottom: 16px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 15px; background: var(--bg); transition: all 0.2s; font-family: inherit; }
-    .input-field:focus { outline: none; border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 4px rgba(59,130,246,0.1); }
+    .input-field { width: 100%; box-sizing: border-box; padding: 14px; margin-bottom: 16px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 15px; background: #fafafa; transition: all 0.2s; font-family: inherit; color: var(--text-main); }
+    .input-field:focus { outline: none; border-color: var(--text-muted); background: var(--surface); }
     
-    .unified-toolbar { display:flex; gap:8px; flex-wrap:wrap; background:var(--surface); padding:10px 15px; border-bottom:1px solid #e2e8f0; z-index:50; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-    .ed-btn { background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:6px 12px; font-size:14px; font-weight:800; cursor:pointer; color:var(--text-main); display:flex; align-items:center; justify-content:center; transition:0.1s; touch-action: manipulation;}
-    .ed-btn:active { background:#e2e8f0; transform: scale(0.95); }
-    .color-btn { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: 0.1s; box-sizing:border-box; }
+    /* 🚀 통합 에디터 & 툴바 (인스타 감성) */
+    .unified-toolbar { 
+        display: flex; gap: 4px; flex-wrap: wrap; background: var(--surface); 
+        padding: 10px 12px; border-bottom: 1px solid var(--border-color); 
+        z-index: 50; align-items: center;
+    }
+    .ed-btn { 
+        background: transparent; border: none; border-radius: 6px; padding: 6px 10px; 
+        font-size: 15px; font-weight: 700; cursor: pointer; color: var(--text-main); 
+        display: flex; align-items: center; justify-content: center; transition: 0.15s; touch-action: manipulation;
+    }
+    .ed-btn:active, .ed-btn:hover { background: #f3f4f6; transform: scale(0.96); }
+    .color-btn { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: 0.1s; box-sizing:border-box; margin: 0 4px; }
     .color-btn:active { transform: scale(0.85); }
-    .color-black { background: #1e293b; }
+    .color-black { background: #262626; }
     .color-red { background: #ef4444; }
     .color-blue { background: #3b82f6; }
-    .color-yellow { background: #fef08a; border: 1px solid #cbd5e1; }
+    .color-yellow { background: #fef08a; border: 1px solid #e5e7eb; }
+    .toolbar-divider { width: 1px; height: 20px; background: var(--border-color); margin: 0 4px; }
     
     .rich-editor {
-        width: 100%; min-height: 250px; padding: 15px; border-radius: 12px;
-        border: 1.5px solid transparent; font-family: inherit; font-size: 15px;
+        width: 100%; min-height: 220px; padding: 16px; border-radius: 0 0 16px 16px;
+        border: none; font-family: inherit; font-size: 15px;
         box-sizing: border-box; background: var(--surface); color: var(--text-main);
-        line-height: 1.7; outline: none; transition: all 0.2s; cursor: text;
+        line-height: 1.6; outline: none; transition: background 0.2s; cursor: text;
         word-break: break-word; white-space: pre-wrap;
     }
-    .rich-editor:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(59,130,246,0.05); }
-    .rich-editor:empty:before { content: attr(placeholder); color: #94a3b8; pointer-events: none; display: block; font-style: italic;}
+    .rich-editor:focus { background: #fafafa; }
+    .rich-editor:empty:before { content: attr(placeholder); color: #a3a3a3; pointer-events: none; display: block; font-style: normal;}
+    .editor-container { border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; margin-bottom: 15px; }
 
-    .btn-primary { background: var(--primary); color: white; border: none; padding: 16px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 12px rgba(59,130,246,0.3); touch-action: manipulation; }
-    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary { background: var(--primary); color: white; border: none; padding: 16px; width: 100%; border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer; transition: transform 0.2s; touch-action: manipulation; }
+    .btn-primary:active { transform: scale(0.98); opacity: 0.9; }
 
     #login-view, #dashboard-view { justify-content: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
-    .auth-box { background: var(--surface); padding: 40px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); width: 100%; max-width: 360px; text-align: center; }
-    .auth-box h1 { font-size: 26px; color: var(--text-main); margin-bottom: 8px; font-weight: 800; }
+    .auth-box { background: var(--surface); padding: 40px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); width: 100%; max-width: 360px; text-align: center; border: 1px solid var(--border-color); }
+    .auth-box h1 { font-size: 24px; color: var(--text-main); margin-bottom: 8px; font-weight: 800; }
     
-    .dash-card { background: var(--surface); padding: 40px 30px; border-radius: 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.08); width: 100%; max-width: 380px; text-align: center; position: relative; }
-    .dash-today-summary { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 16px; padding: 20px; margin-bottom: 30px; display: flex; flex-direction: column; gap: 10px; }
-    .dash-today-summary strong { font-size: 36px; color: var(--primary); font-variant-numeric: tabular-nums; font-weight: 900; letter-spacing: -1px; }
+    .dash-card { background: var(--surface); padding: 40px 30px; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); width: 100%; max-width: 380px; text-align: center; position: relative; border: 1px solid var(--border-color); }
+    .dash-today-summary { background: #fafafa; border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; margin-bottom: 30px; display: flex; flex-direction: column; gap: 10px; }
+    .dash-today-summary strong { font-size: 34px; color: var(--text-main); font-variant-numeric: tabular-nums; font-weight: 900; letter-spacing: -1px; }
     
-    .dash-btn { width: 100%; padding: 20px; border-radius: 16px; font-size: 16px; font-weight: 800; border: none; cursor: pointer; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; transition: transform 0.2s; touch-action: manipulation;}
+    .dash-btn { width: 100%; padding: 18px; border-radius: 16px; font-size: 15px; font-weight: 800; border: none; cursor: pointer; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; transition: transform 0.2s; touch-action: manipulation;}
     .dash-btn:active { transform: scale(0.96); }
-    .dash-btn-outline { width: 100%; padding: 18px; border-radius: 16px; font-size: 15px; font-weight: 800; border: 2px solid #e2e8f0; background: var(--surface); color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; margin-top: 15px; touch-action: manipulation;}
-    .dash-btn-outline:active { background: #f8fafc; transform: scale(0.98); }
+    .dash-btn-outline { width: 100%; padding: 16px; border-radius: 16px; font-size: 14px; font-weight: 800; border: 1px solid var(--border-color); background: var(--surface); color: var(--text-main); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; margin-top: 10px; touch-action: manipulation;}
+    .dash-btn-outline:active { background: #fafafa; transform: scale(0.98); }
     
-    #todo-alert-banner { display:none; width: 100%; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 16px; padding: 16px; margin-bottom: 25px; text-align: left; cursor: pointer; box-sizing: border-box; box-shadow: 0 4px 12px rgba(59,130,246,0.1); transition: transform 0.2s; touch-action: manipulation;}
+    #todo-alert-banner { display:none; width: 100%; background: #fafafa; border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 25px; text-align: left; cursor: pointer; box-sizing: border-box; transition: transform 0.2s; touch-action: manipulation;}
     #todo-alert-banner:active { transform: scale(0.98); }
 
-    .dday-badge { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 8px 14px; border-radius: 14px; font-size: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3); transition: transform 0.2s; display: inline-flex; align-items: center; gap: 6px; }
-    .dday-badge:active { transform: scale(0.95); box-shadow: 0 2px 5px rgba(139, 92, 246, 0.2); }
+    .dday-badge { background: var(--text-main); color: white; padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 800; cursor: pointer; transition: transform 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+    .dday-badge:active { transform: scale(0.95); opacity: 0.8; }
 
-    .fixed-header { position: fixed; top: 0; left: 50%; transform: translateX(-50%); z-index: 150; background: var(--text-main); color: white; padding: 15px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 100%; max-width: 600px; box-sizing: border-box; }
-    .cal-fixed-wrap { position: fixed; top: 0; left: 50%; transform: translateX(-50%); z-index: 150; width: 100%; max-width: 600px; box-sizing: border-box; box-shadow: 0 10px 25px rgba(0,0,0,0.2); background: var(--surface); }
+    .fixed-header { position: fixed; top: 0; left: 50%; transform: translateX(-50%); z-index: 150; background: var(--surface); color: var(--text-main); padding: 15px; text-align: center; border-bottom: 1px solid var(--border-color); width: 100%; max-width: 600px; box-sizing: border-box; }
+    .cal-fixed-wrap { position: fixed; top: 0; left: 50%; transform: translateX(-50%); z-index: 150; width: 100%; max-width: 600px; box-sizing: border-box; background: var(--surface); border-bottom: 1px solid var(--border-color); }
     
     .action-row { display: flex; justify-content: center; gap: 8px; width: 100%; margin-top: 12px; }
-    .btn-action { flex: 1; border: none; padding: 12px 0; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; white-space: nowrap; transition: transform 0.1s; touch-action: manipulation;}
-    .btn-action:active { transform: scale(0.96); }
+    .btn-action { flex: 1; border: 1px solid var(--border-color); background: #fafafa; color: var(--text-main); padding: 12px 0; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; white-space: nowrap; transition: all 0.1s; touch-action: manipulation;}
+    .btn-action:active { transform: scale(0.96); background: #f3f4f6; }
     
-    .list-wrapper { padding: 8px; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px; }
+    .list-wrapper { padding: 12px; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; }
     
-    .list-item { display: flex; padding: 10px 8px; align-items: center; border-radius: 14px; background: var(--surface); border: 1px solid #f1f5f9; transition: background-color 0.3s, border-color 0.2s; }
-    .list-item.planned { background-color: var(--target-light); border-color: #ddd6fe; box-shadow: inset 3px 0 0 var(--target); }
-    .list-item.current { background-color: #fef9c3 !important; border-color: #fef08a; box-shadow: inset 3px 0 0 #eab308 !important; }
+    .list-item { display: flex; padding: 12px 10px; align-items: center; border-radius: 16px; background: var(--surface); border: 1px solid var(--border-color); transition: background-color 0.3s, border-color 0.2s; }
+    .list-item.planned { background-color: #fafafa; border-color: #d8b4fe; }
+    .list-item.current { background-color: #fefce8 !important; border-color: #fde047; }
     
     .controls-wrap { display: flex; flex-direction: row; gap: 6px; margin-right: 10px; align-items: center; flex-shrink: 0; }
-    .cb-icon-box { position: relative; width: 28px; height: 28px; border-radius: 8px; border: 1.5px solid #e2e8f0; background: #f8fafc; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; touch-action: manipulation; }
+    .cb-icon-box { position: relative; width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border-color); background: #fafafa; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; touch-action: manipulation; }
     .cb-icon-box input { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; margin: 0; z-index: 2; }
-    .cb-icon-box span { font-size: 14px; opacity: 0.4; transition: opacity 0.2s; }
+    .cb-icon-box span { font-size: 14px; opacity: 0.3; transition: opacity 0.2s; filter: grayscale(100%); }
     
-    .cb-icon-box.target.active { background: var(--target); border-color: var(--target); }
-    .cb-icon-box.target.active span { opacity: 1; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+    .cb-icon-box.target.active { border-color: var(--target); }
+    .cb-icon-box.target.active span { opacity: 1; filter: none; }
     
-    .cb-icon-box.done.active { background: var(--primary); border-color: var(--primary); }
-    .cb-icon-box.done.active span { opacity: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2)); }
+    .cb-icon-box.done.active { border-color: var(--primary); }
+    .cb-icon-box.done.active span { opacity: 1; filter: none; }
     
     .time-col { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 44px; flex-shrink: 0; margin-right: 8px;}
-    .time { font-size: 14px; font-weight: 900; color: var(--text-main); letter-spacing: -0.5px; }
-    .recorded-time { font-size: 10px; color: var(--text-muted); margin-top: 2px; font-weight: 800; background: #f1f5f9; padding: 2px 6px; border-radius: 8px; width: 100%; text-align: center; box-sizing: border-box; font-variant-numeric: tabular-nums; }
-    .recorded-time.active { color: #ffffff; background: var(--primary); box-shadow: 0 2px 6px rgba(59,130,246,0.3); }
-    .recorded-time.full { background: var(--success); box-shadow: 0 2px 6px rgba(16,185,129,0.3); } 
+    .time { font-size: 14px; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; }
+    .recorded-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; font-weight: 800; background: #f3f4f6; padding: 2px 6px; border-radius: 8px; width: 100%; text-align: center; box-sizing: border-box; font-variant-numeric: tabular-nums; }
+    .recorded-time.active { color: #ffffff; background: var(--primary); }
+    .recorded-time.full { background: var(--success); } 
     
     .text-wrapper { flex-grow: 1; min-width: 0; }
-    .note-input { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1.5px transparent; border-radius: 10px; font-size: 13.5px; background: transparent; -webkit-user-select: auto; font-family: inherit; transition: border-color 0.2s, background 0.2s; }
-    .note-input:focus { outline: none; border-color: var(--primary); background: var(--surface); }
-    .note-input::placeholder { color: #94a3b8; }
+    .note-input { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid transparent; border-radius: 10px; font-size: 14px; background: transparent; -webkit-user-select: auto; font-family: inherit; transition: all 0.2s; color: var(--text-main); }
+    .note-input:focus { outline: none; background: #fafafa; border-color: var(--border-color); }
+    .note-input::placeholder { color: #a3a3a3; }
 
-    .btn-target { position: fixed; bottom: 160px; right: 25px; background: var(--text-main); color: white; border: none; width: 54px; height: 54px; border-radius: 50%; font-size: 24px; box-shadow: 0 6px 20px rgba(0,0,0,0.4); z-index: 110; cursor: pointer; transition: transform 0.2s; display: flex; align-items: center; justify-content: center; touch-action: manipulation;}
+    .btn-target { position: fixed; bottom: 160px; right: 25px; background: var(--text-main); color: white; border: none; width: 54px; height: 54px; border-radius: 50%; font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); z-index: 110; cursor: pointer; transition: transform 0.2s; display: flex; align-items: center; justify-content: center; touch-action: manipulation;}
     .btn-target:active { transform: scale(0.9); }
 
-    #stopwatch-popup { display: none; position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 400px; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: white; padding: 16px 24px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); z-index: 100; box-sizing: border-box; border: 1px solid rgba(255,255,255,0.1); }
-    .timer-btn { background: var(--primary); color: white; border: none; width: 50px; height: 50px; border-radius: 25px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(59,130,246,0.4); transition: opacity 0.2s; touch-action: manipulation; }
+    #stopwatch-popup { display: none; position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 400px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: var(--text-main); padding: 16px 24px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); z-index: 100; box-sizing: border-box; border: 1px solid var(--border-color); }
+    .timer-btn { background: var(--text-main); color: white; border: none; width: 46px; height: 46px; border-radius: 23px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; touch-action: manipulation; padding-left:4px; }
     .timer-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .timer-btn.running { background: #ef4444; box-shadow: 0 4px 15px rgba(239,68,68,0.4); animation: pulse 2s infinite; }
+    .timer-btn.running { background: #ef4444; animation: pulse 2s infinite; padding-left:0; }
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     
-    .progress-container { width: 100%; height: 8px; background: rgba(255, 255, 255, 0.15); border-radius: 4px; margin-top: 14px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); }
-    .progress-bar { height: 100%; background: linear-gradient(90deg, #60a5fa, #34d399); width: 0%; transition: width 0.5s ease-out; border-radius: 4px; box-shadow: 0 0 10px rgba(52, 211, 153, 0.5); }
+    .progress-container { width: 100%; height: 6px; background: #f3f4f6; border-radius: 3px; margin-top: 14px; overflow: hidden; }
+    .progress-bar { height: 100%; background: linear-gradient(90deg, #3b82f6, #10b981); width: 0%; transition: width 0.5s ease-out; border-radius: 3px; }
 
-    .cal-sub-header { background: var(--surface); padding: 12px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #f1f5f9; }
-    .action-pill { border: none; padding: 8px 14px; border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; font-family: 'Pretendard', sans-serif; touch-action: manipulation;}
-    .action-pill:active { transform: scale(0.95); }
-    .action-pill-gray { background: #f1f5f9; color: #475569; }
-    .action-pill-blue { background: #eff6ff; color: #3b82f6; border: 1px solid #bfdbfe; }
-    .action-pill-insta { background: linear-gradient(45deg, #f58529, #dd2a7b, #8134af); color: white; box-shadow: 0 4px 10px rgba(221,42,123,0.25); }
+    .cal-sub-header { background: var(--surface); padding: 12px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--border-color); }
+    .action-pill { border: 1px solid var(--border-color); background: var(--surface); padding: 8px 14px; border-radius: 20px; font-weight: 700; font-size: 13px; color: var(--text-main); cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; font-family: 'Pretendard', sans-serif; touch-action: manipulation;}
+    .action-pill:active { transform: scale(0.95); background: #fafafa; }
+    .action-pill-insta { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); color: white; border: none; }
+    .action-pill-insta:active { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); opacity: 0.9; }
 
-    .cal-weekdays { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); text-align: center; padding: 12px 0; font-size: 12px; font-weight: 900; color: var(--text-muted); width: 100%; box-sizing: border-box; background: var(--bg); border-bottom: 1px solid #f1f5f9; }
+    .cal-weekdays { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); text-align: center; padding: 12px 0; font-size: 12px; font-weight: 800; color: var(--text-muted); width: 100%; box-sizing: border-box; background: var(--bg); border-bottom: 1px solid var(--border-color); }
     .cal-weekdays .sun { color: #ef4444; }
     .cal-weekdays .sat { color: #3b82f6; }
     
     .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; padding: 10px; background: var(--bg); width: 100%; box-sizing: border-box; }
-    .cal-day { background: var(--surface); min-height: 80px; padding: 4px; border-radius: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; box-shadow: 0 2px 4px rgba(0,0,0,0.02); box-sizing: border-box; position: relative; transition: transform 0.1s; touch-action: manipulation; border: 1px solid transparent; }
+    .cal-day { background: var(--surface); min-height: 80px; padding: 6px; border-radius: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; box-sizing: border-box; position: relative; transition: transform 0.1s; touch-action: manipulation; border: 1px solid var(--border-color); }
     .cal-day:active { transform: scale(0.96); }
-    .cal-day.today { border: 1.5px solid var(--primary); background: #f8fafc; }
-    .cal-day.empty { background: transparent; box-shadow: none; cursor: default; }
+    .cal-day.today { border: 1.5px solid var(--text-main); }
+    .cal-day.empty { background: transparent; border: none; cursor: default; }
     
-    .date-num { font-size: 13px; font-weight: 900; color: var(--text-main); align-self: flex-start; padding-left: 2px; margin-bottom: auto; z-index: 2; }
+    .date-num { font-size: 13px; font-weight: 800; color: var(--text-main); align-self: flex-start; margin-bottom: auto; z-index: 2; }
     .date-num.sun { color: #ef4444; }
     .date-num.sat { color: #3b82f6; }
     
     .cal-badge-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%; padding-bottom: 2px; margin-top: 4px; }
-    .cal-badge { font-size: 10px; font-weight: 800; padding: 2px 0; border-radius: 4px; width: 100%; text-align: center; letter-spacing: -0.5px; white-space: nowrap; line-height: 1.1; font-variant-numeric: tabular-nums; }
-    .cal-badge.target { color: var(--target); background: transparent; }
-    .cal-badge.actual { color: #ffffff; background: var(--primary); font-weight: 900; margin-top: 1px; }
-    .cal-badge.actual.high { background: #ea580c; }
+    .cal-badge { font-size: 10px; font-weight: 700; padding: 2px 0; border-radius: 4px; width: 100%; text-align: center; letter-spacing: -0.5px; white-space: nowrap; line-height: 1.1; font-variant-numeric: tabular-nums; }
+    .cal-badge.target { color: var(--text-muted); background: transparent; }
+    .cal-badge.actual { color: #ffffff; background: var(--primary); margin-top: 1px; }
+    .cal-badge.actual.high { background: var(--warning); }
 
-    .overlay-base { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px); z-index: 2000; cursor: pointer; }
-    .modal-box { background: var(--surface); width: 100%; max-width: 450px; border-radius: 24px; max-height: 85vh; display:flex; flex-direction:column; box-shadow: 0 25px 50px rgba(0,0,0,0.3); box-sizing: border-box; cursor: default; overflow: hidden; }
-    .modal-header { padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: var(--surface); z-index: 20; flex-shrink: 0; }
-    .modal-content-scroll { flex-grow: 1; overflow-y: auto; padding: 15px; background: var(--bg); position: relative; }
-    .modal-footer { padding: 15px 20px; background: var(--surface); border-top: 1px solid #e2e8f0; z-index: 20; flex-shrink: 0; }
+    .overlay-base { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(2px); z-index: 2000; cursor: pointer; }
+    .modal-box { background: var(--surface); width: 100%; max-width: 450px; border-radius: 20px; max-height: 85vh; display:flex; flex-direction:column; box-shadow: 0 10px 40px rgba(0,0,0,0.1); box-sizing: border-box; cursor: default; overflow: hidden; border: 1px solid var(--border-color); }
+    .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--surface); z-index: 20; flex-shrink: 0; }
+    .modal-content-scroll { flex-grow: 1; overflow-y: auto; padding: 20px; background: var(--bg); position: relative; }
+    .modal-footer { padding: 16px 20px; background: var(--surface); border-top: 1px solid var(--border-color); z-index: 20; flex-shrink: 0; }
 
-    #loading-overlay { background: rgba(255,255,255,0.95); flex-direction: column; gap: 10px; color: var(--primary); font-weight: bold; z-index: 9999; font-size: 18px; cursor: default; }
-    #toast-notification { position: fixed; top: -60px; left: 50%; transform: translateX(-50%); background: var(--surface); color: var(--text-main); padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 800; box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 9999; transition: top 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); border: 2px solid var(--primary); pointer-events: none; }
+    #loading-overlay { background: rgba(255,255,255,0.95); flex-direction: column; gap: 10px; color: var(--text-main); font-weight: bold; z-index: 9999; font-size: 16px; cursor: default; backdrop-filter: none; }
+    #toast-notification { position: fixed; top: -60px; left: 50%; transform: translateX(-50%); background: var(--text-main); color: white; padding: 14px 24px; border-radius: 30px; font-size: 14px; font-weight: 700; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 9999; transition: top 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); pointer-events: none; }
     #toast-notification.show { top: 30px; }
     
-    .modal-total-time { text-align: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px dashed #e2e8f0; display: flex; justify-content: space-around; }
+    .modal-total-time { text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-around; }
     .modal-total-time div { display: flex; flex-direction: column; align-items: center; }
     .modal-total-time span { display: block; font-size: 13px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; }
-    .modal-total-time strong { font-size: 30px; color: var(--primary); font-weight: 900; letter-spacing: -1px; }
-    .modal-total-time strong.target-text { color: var(--target); }
+    .modal-total-time strong { font-size: 26px; color: var(--text-main); font-weight: 900; letter-spacing: -0.5px; }
+    .modal-total-time strong.target-text { color: var(--text-muted); }
     
-    .timeline { padding-left: 10px; border-left: 3px solid #e2e8f0; margin-left: 10px; padding-bottom: 10px; }
+    .timeline { padding-left: 10px; border-left: 2px solid var(--border-color); margin-left: 10px; padding-bottom: 10px; }
     .timeline-item { position: relative; padding-bottom: 20px; padding-left: 20px; }
     .timeline-item:last-child { padding-bottom: 0; }
-    .timeline-item::before { content: ''; position: absolute; left: -29.5px; top: 0; width: 12px; height: 12px; border-radius: 50%; background: #cbd5e1; border: 4px solid var(--surface); }
-    .timeline-item.focused::before { background: var(--primary); box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
-    .timeline-item.planned::before { background: var(--target); box-shadow: 0 0 0 2px rgba(139,92,246,0.2); }
-    .tl-time { font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 6px; }
-    .tl-content { background: var(--bg); padding: 12px 14px; border-radius: 12px; font-size: 14px; border: 1px solid #f1f5f9; }
-    .tl-badge { display: inline-block; background: #eff6ff; color: var(--primary-dark); padding: 6px 10px; border-radius: 8px; font-weight: 800; font-size: 12px; letter-spacing: -0.5px;}
-    .tl-badge.target { background: #f5f3ff; color: #6d28d9; }
-    .tl-note { color: var(--text-main); line-height: 1.5; font-weight: 500; word-break: break-word; white-space: pre-wrap;}
-    .tl-empty-state { text-align: center; color: var(--text-muted); padding: 30px 0; font-weight: bold; }
+    .timeline-item::before { content: ''; position: absolute; left: -26px; top: 2px; width: 10px; height: 10px; border-radius: 50%; background: var(--border-color); border: 3px solid var(--bg); }
+    .timeline-item.focused::before { background: var(--primary); }
+    .timeline-item.planned::before { background: var(--text-muted); }
+    .tl-time { font-size: 14px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
+    .tl-content { background: var(--surface); padding: 12px; border-radius: 12px; font-size: 14px; border: 1px solid var(--border-color); }
+    .tl-badge { display: inline-block; background: #f3f4f6; color: var(--text-main); padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 12px; letter-spacing: -0.5px;}
+    .tl-note { color: var(--text-main); line-height: 1.5; font-weight: 500; word-break: break-word; white-space: pre-wrap; margin-top: 6px;}
+    .tl-empty-state { text-align: center; color: var(--text-muted); padding: 30px 0; font-weight: bold; font-size: 14px;}
 
-    .guide-box { padding: 16px 18px; border-radius: 14px; margin-bottom: 14px; text-align: left; background: var(--surface); border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.03); box-sizing: border-box; }
-    .guide-box.primary { border-left: 5px solid var(--primary); }
-    .guide-box.success { border-left: 5px solid var(--success); }
-    .guide-box.info { border-left: 5px solid #0ea5e9; }
-    .guide-box.purple { border-left: 5px solid var(--target); }
-    .guide-box.orange { border-left: 5px solid #f97316; }
-    .guide-title { font-size: 16px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; letter-spacing: -0.5px;}
+    .guide-box { padding: 16px; border-radius: 16px; margin-bottom: 14px; text-align: left; background: var(--surface); border: 1px solid var(--border-color); box-sizing: border-box; }
+    .guide-title { font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; letter-spacing: -0.5px;}
     .guide-desc { font-size: 13.5px; color: var(--text-muted); line-height: 1.6; word-break: keep-all; font-weight: 500;}
 
     #settings-modal, #patch-note-modal, #guide-modal, #dday-modal { z-index: 2200; }
     #diary-modal, #todo-modal, #capture-modal { z-index: 2100; }
     #record-modal, #board-modal { z-index: 2000; }
 
-    .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: #f8fafc; border-radius: 12px; margin-bottom: 10px; font-weight: 800; color: var(--text-main); }
-    .setting-btn { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; transition: background 0.2s; touch-action: manipulation;}
-    .setting-btn.off { background: #cbd5e1; color: white; }
+    .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: var(--surface); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 10px; font-weight: 700; color: var(--text-main); font-size: 14px; }
+    .setting-btn { background: var(--text-main); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; transition: 0.2s; touch-action: manipulation;}
+    .setting-btn.off { background: #e5e7eb; color: var(--text-muted); }
+
+    /* 모달 버튼 스타일 정규화 */
+    .modal-close-btn { background: transparent; color: var(--text-main); border: none; width: 32px; height: 32px; border-radius: 50%; font-weight: bold; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .modal-close-btn:hover { background: #f3f4f6; }
 
     #insta-card-container { position: fixed; top: -9999px; left: -9999px; width: 1080px; height: 1500px; opacity: 0; pointer-events: none; z-index: -9999; }
     #insta-card { width: 1080px; height: 1500px; padding: 80px; box-sizing: border-box; display: flex; flex-direction: column; font-family: 'Pretendard', sans-serif; position: relative; letter-spacing: -1px; }
@@ -207,7 +215,7 @@
 
 <div id="toast-notification">🔔 <span id="toast-msg">메시지</span></div>
 <div id="loading-overlay" class="overlay-base" style="display:flex;">
-    <div style="font-size: 40px; margin-bottom: 10px;">⏳</div>
+    <div style="font-size: 32px; margin-bottom: 10px;">⏳</div>
     <div id="loading-text">시스템 엔진 가동 중...</div>
 </div>
 
@@ -217,7 +225,7 @@
         <p style="color:var(--text-muted); font-size:14px; margin-bottom:30px;">소수 정예 완벽 동기화 플래너</p>
         <input type="text" id="login-id" class="input-field" placeholder="아이디">
         <input type="password" id="login-pw" class="input-field" placeholder="비밀번호">
-        <button class="btn-primary" onclick="SFX.play('tap'); handleAuth()">로그인 & 시작</button>
+        <button class="btn-primary" style="background:var(--text-main);" onclick="SFX.play('tap'); handleAuth()">로그인 & 시작</button>
         <span id="login-status" style="display:block; margin-top:15px; color:#ef4444; font-size:13px; font-weight:bold;"></span>
     </div>
 </div>
@@ -227,36 +235,36 @@
         <div style="display:flex; justify-content:space-between; align-items:flex-start; width:100%; margin-bottom: 10px;">
              <div id="dday-badge" onclick="SFX.play('pop'); openDdayModal()" class="dday-badge">⏳ 디데이 설정 +</div>
              <div style="display:flex; gap:8px;">
-                 <button style="background:#eff6ff; color:#3b82f6; border:none; padding:8px; border-radius:10px; font-size:16px; cursor:pointer;" onclick="SFX.play('pop'); document.getElementById('patch-note-modal').style.display='flex'; document.body.style.overflow='hidden';">📢</button>
-                 <button style="background:#f1f5f9; color:#475569; border:none; padding:8px; border-radius:10px; font-size:16px; cursor:pointer;" onclick="SFX.play('pop'); document.getElementById('settings-modal').style.display='flex'; document.body.style.overflow='hidden';">⚙️</button>
+                 <button style="background:transparent; border:1px solid var(--border-color); padding:6px 10px; border-radius:10px; font-size:16px; cursor:pointer;" onclick="SFX.play('pop'); document.getElementById('patch-note-modal').style.display='flex'; document.body.style.overflow='hidden';">📢</button>
+                 <button style="background:transparent; border:1px solid var(--border-color); padding:6px 10px; border-radius:10px; font-size:16px; cursor:pointer;" onclick="SFX.play('pop'); document.getElementById('settings-modal').style.display='flex'; document.body.style.overflow='hidden';">⚙️</button>
              </div>
         </div>
         <div style="display:flex; flex-direction:column; align-items:center; text-align:center;">
             <div style="font-size: 40px; margin-bottom: 5px;">👋</div>
-            <h2 style="margin-bottom:25px; margin-top:0;">반갑습니다,<br><span id="dash-user-name" style="color:var(--primary);">User</span>님!</h2>
+            <h2 style="margin-bottom:25px; margin-top:0;">반갑습니다,<br><span id="dash-user-name" style="color:var(--text-main);">User</span>님!</h2>
         </div>
         <div id="todo-alert-banner" style="display:none;" onclick="SFX.play('tap'); teleportToTodo(this.dataset.targetDStr)">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-                <span style="font-size: 13px; font-weight: 800; color: #2563eb;">🔔 다가오는 일정</span>
-                <span style="font-size: 18px;">👉</span>
+                <span style="font-size: 13px; font-weight: 800; color: var(--text-main);">🔔 다가오는 일정</span>
+                <span style="font-size: 16px; color: var(--text-muted);">👉</span>
             </div>
-            <div id="todo-alert-text" style="font-size: 15px; color: #1e3a8a; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+            <div id="todo-alert-text" style="font-size: 14.5px; color: var(--text-muted); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
         </div>
         <div class="dash-today-summary">
             <div style="display:flex; flex-direction:column; gap:4px;">
-                <span style="font-size:13px; color:var(--target); font-weight:800;">🎯 오늘의 목표 시간</span>
-                <strong id="dash-today-target" style="font-size:24px; color:var(--target);">00h 00m</strong>
+                <span style="font-size:13px; color:var(--text-muted); font-weight:800;">🎯 오늘의 목표 시간</span>
+                <strong id="dash-today-target" style="font-size:24px; color:var(--text-muted);">00h 00m</strong>
             </div>
-            <div style="display:flex; flex-direction:column; gap:4px; margin-top:10px; padding-top:15px; border-top:1px dashed #cbd5e1;">
-                <span style="font-size:13px; color:var(--text-muted); font-weight:800;">🔥 오늘 달린 시간</span>
+            <div style="display:flex; flex-direction:column; gap:4px; margin-top:10px; padding-top:15px; border-top:1px solid var(--border-color);">
+                <span style="font-size:13px; color:var(--text-main); font-weight:800;">🔥 오늘 달린 시간</span>
                 <strong id="dash-today-time">00h 00m</strong>
             </div>
         </div>
-        <button class="dash-btn" style="background:var(--primary); color:white; box-shadow: 0 8px 20px rgba(59,130,246,0.3);" onclick="SFX.play('tap'); switchView('study')">🔥 오늘의 달리기 시작</button>
-        <button class="dash-btn" style="background:var(--warning); color:var(--warning-text); box-shadow: 0 8px 20px rgba(254,240,138,0.5);" onclick="SFX.play('tap'); switchView('calendar')">📅 내 전체 기록 보기</button>
-        <button class="dash-btn-outline" style="border-color: #0ea5e9; color: #0284c7; margin-top: 25px; background: #fdfcff;" onclick="SFX.play('pop'); openBoardModal();">📢 스터디 라운지 (게시판)</button>
-        <button class="dash-btn-outline" onclick="SFX.play('pop'); document.getElementById('guide-modal').style.display='flex'; document.body.style.overflow='hidden';">📖 페이스메이커 사용 설명서</button>
-        <div style="margin-top: 25px; font-size: 12px; color: #94a3b8; font-weight: 700; letter-spacing: 0.5px;">Pacemaker Planner ver <span class="app-version-display"></span></div>
+        <button class="dash-btn" style="background:var(--text-main); color:white;" onclick="SFX.play('tap'); switchView('study')">🔥 오늘의 달리기 시작</button>
+        <button class="dash-btn-outline" onclick="SFX.play('tap'); switchView('calendar')">📅 내 전체 기록 보기</button>
+        <button class="dash-btn-outline" style="border-color:var(--border-color); background: #fafafa; margin-top: 25px;" onclick="SFX.play('pop'); openBoardModal();">📢 스터디 라운지 (게시판)</button>
+        <button class="dash-btn-outline" style="border:none; color: var(--text-muted); font-size:13px;" onclick="SFX.play('pop'); document.getElementById('guide-modal').style.display='flex'; document.body.style.overflow='hidden';">📖 앱 사용 가이드</button>
+        <div style="margin-top: 15px; font-size: 11px; color: #a3a3a3; font-weight: 700; letter-spacing: 0.5px;">Pacemaker Planner ver <span class="app-version-display"></span></div>
     </div>
 </div>
 
@@ -265,17 +273,17 @@
         <div id="study-spacer"></div>
         <div class="fixed-header" id="main-header">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                <button style="background:rgba(255,255,255,0.15); border:none; color:white; padding:8px 12px; border-radius:10px; font-weight:bold; cursor:pointer;" onclick="SFX.play('tap'); switchView('dashboard')">🏠 홈</button>
-                <h2 style="margin:0; font-size:18px; letter-spacing:-0.5px;">🔥 페이스메이커</h2>
-                <button style="background:rgba(255,255,255,0.15); border:none; color:white; padding:8px 12px; border-radius:10px; font-size:14px; font-weight:bold; cursor:pointer;" onclick="SFX.play('pop'); document.getElementById('settings-modal').style.display='flex'; document.body.style.overflow='hidden';">⚙️ 설정</button>
+                <button style="background:transparent; border:none; color:var(--text-main); font-weight:bold; cursor:pointer;" onclick="SFX.play('tap'); switchView('dashboard')">🏠 홈</button>
+                <h2 style="margin:0; font-size:16px; font-weight:800; letter-spacing:-0.5px;">🔥 페이스메이커</h2>
+                <button style="background:transparent; border:none; color:var(--text-main); font-weight:bold; cursor:pointer;" onclick="SFX.play('pop'); document.getElementById('settings-modal').style.display='flex'; document.body.style.overflow='hidden';">⚙️ 설정</button>
             </div>
             <div class="action-row">
-                <button class="btn-action" style="background:#8b5cf6; color:white;" onclick="SFX.play('pop'); openTextModal('diary', Utils.getLogicalDateString())">📝 일기</button>
-                <button class="btn-action" style="background:#0ea5e9; color:white;" onclick="SFX.play('pop'); openTextModal('todo', Utils.getLogicalDateString())">✅ 할일</button>
-                <button id="btn-manual-save" class="btn-action" style="background:var(--success); color:white; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);" onclick="SFX.play('tap'); manualForceSave()">💾 저장</button>
+                <button class="btn-action" onclick="SFX.play('pop'); openTextModal('diary', Utils.getLogicalDateString())">📝 일기</button>
+                <button class="btn-action" onclick="SFX.play('pop'); openTextModal('todo', Utils.getLogicalDateString())">✅ 할일</button>
+                <button id="btn-manual-save" class="btn-action" style="background:var(--text-main); color:white;" onclick="SFX.play('tap'); manualForceSave()">💾 저장</button>
             </div>
         </div>
-        <div id="clock-display" style="padding: 15px; text-align: center; color: var(--text-muted); font-weight: 800; font-size: 14px; background:var(--surface);">로딩 중...</div>
+        <div id="clock-display" style="padding: 15px; text-align: center; color: var(--text-muted); font-weight: 800; font-size: 13px; background:var(--bg); border-bottom:1px solid var(--border-color);">로딩 중...</div>
         <div class="list-wrapper" id="schedule-list"></div>
     </div>
     <button class="btn-target" onclick="SFX.play('tap'); scrollToCurrent()">🎯</button>
@@ -286,15 +294,15 @@
         <div style="display: flex; align-items: center; gap: 16px;">
             <button id="toggle-timer-btn" class="timer-btn" onclick="toggleTimer()">▶</button>
             <div style="display: flex; flex-direction: column;">
-                <div style="font-size:11px; color:#c4b5fd; font-weight:800; margin-bottom:2px; display:flex; align-items:center;">
-                    <span id="popup-dday" style="background:var(--primary); color:white; padding:2px 4px; border-radius:4px; margin-right:4px; font-size:9px; display:none;"></span>
+                <div style="font-size:11px; color:var(--text-muted); font-weight:800; margin-bottom:2px; display:flex; align-items:center;">
+                    <span id="popup-dday" style="background:var(--text-main); color:white; padding:2px 6px; border-radius:10px; margin-right:6px; font-size:10px; display:none;"></span>
                     🎯 목표 <span id="popup-target-time" style="margin-left:4px;">00h 00m</span>
                 </div>
                 <div style="display:flex; align-items:center;">
-                    <span style="font-size:11px; color:#94a3b8; font-weight:800;">TOTAL STUDY TIME</span>
-                    <span id="sync-indicator" style="font-size:11px; color:#cbd5e1; font-weight:bold; margin-left:8px;"></span>
+                    <span style="font-size:11px; color:var(--text-muted); font-weight:800;">TOTAL STUDY TIME</span>
+                    <span id="sync-indicator" style="font-size:11px; color:#a3a3a3; font-weight:bold; margin-left:8px;"></span>
                 </div>
-                <span id="total-study-display" style="font-size:28px; color:var(--warning); font-variant-numeric:tabular-nums; font-weight:800; line-height:1; margin-top:2px;">00:00:00</span>
+                <span id="total-study-display" style="font-size:28px; color:var(--text-main); font-variant-numeric:tabular-nums; font-weight:900; line-height:1; margin-top:2px;">00:00:00</span>
             </div>
         </div>
         <div class="progress-container">
@@ -307,20 +315,20 @@
     <div class="container">
         <div id="cal-spacer"></div>
         <div class="cal-fixed-wrap" id="cal-main-header">
-            <div style="background: var(--text-main); color: white; padding: 15px 20px; display:flex; justify-content:space-between; align-items:center;">
-                <button style="background:rgba(255,255,255,0.15); border:none; color:white; padding:8px 12px; border-radius:10px; font-weight:bold; cursor:pointer;" onclick="SFX.play('tap'); switchView('dashboard')">🏠 홈</button>
+            <div style="background: var(--surface); color: var(--text-main); padding: 15px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--border-color);">
+                <button style="background:transparent; border:none; color:var(--text-main); font-weight:bold; cursor:pointer;" onclick="SFX.play('tap'); switchView('dashboard')">🏠 홈</button>
                 <div style="display:flex; align-items:center; gap: 15px;">
-                    <button onclick="SFX.play('tap'); changeMonth(-1)" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;">◀</button>
-                    <h3 id="cal-month-year" style="margin:0; font-size:18px; font-weight:800;">연월 표시</h3>
-                    <button onclick="SFX.play('tap'); changeMonth(1)" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;">▶</button>
+                    <button onclick="SFX.play('tap'); changeMonth(-1)" style="background:none; border:none; color:var(--text-main); font-size:16px; cursor:pointer; padding:5px;">◀</button>
+                    <h3 id="cal-month-year" style="margin:0; font-size:16px; font-weight:800;">연월 표시</h3>
+                    <button onclick="SFX.play('tap'); changeMonth(1)" style="background:none; border:none; color:var(--text-main); font-size:16px; cursor:pointer; padding:5px;">▶</button>
                 </div>
-                <button style="background:rgba(255,255,255,0.15); border:none; color:white; padding:8px 12px; border-radius:10px; font-size:14px; font-weight:bold; cursor:pointer;" onclick="SFX.play('pop'); document.getElementById('settings-modal').style.display='flex'; document.body.style.overflow='hidden';">⚙️ 설정</button>
+                <button style="background:transparent; border:none; color:var(--text-main); font-weight:bold; cursor:pointer;" onclick="SFX.play('pop'); document.getElementById('settings-modal').style.display='flex'; document.body.style.overflow='hidden';">⚙️ 설정</button>
             </div>
             <div class="cal-sub-header">
-                <button class="action-pill action-pill-gray" onclick="SFX.play('tap'); goToToday()">오늘로 이동</button>
+                <button class="action-pill" onclick="SFX.play('tap'); goToToday()">오늘로 이동</button>
                 <div style="display:flex; gap:8px;">
-                    <button class="action-pill action-pill-blue" onclick="SFX.play('tap'); loadFromCloud(false)">☁️ 수동 동기화</button>
-                    <button class="action-pill action-pill-insta" onclick="SFX.play('pop'); document.getElementById('theme-modal').style.display='flex'; document.body.style.overflow='hidden';">📸 인스타 캡처</button>
+                    <button class="action-pill" onclick="SFX.play('tap'); loadFromCloud(false)">☁️ 수동 동기화</button>
+                    <button class="action-pill action-pill-insta" onclick="SFX.play('pop'); document.getElementById('theme-modal').style.display='flex'; document.body.style.overflow='hidden';">📸 캡처</button>
                 </div>
             </div>
             <div class="cal-weekdays">
@@ -333,28 +341,28 @@
 
 <div id="dday-modal" class="overlay-base">
     <div class="modal-box" style="padding: 25px; display:block;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h3 style="margin:0; font-size:22px; font-weight:800; color:var(--text-main);">⏳ 디데이 설정</h3>
-            <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); document.getElementById('dday-modal').style.display='none'; document.body.style.overflow='';">✖</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3 style="margin:0; font-size:18px; font-weight:800; color:var(--text-main);">⏳ 디데이 설정</h3>
+            <button class="modal-close-btn" onclick="SFX.play('tap'); document.getElementById('dday-modal').style.display='none'; document.body.style.overflow='';">✕</button>
         </div>
-        <div style="font-size:13px; color:var(--text-muted); margin-bottom:6px; font-weight:700;">목표 시험/일정 이름</div>
+        <div style="font-size:13px; color:var(--text-muted); margin-bottom:8px; font-weight:700;">목표 시험/일정 이름</div>
         <input type="text" id="dday-title-input" class="input-field" placeholder="예: 2차 경찰 채용 시험" maxlength="20" style="margin-bottom:15px;">
-        <div style="font-size:13px; color:var(--text-muted); margin-bottom:6px; font-weight:700;">목표 날짜</div>
+        <div style="font-size:13px; color:var(--text-muted); margin-bottom:8px; font-weight:700;">목표 날짜</div>
         <input type="date" id="dday-date-input" class="input-field">
-        <button class="btn-primary" style="margin-top:15px; background:linear-gradient(135deg, #6366f1, #8b5cf6); box-shadow: 0 4px 12px rgba(139,92,246,0.3);" onclick="SFX.play('tap'); saveDday()">💾 디데이 저장 및 동기화</button>
-        <button class="btn-action" style="margin-top:10px; background:#f1f5f9; color:#ef4444; width:100%; box-shadow:none; font-weight:bold;" onclick="SFX.play('tap'); clearDday()">🗑️ 설정 지우기</button>
+        <button class="btn-primary" style="margin-top:15px; background:var(--text-main);" onclick="SFX.play('tap'); saveDday()">💾 설정 저장</button>
+        <button class="btn-primary" style="margin-top:10px; background:transparent; color:#ef4444; border:1px solid #ef4444;" onclick="SFX.play('tap'); clearDday()">🗑️ 설정 지우기</button>
     </div>
 </div>
 
 <div id="settings-modal" class="overlay-base">
     <div class="modal-box" style="padding: 25px; max-width: 380px; display:block; overflow-y:auto; max-height:90vh;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h3 style="margin:0; font-size:22px; font-weight:900; color:var(--text-main);">⚙️ 시스템 설정</h3>
-            <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); document.getElementById('settings-modal').style.display='none'; document.body.style.overflow='';">✖</button>
+            <h3 style="margin:0; font-size:18px; font-weight:800; color:var(--text-main);">⚙️ 시스템 설정</h3>
+            <button class="modal-close-btn" onclick="SFX.play('tap'); document.getElementById('settings-modal').style.display='none'; document.body.style.overflow='';">✕</button>
         </div>
-        <div style="text-align:center; padding:15px; background:#eff6ff; border-radius:16px; margin-bottom:20px;">
-            <div style="font-size:12px; color:#2563eb; font-weight:800; margin-bottom:4px;">현재 접속 중인 아이디</div>
-            <div style="font-size:18px; font-weight:900; color:var(--text-main);" id="settings-userid">User</div>
+        <div style="text-align:center; padding:15px; background:var(--surface); border:1px solid var(--border-color); border-radius:16px; margin-bottom:20px;">
+            <div style="font-size:12px; color:var(--text-muted); font-weight:700; margin-bottom:4px;">현재 접속 중인 계정</div>
+            <div style="font-size:18px; font-weight:800; color:var(--text-main);" id="settings-userid">User</div>
         </div>
         <div class="setting-item">
             <span>⏰ 기본 달성 팝업 알림</span>
@@ -365,152 +373,151 @@
             <button id="set-btn-sound" class="setting-btn" onclick="SFX.play('tap'); toggleSetting('sound')">켜짐</button>
         </div>
 
-        <div class="setting-item" style="flex-direction:column; align-items:flex-start; gap:10px; background:#f5f3ff; border:1px solid #ddd6fe;">
-            <div style="display:flex; justify-content:space-between; width:100%;">
-                <span style="color:#6d28d9;">⏰ 나만의 브라우저 알람</span>
-                <button class="setting-btn" style="background:#10b981; padding:6px 12px;" onclick="SFX.play('tap'); triggerBrowserAlarm(true)">즉시 테스트</button>
+        <div class="setting-item" style="flex-direction:column; align-items:flex-start; gap:10px; background:#fafafa;">
+            <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                <span style="color:var(--text-main); font-weight:800;">⏰ 나만의 브라우저 알람</span>
+                <button class="action-pill" style="padding:6px 10px; font-size:12px;" onclick="SFX.play('tap'); triggerBrowserAlarm(true)">즉시 테스트</button>
             </div>
-            <div style="font-size:12px; color:#8b5cf6; font-weight:normal;">설정한 시간이 되면 재밌는 격려 메시지와 함께 브라우저 알림이 뜹니다.</div>
+            <div style="font-size:12px; color:var(--text-muted); font-weight:normal;">설정한 시간이 되면 재밌는 격려 메시지와 함께 브라우저 알림이 뜹니다.</div>
             <div style="display:flex; gap:8px; width:100%; align-items:center;">
-                <input type="time" id="new-alarm-time" class="input-field" style="margin-bottom:0; padding:10px; font-weight:bold;">
-                <button class="btn-primary" style="width:auto; padding:10px 16px; font-size:14px; background:#8b5cf6;" onclick="SFX.play('tap'); addCustomAlarm()">추가</button>
+                <input type="time" id="new-alarm-time" class="input-field" style="margin-bottom:0; padding:10px; font-weight:bold; background:var(--surface);">
+                <button class="btn-primary" style="width:auto; padding:10px 16px; font-size:14px; background:var(--text-main);" onclick="SFX.play('tap'); addCustomAlarm()">추가</button>
             </div>
             <div id="custom-alarm-list" style="width:100%; display:flex; flex-wrap:wrap; gap:8px; margin-top:5px;"></div>
         </div>
 
-        <div class="setting-item" style="background:#fef2f2;">
+        <div class="setting-item" style="border-color: #fecaca; background: #fef2f2;">
             <span style="color:#ef4444;">🧹 오늘의 보드 초기화</span>
             <button style="background:#ef4444; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:bold; font-size:13px; cursor:pointer;" onclick="SFX.play('tap'); manualClearBoard()">초기화</button>
         </div>
-        <div class="setting-item" style="background:#f1f5f9; margin-top:20px;">
-            <span style="color:#64748b;">🚪 기기에서 로그아웃</span>
-            <button style="background:#64748b; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:bold; font-size:13px; cursor:pointer;" onclick="SFX.play('tap'); handleLogout()">로그아웃</button>
+        <div class="setting-item" style="margin-top:20px; background:transparent; border:none; padding:0;">
+            <button class="btn-primary" style="background:#f3f4f6; color:var(--text-main); font-size:14px;" onclick="SFX.play('tap'); handleLogout()">🚪 기기에서 로그아웃</button>
         </div>
     </div>
 </div>
 
 <div id="patch-note-modal" class="overlay-base">
-    <div class="modal-box" style="padding: 25px; max-width: 420px; background: var(--bg); display:block;">
+    <div class="modal-box" style="padding: 25px; max-width: 420px; display:block;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h3 style="margin:0; font-size:20px; font-weight:800; color:var(--text-main);">📢 업데이트 히스토리</h3>
-            <button style="background:var(--surface); color:#64748b; border:1px solid #e2e8f0; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; transition: background 0.2s;" onclick="SFX.play('tap'); document.getElementById('patch-note-modal').style.display='none'; document.body.style.overflow='';">✖</button>
+            <h3 style="margin:0; font-size:18px; font-weight:800; color:var(--text-main);">📢 업데이트 내역</h3>
+            <button class="modal-close-btn" onclick="SFX.play('tap'); document.getElementById('patch-note-modal').style.display='none'; document.body.style.overflow='';">✕</button>
         </div>
         <div style="max-height: 55vh; overflow-y: auto; padding-right: 5px;">
-            <div class="guide-box purple">
-                <div class="guide-title">🚀 0.8.4 게시판 및 알람 업데이트 (NEW)</div>
-                <div class="guide-desc">• 📢 <b>게시판 수정/삭제/댓글</b> 기능 완벽 지원!<br>• ⏰ 설정에서 <b>원하는 시간 브라우저 알람</b> 추가 가능 (공부 시간에 따라 재밌는 멘트가 나옵니다)<br>• 🛡️ <b>기기 동접 방어 시스템</b>: 모바일 켜두고 PC 접속시 데이터 꼬임 없이 폰 타이머 자동차단!</div>
+            <div class="guide-box">
+                <div class="guide-title">🚀 0.8.5 UI/UX & 에디터 통합 패치 (NEW)</div>
+                <div class="guide-desc">• 🎨 <b>인스타그램 감성 UI</b>: 거대한 버튼들을 세련된 형태로 다듬고, 전체적인 색감과 테두리를 미니멀하게 개선했습니다.<br>• 📝 <b>통합 텍스트 에디터</b>: 일기, 할일, 게시판 모두 동일한 고품질 에디터를 사용하도록 통합했습니다.<br>• 🛡️ <b>데이터 안전망 강화</b>: 빈 내용이 서버에 덮어씌워지지 않도록 방어 로직을 보완했습니다.</div>
             </div>
-            <div class="guide-box primary">
-                <div class="guide-title">🚀 0.8.2 통합 에디터 & 최적화 패치</div>
-                <div class="guide-desc">• 📝 모든 작성 영역에 공통 서식 도구 적용.<br>• 🛡️ 서버 통신 및 HTML 서식 보존 안전망 강화.</div>
+            <div class="guide-box">
+                <div class="guide-title">🚀 0.8.4 게시판 및 알람 업데이트</div>
+                <div class="guide-desc">• 📢 <b>게시판 수정/삭제/댓글</b> 기능 완벽 지원!<br>• ⏰ 설정에서 <b>원하는 시간 브라우저 알람</b> 추가 가능 (공부 시간에 따라 재밌는 멘트가 나옵니다)<br>• 🛡️ <b>기기 동접 방어 시스템</b>: 모바일 켜두고 PC 접속시 데이터 꼬임 방지!</div>
             </div>
         </div>
-        <button class="btn-primary" style="margin-top:15px; padding:14px; border-radius:12px; font-size:15px;" onclick="SFX.play('tap'); document.getElementById('patch-note-modal').style.display='none'; document.body.style.overflow='';">확인 완료</button>
+        <button class="btn-primary" style="margin-top:15px; background:var(--text-main);" onclick="SFX.play('tap'); document.getElementById('patch-note-modal').style.display='none'; document.body.style.overflow='';">확인</button>
     </div>
 </div>
 
 <div id="guide-modal" class="overlay-base">
-    <div class="modal-box" style="padding: 25px; max-width: 450px; background: var(--bg); display:block;">
+    <div class="modal-box" style="padding: 25px; max-width: 450px; display:block;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h3 style="margin:0; font-size:22px; font-weight:900; color:var(--text-main);">🙋‍♀️ 초보 가이드 (v0.8.4)</h3>
-            <button style="background:var(--surface); color:#64748b; border:1px solid #e2e8f0; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); document.getElementById('guide-modal').style.display='none'; document.body.style.overflow='';">✖</button>
+            <h3 style="margin:0; font-size:18px; font-weight:800; color:var(--text-main);">🙋‍♀️ 초보 가이드</h3>
+            <button class="modal-close-btn" onclick="SFX.play('tap'); document.getElementById('guide-modal').style.display='none'; document.body.style.overflow='';">✕</button>
         </div>
         <div style="max-height: 60vh; overflow-y: auto; padding-right: 5px;">
-            <div style="font-size:14.5px; color:var(--text-main); font-weight:700; margin-bottom:20px; line-height:1.6; padding:0 5px;">
+            <div style="font-size:14px; color:var(--text-main); font-weight:600; margin-bottom:20px; line-height:1.6; padding:0 5px;">
                 복잡하게 생각할 필요 없어요. <b>이 6가지만 순서대로 읽고 바로 시작해 보세요!</b>
             </div>
-            <div class="guide-box" style="border-left: 5px solid #6366f1;">
+            <div class="guide-box">
                 <div class="guide-title">⏳ 1단계. 디데이 설정</div>
                 <div class="guide-desc">홈 화면 좌측 상단의 <b>[⏳ 디데이 설정 +]</b> 버튼을 눌러 목표일을 등록하세요. 스톱워치 창에서 매일 확인 가능합니다.</div>
             </div>
-            <div class="guide-box purple">
+            <div class="guide-box">
                 <div class="guide-title">🎯 2단계. 코스 계획 & 정기 알람</div>
-                <div class="guide-desc"><b>[🎯 계획]</b> 아이콘을 눌러 구간을 설정하세요. 브라우저 알람을 켜두면 스톱워치를 안 켜도 6시간마다 알람이 갑니다! 맞춤 알람은 설정(⚙️)에서!</div>
+                <div class="guide-desc"><b>[🎯 계획]</b> 아이콘을 눌러 구간을 설정하세요. 설정(⚙️)에서 원하는 시간에 나만의 맞춤 알람도 추가할 수 있습니다.</div>
             </div>
-            <div class="guide-box primary">
+            <div class="guide-box">
                 <div class="guide-title">▶️ 3단계. 스톱워치 실행</div>
                 <div class="guide-desc">맨 아래 <b>[▶ 재생]</b> 버튼을 꾹 누르세요. 30분을 채우면 자동으로 불이 들어오며 알람이 울립니다.</div>
             </div>
-            <div class="guide-box success">
+            <div class="guide-box">
                 <div class="guide-title">📝 4단계. 메모와 일기 (저장은 자동!)</div>
-                <div class="guide-desc">메모, 할 일, 일기를 새롭게 도입된 <b>통합 에디터</b>로 작성하세요. 형광펜과 글씨 색상을 자유롭게 꾸며보세요.</div>
+                <div class="guide-desc">할 일, 일기를 새롭게 도입된 <b>통합 에디터</b>로 작성하세요. 체크박스와 글씨 색상을 자유롭게 꾸며보세요.</div>
             </div>
-            <div class="guide-box info">
+            <div class="guide-box">
                 <div class="guide-title">📢 5단계. 실시간 스터디 라운지</div>
-                <div class="guide-desc">홈 화면의 <b>[스터디 라운지]</b>에 들어가 다짐이나 메모를 자유롭게 남기세요. 모두와 함께 달리는 기분을 느낄 수 있습니다. 내 글은 삭제/수정도 가능!</div>
+                <div class="guide-desc">홈 화면의 <b>[스터디 라운지]</b>에 들어가 다짐이나 메모를 자유롭게 남기세요. 내 글은 삭제/수정도 가능하며, 댓글로 응원할 수 있습니다.</div>
             </div>
-            <div class="guide-box orange">
+            <div class="guide-box">
                 <div class="guide-title">🛡️ 6단계. 절대 안전망 (새벽 5시 리셋)</div>
-                <div class="guide-desc">우리의 하루는 밤 12시가 아니라 <b>매일 새벽 5시에 리셋</b>됩니다. 여러 기기 동시 접속 시 똑똑하게 방어해줍니다!</div>
+                <div class="guide-desc">우리의 하루는 밤 12시가 아니라 <b>매일 새벽 5시에 리셋</b>됩니다. 여러 기기 동시 접속 시 똑똑하게 방어해줍니다.</div>
             </div>
         </div>
-        <button class="btn-primary" style="margin-top:20px; padding:16px; border-radius:12px; font-size:16px;" onclick="SFX.play('success'); document.getElementById('guide-modal').style.display='none'; document.body.style.overflow='';">와, 진짜 쉽네요! 이제 시작할게요 🔥</button>
+        <button class="btn-primary" style="margin-top:20px; background:var(--text-main);" onclick="SFX.play('success'); document.getElementById('guide-modal').style.display='none'; document.body.style.overflow='';">확인했어요 🔥</button>
     </div>
 </div>
 
 <div id="theme-modal" class="overlay-base">
     <div style="background:white; padding:30px; border-radius:24px; text-align:center; width:100%; max-width:320px;">
-        <h3 style="margin:0 0 20px 0; font-size:20px; font-weight:800; color:var(--text-main);">🎨 감성 테마 선택</h3>
-        <button style="width:100%; padding:15px; margin-bottom:10px; border-radius:12px; border:none; background:linear-gradient(135deg, #fbcfe8, #f472b6); color:white; font-size:16px; font-weight:bold; cursor:pointer;" onclick="SFX.play('tap'); generateInstaImage('spring')">🌸 화사한 봄</button>
-        <button style="width:100%; padding:15px; margin-bottom:10px; border-radius:12px; border:none; background:linear-gradient(135deg, #a7f3d0, #10b981); color:white; font-size:16px; font-weight:bold; cursor:pointer;" onclick="SFX.play('tap'); generateInstaImage('summer')">🌿 싱그러운 여름</button>
-        <button style="width:100%; padding:15px; margin-bottom:10px; border-radius:12px; border:none; background:linear-gradient(135deg, #fed7aa, #ea580c); color:white; font-size:16px; font-weight:bold; cursor:pointer;" onclick="SFX.play('tap'); generateInstaImage('autumn')">🍁 따뜻한 가을</button>
-        <button style="width:100%; padding:15px; margin-bottom:10px; border-radius:12px; border:none; background:linear-gradient(135deg, #e0f2fe, #38bdf8); color:white; font-size:16px; font-weight:bold; cursor:pointer;" onclick="SFX.play('tap'); generateInstaImage('winter')">❄️ 차분한 겨울</button>
-        <button style="width:100%; padding:14px; margin-top:10px; border-radius:12px; border:none; background:#e2e8f0; color:#475569; font-weight:bold; cursor:pointer;" onclick="SFX.play('tap'); document.getElementById('theme-modal').style.display='none'; document.body.style.overflow='';">취소</button>
+        <h3 style="margin:0 0 20px 0; font-size:18px; font-weight:800; color:var(--text-main);">🎨 감성 테마 캡처</h3>
+        <button class="btn-primary" style="background:linear-gradient(135deg, #fbcfe8, #f472b6); margin-bottom:10px;" onclick="SFX.play('tap'); generateInstaImage('spring')">🌸 화사한 봄</button>
+        <button class="btn-primary" style="background:linear-gradient(135deg, #a7f3d0, #10b981); margin-bottom:10px;" onclick="SFX.play('tap'); generateInstaImage('summer')">🌿 싱그러운 여름</button>
+        <button class="btn-primary" style="background:linear-gradient(135deg, #fed7aa, #ea580c); margin-bottom:10px;" onclick="SFX.play('tap'); generateInstaImage('autumn')">🍁 따뜻한 가을</button>
+        <button class="btn-primary" style="background:linear-gradient(135deg, #e0f2fe, #38bdf8); margin-bottom:10px;" onclick="SFX.play('tap'); generateInstaImage('winter')">❄️ 차분한 겨울</button>
+        <button class="btn-primary" style="background:#f3f4f6; color:var(--text-main); margin-top:10px;" onclick="SFX.play('tap'); document.getElementById('theme-modal').style.display='none'; document.body.style.overflow='';">취소</button>
     </div>
 </div>
 
+<template id="editor-toolbar-template">
+    <div class="unified-toolbar">
+        <button class="ed-btn" onclick="formatText('bold')" title="굵게"><b style="font-family:serif;">B</b></button>
+        <button class="ed-btn" onclick="formatText('italic')" title="기울임"><i style="font-family:serif;">I</i></button>
+        <button class="ed-btn" onclick="formatText('underline')" title="밑줄"><u style="font-family:serif;">U</u></button>
+        <button class="ed-btn" onclick="formatText('strikeThrough')" title="취소선"><s style="font-family:serif;">S</s></button>
+        <div class="toolbar-divider"></div>
+        <button class="ed-btn" onclick="formatText('insertUnorderedList')" title="리스트">•</button>
+        <button class="ed-btn" onclick="insertEmojiAtCursor('⬜ ')" title="할일">⬜</button>
+        <button class="ed-btn" onclick="insertEmojiAtCursor('✅ ')" title="완료">✅</button>
+        <div class="toolbar-divider"></div>
+        <button class="color-btn color-black" onclick="formatText('foreColor', '#262626')"></button>
+        <button class="color-btn color-red" onclick="formatText('foreColor', '#ef4444')"></button>
+        <button class="color-btn color-blue" onclick="formatText('foreColor', '#3b82f6')"></button>
+        <button class="color-btn color-yellow" onclick="formatText('hiliteColor', '#fef08a')" title="형광펜"></button>
+    </div>
+</template>
+
 <div id="diary-modal" class="overlay-base">
-    <div class="modal-box" style="padding:0; display:flex; flex-direction:column; background:var(--bg);">
+    <div class="modal-box" style="padding:0; background:var(--bg);">
         <div class="modal-header">
-            <h3 id="diary-modal-title" style="margin:0; font-size:18px; font-weight:800; color:var(--text-main);">📝 오늘의 일기</h3>
-            <button style="background:#f1f5f9; color:#64748b; border:none; width:32px; height:32px; border-radius:50%; font-weight:bold; cursor:pointer;" onclick="SFX.play('tap'); saveTextData('diary', true); document.getElementById('diary-modal').style.display='none'; document.body.style.overflow='';">✖</button>
+            <h3 id="diary-modal-title" style="margin:0; font-size:16px; font-weight:800; color:var(--text-main);">📝 오늘의 일기</h3>
+            <button class="modal-close-btn" onclick="SFX.play('tap'); saveTextData('diary', true); document.getElementById('diary-modal').style.display='none'; document.body.style.overflow='';">✕</button>
         </div>
-        <div class="unified-toolbar">
-            <button class="ed-btn" onclick="formatText('bold')" title="굵게"><b>B</b></button>
-            <button class="ed-btn" onclick="formatText('italic')" title="기울임"><i>I</i></button>
-            <button class="ed-btn" onclick="formatText('underline')" title="밑줄"><u>U</u></button>
-            <button class="ed-btn" onclick="formatText('strikeThrough')" title="취소선"><s>S</s></button>
-            <div style="width:1px; background:#cbd5e1; margin:0 2px;"></div>
-            <button class="ed-btn" onclick="formatText('insertUnorderedList')" title="리스트">점</button>
-            <button class="ed-btn" onclick="formatText('removeFormat')" title="서식 지우기">🧹</button>
-            <div style="width:1px; background:#cbd5e1; margin:0 2px;"></div>
-            <button class="color-btn color-black" onclick="formatText('foreColor', '#1e293b')"></button>
-            <button class="color-btn color-red" onclick="formatText('foreColor', '#ef4444')"></button>
-            <button class="color-btn color-blue" onclick="formatText('foreColor', '#3b82f6')"></button>
-            <button class="color-btn color-yellow" onclick="formatText('hiliteColor', '#fef08a')" title="형광펜"></button>
-        </div>
-        <div class="modal-content-scroll">
+        <div class="modal-content-scroll" style="padding: 15px;">
             <input type="hidden" id="diary-date-input">
-            <div id="diary-input" class="rich-editor" contenteditable="true" placeholder="오늘 하루는 어땠나요? 자유롭게 적어보세요!"></div>
+            <div class="editor-container">
+                <div id="diary-toolbar-container"></div>
+                <div id="diary-input" class="rich-editor" contenteditable="true" placeholder="오늘 하루는 어땠나요? 자유롭게 적어보세요!"></div>
+            </div>
         </div>
-        <div class="modal-footer">
-            <button class="btn-primary" style="background:#8b5cf6;" onclick="SFX.play('tap'); saveTextData('diary')">💾 일기 저장하고 동기화</button>
+        <div class="modal-footer" style="padding: 15px;">
+            <button class="btn-primary" style="background:var(--text-main);" onclick="SFX.play('tap'); saveTextData('diary')">💾 저장하고 닫기</button>
         </div>
     </div>
 </div>
 
 <div id="todo-modal" class="overlay-base">
-    <div class="modal-box" style="padding:0; display:flex; flex-direction:column; background:var(--bg);">
+    <div class="modal-box" style="padding:0; background:var(--bg);">
         <div class="modal-header">
-            <h3 id="todo-modal-title" style="margin:0; font-size:18px; font-weight:800; color:var(--text-main);">✅ 오늘의 할 일</h3>
-            <button style="background:#f1f5f9; color:#64748b; border:none; width:32px; height:32px; border-radius:50%; font-weight:bold; cursor:pointer;" onclick="SFX.play('tap'); saveTextData('todo', true); document.getElementById('todo-modal').style.display='none'; document.body.style.overflow='';">✖</button>
+            <h3 id="todo-modal-title" style="margin:0; font-size:16px; font-weight:800; color:var(--text-main);">✅ 오늘의 할 일</h3>
+            <button class="modal-close-btn" onclick="SFX.play('tap'); saveTextData('todo', true); document.getElementById('todo-modal').style.display='none'; document.body.style.overflow='';">✕</button>
         </div>
-        <div class="unified-toolbar">
-            <button class="ed-btn" style="color:#0ea5e9;" onclick="insertEmojiAtCursor('⬜ ')">⬜ 할일</button>
-            <button class="ed-btn" style="color:#10b981;" onclick="insertEmojiAtCursor('✅ ')">✅ 완료</button>
-            <div style="width:1px; background:#cbd5e1; margin:0 2px;"></div>
-            <button class="ed-btn" onclick="formatText('bold')" title="굵게"><b>B</b></button>
-            <button class="ed-btn" onclick="formatText('strikeThrough')" title="취소선"><s>S</s></button>
-            <button class="color-btn color-red" onclick="formatText('foreColor', '#ef4444')"></button>
-            <button class="color-btn color-blue" onclick="formatText('foreColor', '#3b82f6')"></button>
-            <button class="color-btn color-yellow" onclick="formatText('hiliteColor', '#fef08a')" title="형광펜"></button>
-        </div>
-        <div class="modal-content-scroll">
+        <div class="modal-content-scroll" style="padding: 15px;">
             <input type="hidden" id="todo-date-input">
-            <div id="todo-input" class="rich-editor" contenteditable="true" placeholder="오늘의 할 일을 리스트업 해보세요!"></div>
+            <div class="editor-container">
+                <div id="todo-toolbar-container"></div>
+                <div id="todo-input" class="rich-editor" contenteditable="true" placeholder="오늘의 할 일을 리스트업 해보세요!"></div>
+            </div>
         </div>
-        <div class="modal-footer">
-            <button class="btn-primary" style="background:#0ea5e9;" onclick="SFX.play('tap'); saveTextData('todo')">💾 할 일 저장하고 동기화</button>
+        <div class="modal-footer" style="padding: 15px;">
+            <button class="btn-primary" style="background:var(--text-main);" onclick="SFX.play('tap'); saveTextData('todo')">💾 저장하고 닫기</button>
         </div>
     </div>
 </div>
@@ -518,27 +525,27 @@
 <div id="record-modal" class="overlay-base">
     <div class="modal-box" style="padding: 20px; max-width: 450px; display:block;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h3 id="modal-title" style="margin:0; font-size:22px; font-weight:800; color:var(--text-main);">상세 기록</h3>
-            <button style="background:#f1f5f9; color:#64748b; border:none; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; transition: background 0.2s;" onclick="SFX.play('tap'); document.getElementById('record-modal').style.display='none'; document.body.style.overflow='';">✖</button>
+            <h3 id="modal-title" style="margin:0; font-size:18px; font-weight:800; color:var(--text-main);">상세 기록</h3>
+            <button class="modal-close-btn" onclick="SFX.play('tap'); document.getElementById('record-modal').style.display='none'; document.body.style.overflow='';">✕</button>
         </div>
         <div id="modal-body" style="display:flex; flex-direction:column;"></div>
     </div>
 </div>
 
 <div id="board-modal" class="overlay-base">
-    <div class="modal-box" style="padding:0; display:flex; flex-direction:column; background: #f8fafc; height: 85vh; width: 100%; max-width: 500px;">
-        <div class="modal-header" style="box-shadow:0 2px 10px rgba(0,0,0,0.05);">
-            <h3 id="board-header-title" style="margin:0; font-size:18px; font-weight:900; color:var(--text-main);">📢 스터디 라운지</h3>
-            <button style="background:#f1f5f9; color:#64748b; border:none; width:32px; height:32px; border-radius:50%; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center;" onclick="SFX.play('tap'); closeBoardModal()">✖</button>
+    <div class="modal-box" style="padding:0; background: var(--bg); height: 85vh; width: 100%; max-width: 500px;">
+        <div class="modal-header">
+            <h3 id="board-header-title" style="margin:0; font-size:16px; font-weight:800; color:var(--text-main);">📢 스터디 라운지</h3>
+            <button class="modal-close-btn" onclick="SFX.play('tap'); closeBoardModal()">✕</button>
         </div>
         <div id="board-content-area" style="flex-grow:1; display:flex; flex-direction:column; overflow:hidden;"></div>
     </div>
 </div>
 
-<div id="capture-modal" class="overlay-base" style="flex-direction:column; background:rgba(0,0,0,0.95); z-index: 2200;">
-    <img id="capture-result-img" style="width:100%; max-width:400px; border-radius:20px; margin-bottom:20px;">
+<div id="capture-modal" class="overlay-base" style="flex-direction:column; background:rgba(0,0,0,0.9); z-index: 2200;">
+    <img id="capture-result-img" style="width:100%; max-width:400px; border-radius:16px; margin-bottom:20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
     <div style="color:white; font-weight:bold; margin-bottom:20px; text-align:center; line-height: 1.5;">👆<br>이미지를 길게 꾹 눌러서 저장하세요!<br>(인스타 스토리에 딱 맞습니다)</div>
-    <button style="background:#475569; color:white; border:none; padding:14px 40px; border-radius:12px; font-weight:bold; font-size:16px; cursor:pointer;" onclick="SFX.play('tap'); document.getElementById('capture-modal').style.display='none'; document.body.style.overflow='';">닫기</button>
+    <button class="action-pill" style="padding:12px 30px; font-size:15px;" onclick="SFX.play('tap'); document.getElementById('capture-modal').style.display='none'; document.body.style.overflow='';">닫기</button>
 </div>
 
 <div id="insta-card-container">
@@ -563,7 +570,7 @@
     // ==========================================
     // 📦 1. 시스템 설정 및 전역 변수
     // ==========================================
-    const APP_VERSION = "0.8.4 게시판 및 알람 업데이트"; 
+    const APP_VERSION = "0.8.5 UI/UX 통합 패치"; 
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz44IxYKNNHOxY3RlfCCCHxyVhSH4taIpN_8R1FMZ_7be6J9g8IFT3ecyvTn2-yWbYC/exec";
     
     let activeUser = localStorage.getItem('activeUser');
@@ -592,7 +599,7 @@
     let targetStudyString = "00h 00m";
     let currentRenderDate = new Date();
     
-    let editingPostId = null; // 게시판 수정용 플래그
+    let editingPostId = null; 
     let currentBoardItem = null;
 
     // ==========================================
@@ -604,19 +611,19 @@
         sanitizeHTML: (str) => {
             if (!str) return "";
             let s = str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            // 통합 에디터 사용 태그 허용 리스트 확대
             s = s.replace(/&lt;(b|i|u|s|em|strong|strike|div|br|ul|ol|li|p|h[1-6]|\/b|\/i|\/u|\/s|\/em|\/strong|\/strike|\/div|\/ul|\/ol|\/li|\/p|\/h[1-6]|\/span|\/font)&gt;/gi, '<$1>');
             s = s.replace(/&lt;br\/?&gt;/gi, '<br>');
             s = s.replace(/&lt;font color="([^"]+)"&gt;/gi, '<font color="$1">');
-            s = s.replace(/&lt;font size="([^"]+)"&gt;/gi, '<font size="$1">');
             s = s.replace(/&lt;span style="([^"]+)"&gt;/gi, function(match, p1) {
-                if(p1.includes('background-color') || p1.includes('color')) { return `<span style="${p1}">`; } return '<span>';
+                // 안전한 인라인 스타일만 허용
+                if(p1.includes('background-color') || p1.includes('color') || p1.includes('font-family')) { return `<span style="${p1}">`; } return '<span>';
             });
             return s;
         },
         getAbsMins: (h, m) => (Number(h) < 5 ? Number(h) + 24 : Number(h)) * 60 + Number(m),
         getKoreaDate: () => {
-            const d = new Date();
-            return new Date(d.getTime() + (d.getTimezoneOffset() * 60000) + (9 * 3600000));
+            const d = new Date(); return new Date(d.getTime() + (d.getTimezoneOffset() * 60000) + (9 * 3600000));
         },
         getRelativeDateString: (offsetDays = 0) => {
             const n = Utils.getKoreaDate(); 
@@ -628,8 +635,7 @@
     };
 
     const timeData = Array.from({ length: 48 }, (_, i) => {
-        let h = (5 + Math.floor(i * 30 / 60)) % 24; let m = (i * 30) % 60;
-        return { time: `${Utils.pad(h)}:${Utils.pad(m)}` };
+        let h = (5 + Math.floor(i * 30 / 60)) % 24; let m = (i * 30) % 60; return { time: `${Utils.pad(h)}:${Utils.pad(m)}` };
     });
 
     async function hashSHA256(str) {
@@ -648,8 +654,7 @@
             this.init();
             try {
                 const t = this.ctx.currentTime;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
+                const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
                 osc.connect(gain); gain.connect(this.ctx.destination);
                 if (type === 'tap') { 
                     osc.type = 'sine'; osc.frequency.setValueAtTime(600, t); osc.frequency.exponentialRampToValueAtTime(300, t + 0.05);
@@ -682,8 +687,7 @@
         const overlay = document.getElementById('loading-overlay');
         if(loadingTimeout) clearTimeout(loadingTimeout);
         if(show) {
-            document.getElementById('loading-text').innerText = text; 
-            overlay.style.display = 'flex'; 
+            document.getElementById('loading-text').innerText = text; overlay.style.display = 'flex'; 
             loadingTimeout = setTimeout(() => { overlay.style.display = 'none'; showToast("⏳ 지연되어 백그라운드 모드로 전환합니다."); }, 15000);
         } else { overlay.style.display = 'none'; }
     }
@@ -698,7 +702,7 @@
     function playChime() { if (!isSoundOn) return; SFX.play('success'); }
 
     // ==========================================
-    // 📝 리치 텍스트 에디터 도구
+    // 📝 통합 리치 텍스트 에디터 도구
     // ==========================================
     function formatText(command, value = null) { SFX.play('tap'); document.execCommand(command, false, value); }
     function insertEmojiAtCursor(text) { SFX.play('tap'); document.execCommand('insertText', false, text); }
@@ -707,6 +711,19 @@
         if (!rawData) { el.innerHTML = ""; return; }
         if (!/<[a-z][\s\S]*>/i.test(rawData)) { el.innerHTML = rawData.replace(/\n/g, '<br>'); } else { el.innerHTML = rawData; }
     }
+
+    // 템플릿을 복사하여 각 에디터에 주입
+    function injectToolbar(containerId) {
+        const template = document.getElementById('editor-toolbar-template');
+        const container = document.getElementById(containerId);
+        if(container && template) { container.appendChild(template.content.cloneNode(true)); }
+    }
+    
+    // 초기 렌더링 시 툴바 주입
+    document.addEventListener("DOMContentLoaded", () => {
+        injectToolbar('diary-toolbar-container');
+        injectToolbar('todo-toolbar-container');
+    });
 
     // ==========================================
     // 💾 3. 로컬 DB 엔진
@@ -947,7 +964,6 @@
         let batonTaken = false;
         if (parsedData.runningState) {
             const rState = JSON.parse(parsedData.runningState);
-            // 만약 클라우드 토큰이 나와 다르다면 내가 남의 타이머를 이어받아 덮어쓰면 안됨.
             if (rState.isRunning && rState.startTime > 0 && (!cloudToken || cloudToken === myDeviceToken)) {
                 if (!isRunning) { 
                     const passedSecs = Math.floor((Date.now() - rState.startTime) / 1000);
@@ -955,7 +971,6 @@
                     else { stopStopwatch(); }
                 }
             } else if (!rState.isRunning || (cloudToken && cloudToken !== myDeviceToken)) { 
-                // 클라우드가 정지상태이거나 남의 기기가 돌고있다면 내 기기는 멈춰있어야 함.
                 if (isRunning) stopStopwatch(); 
             }
         }
@@ -970,10 +985,7 @@
             showToast("📅 어제 기록을 백업하고 보드를 초기화했습니다.");
         } else { setL('lastLogicalDate', currentLogicalDate); }
 
-        updateUI(true); 
-        syncTodayRecord(); 
-        renderCalendar(); 
-        updateHighlight(); updateDashboardTodoAlert(); updateDdayUI();
+        updateUI(true); syncTodayRecord(); renderCalendar(); updateHighlight(); updateDashboardTodoAlert(); updateDdayUI();
         
         if (batonTaken && !skipSync) { triggerAutoSync(); if(!silent) showToast("🔥 타임워프! 바통을 이어받았습니다."); } 
         else if(!silent && !skipSync) { SFX.play('success'); showToast("✅ 동기화 완료!"); }
@@ -1209,7 +1221,7 @@
         
         let dString = diffDays > 0 ? `D-${diffDays}` : (diffDays === 0 ? `D-Day` : `D+${Math.abs(diffDays)}`);
         let titleText = ddayConfig.title ? ddayConfig.title + " " : "";
-        badge.innerHTML = `<span style="opacity:0.8; font-size:11px;">${Utils.escapeHTML(titleText)}</span><span style="font-size:16px;">${dString}</span>`;
+        badge.innerHTML = `<span style="opacity:0.8; font-size:11px;">${Utils.escapeHTML(titleText)}</span><span style="font-size:14px; margin-left:4px;">${dString}</span>`;
         popupBadge.innerText = dString; popupBadge.style.display = 'inline-block';
     }
 
@@ -1251,10 +1263,10 @@
     function getFunAlarmMessage() {
         let totalSecs = 0; blockSeconds.forEach(s => totalSecs+=s);
         let h = Math.floor(totalSecs / 3600);
-        if (h === 0) return "아직 시작도 안 하셨다구요? 빨리 일어나서 책상으로 가세요! 🔥";
-        if (h < 3) return `현재 ${h}시간째... 웜업은 끝났죠? 이제 본격적으로 달려봅시다! 🏃‍♂️`;
-        if (h < 6) return `벌써 ${h}시간 돌파! 순조롭습니다. 조금만 더 페이스를 올려봐요! 🚀`;
-        if (h < 10) return `와, ${h}시간이나! 당신의 열정에 박수를 보냅니다. 목표가 눈앞이에요! 👏`;
+        if (h === 0) return "아직 시작도 안 하셨다구요? 빨리 책상으로 가세요! 🔥";
+        if (h < 3) return `현재 ${h}시간째... 웜업 끝! 본격적으로 달려봅시다! 🏃‍♂️`;
+        if (h < 6) return `벌써 ${h}시간 돌파! 순조롭습니다. 페이스를 올려봐요! 🚀`;
+        if (h < 10) return `와, ${h}시간이나! 목표가 눈앞이에요. 조금만 더! 👏`;
         return `미쳤다... ${h}시간 달성! 오늘 하루를 완벽하게 찢으셨습니다! 👑`;
     }
 
@@ -1265,9 +1277,7 @@
             new Notification(isTest ? "🔔 [테스트] 맞춤 알람" : "🔔 페이스메이커 맞춤 알람", { body: msg + `\n🎯 목표: ${targetStudyString} | ⏱ 현재: ${totalStudyString}`, icon: "icon-512.png" });
         } else if (Notification.permission !== "denied") {
             Notification.requestPermission().then(permission => { if (permission === "granted") triggerBrowserAlarm(isTest); });
-        } else if (isTest) {
-            alert("알림 권한이 차단되어 있습니다. 브라우저 설정에서 알림을 허용해주세요.");
-        }
+        } else if (isTest) { alert("알림 권한이 차단되어 있습니다. 브라우저 설정에서 알림을 허용해주세요."); }
     }
 
     function addCustomAlarm() {
@@ -1286,16 +1296,13 @@
     
     function renderCustomAlarms() {
         const list = document.getElementById('custom-alarm-list');
-        list.innerHTML = customAlarms.map(t => `<div style="background:#e2e8f0; padding:6px 12px; border-radius:20px; font-size:14px; font-weight:bold; color:#475569; display:flex; align-items:center; gap:8px;">${t} <button style="background:none;border:none;color:#ef4444;cursor:pointer;font-weight:900;padding:0;font-size:14px;" onclick="SFX.play('pop'); removeCustomAlarm('${t}')">X</button></div>`).join('');
+        list.innerHTML = customAlarms.map(t => `<div style="background:var(--surface); padding:6px 12px; border:1px solid var(--border-color); border-radius:20px; font-size:14px; font-weight:bold; color:var(--text-main); display:flex; align-items:center; gap:8px;">${t} <button style="background:none;border:none;color:#ef4444;cursor:pointer;font-weight:900;padding:0;font-size:14px;" onclick="SFX.play('pop'); removeCustomAlarm('${t}')">✕</button></div>`).join('');
     }
 
-    // 커스텀 알람 체커 (매 10초)
     setInterval(() => {
         let n = new Date(); let hhmm = Utils.pad(n.getHours()) + ":" + Utils.pad(n.getMinutes());
         let dateKey = Utils.getLogicalDateString() + "-" + hhmm;
-        if (customAlarms.includes(hhmm) && !triggeredAlarms[dateKey]) {
-            triggeredAlarms[dateKey] = true; triggerBrowserAlarm(false);
-        }
+        if (customAlarms.includes(hhmm) && !triggeredAlarms[dateKey]) { triggeredAlarms[dateKey] = true; triggerBrowserAlarm(false); }
     }, 10000);
 
 
@@ -1618,7 +1625,7 @@
                 }
                 if(rec.todo && rec.todo.trim() !== '') hasTodo = true;
             }
-            let todoDot = hasTodo ? `<div style="width:6px; height:6px; background:#0ea5e9; border-radius:50%; position:absolute; top:6px; right:6px;"></div>` : '';
+            let todoDot = hasTodo ? `<div style="width:6px; height:6px; background:var(--primary); border-radius:50%; position:absolute; top:8px; right:8px;"></div>` : '';
             let dayClass = "date-num"; let dOfWeek = new Date(y, m, i).getDay();
             if(dOfWeek === 0) dayClass += " sun"; else if(dOfWeek === 6) dayClass += " sat";
             newHtml += `<div class="cal-day ${isToday?'today':''}" onclick="SFX.play('pop'); document.body.style.overflow='hidden'; showModal('${dStr}')">
@@ -1634,7 +1641,8 @@
             let btnDiv = document.getElementById('tab-btn-' + t);
             if(contentDiv && btnDiv) {
                 contentDiv.style.display = (t === tabName) ? 'block' : 'none';
-                btnDiv.className = (t === tabName) ? 'action-pill action-pill-blue' : 'action-pill action-pill-gray';
+                if(t === tabName) { btnDiv.style.background = '#f3f4f6'; btnDiv.style.borderColor = 'var(--text-main)'; }
+                else { btnDiv.style.background = 'var(--surface)'; btnDiv.style.borderColor = 'var(--border-color)'; }
             }
         });
     }
@@ -1642,25 +1650,25 @@
     function showModal(dStr) {
         const rec = dailyRecords[dStr] || { totalTime: "00h 00m", targetTime: "00h 00m", details: [], diary: "", todo: "" }; 
         document.getElementById('modal-title').innerText = `📅 ${dStr}`;
-        let html = `<div class="modal-total-time" style="margin-bottom:15px; padding-bottom:15px;"><div><span>목표 시간</span><strong class="target-text">${rec.targetTime || "00h 00m"}</strong></div><div><span>집중 시간</span><strong>${rec.totalTime}</strong></div></div>`;
+        let html = `<div class="modal-total-time"><div><span>목표 시간</span><strong class="target-text">${rec.targetTime || "00h 00m"}</strong></div><div><span>집중 시간</span><strong>${rec.totalTime}</strong></div></div>`;
         
         html += `
         <div style="display:flex; gap:6px; margin-bottom:15px;">
-            <button id="tab-btn-timeline" class="action-pill action-pill-blue" style="flex:1; padding:10px 0;" onclick="switchTab('timeline')">🔥 시간표</button>
-            <button id="tab-btn-todo" class="action-pill action-pill-gray" style="flex:1; padding:10px 0;" onclick="switchTab('todo')">✅ 할 일</button>
-            <button id="tab-btn-diary" class="action-pill action-pill-gray" style="flex:1; padding:10px 0;" onclick="switchTab('diary')">📝 일기</button>
+            <button id="tab-btn-timeline" class="action-pill" style="flex:1; padding:10px 0; background:#f3f4f6; border-color:var(--text-main);" onclick="switchTab('timeline')">🔥 시간표</button>
+            <button id="tab-btn-todo" class="action-pill" style="flex:1; padding:10px 0;" onclick="switchTab('todo')">✅ 할 일</button>
+            <button id="tab-btn-diary" class="action-pill" style="flex:1; padding:10px 0;" onclick="switchTab('diary')">📝 일기</button>
         </div>
         `;
 
         let valid = rec.details ? rec.details.filter(d => d.min > 0 || d.isTarget || (d.note && d.note !== "null" && d.note.trim() !== "")) : [];
-        html += `<div id="tab-content-timeline" style="display:block; background:#fff; border:1px solid #e2e8f0; padding:15px; border-radius:16px; min-height: 200px;">`;
+        html += `<div id="tab-content-timeline" style="display:block; background:var(--surface); border:1px solid var(--border-color); padding:15px; border-radius:16px; min-height: 200px;">`;
         if(valid.length > 0) {
             html += `<div class="timeline" style="max-height: 250px; overflow-y: auto; padding-right:10px; margin-left:0;">`;
             valid.forEach(d => {
                 let isFocused = d.min > 0; let isPlanned = d.isTarget && !isFocused; 
                 let n = (d.note && d.note !== "null" && d.note.trim() !== "") ? Utils.escapeHTML(d.note.trim()) : "";
                 let contentInner = "";
-                let badgeStr = isFocused ? `<div class="tl-badge" ${n===''?'style="margin-bottom:0;"':''}>🔥 ${d.min}분 몰입</div>` : (isPlanned ? `<div class="tl-badge target" ${n===''?'style="margin-bottom:0;"':''}>🎯 목표 구간</div>` : "");
+                let badgeStr = isFocused ? `<div class="tl-badge" ${n===''?'style="margin-bottom:0;"':''}>🔥 ${d.min}분 몰입</div>` : (isPlanned ? `<div class="tl-badge" style="background:var(--text-main);color:white;" ${n===''?'style="margin-bottom:0;"':''}>🎯 목표 구간</div>` : "");
                 if (badgeStr && n !== "") contentInner = `${badgeStr}<div class="tl-note">${n}</div>`;
                 else if (badgeStr && n === "") contentInner = `${badgeStr}`; else if (!badgeStr && n !== "") contentInner = `<div class="tl-note">${n}</div>`;
                 html += `<div class="timeline-item ${isFocused ? 'focused' : (isPlanned ? 'planned' : '')}"><div class="tl-time">${d.time}</div><div class="tl-content" ${n === '' ? 'style="padding: 10px 14px;"' : ''}>${contentInner}</div></div>`;
@@ -1669,16 +1677,16 @@
         } else { html += `<div class="tl-empty-state" style="padding:15px 0;">세부 기록이 없습니다.</div>`; }
         html += `</div>`;
 
-        let renderTodo = rec.todo ? Utils.sanitizeHTML(rec.todo) : '<span style="color:#94a3b8; font-style:italic;">등록된 할 일이 없습니다.</span>';
-        html += `<div id="tab-content-todo" style="display:none; background:#f0f9ff; border:1px solid #bae6fd; padding:15px; border-radius:16px; min-height: 200px; position:relative;">
-                <div style="font-size:14px; font-weight:800; color:#0284c7; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
-                    <span>✅ 체크리스트</span><button style="background:none; border:none; color:#0ea5e9; font-weight:bold; cursor:pointer; font-size:13px; padding:0;" onclick="SFX.play('pop'); document.getElementById('record-modal').style.display='none'; openTextModal('todo', '${dStr}')">✏️ 수정하기</button>
+        let renderTodo = rec.todo ? Utils.sanitizeHTML(rec.todo) : '<span style="color:var(--text-muted); font-style:italic;">등록된 할 일이 없습니다.</span>';
+        html += `<div id="tab-content-todo" style="display:none; background:var(--surface); border:1px solid var(--border-color); padding:15px; border-radius:16px; min-height: 200px; position:relative;">
+                <div style="font-size:14px; font-weight:800; color:var(--text-main); margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
+                    <span>✅ 체크리스트</span><button style="background:none; border:none; color:var(--primary); font-weight:bold; cursor:pointer; font-size:13px; padding:0;" onclick="SFX.play('pop'); document.getElementById('record-modal').style.display='none'; openTextModal('todo', '${dStr}')">✏️ 수정하기</button>
                 </div><div style="max-height: 220px; overflow-y: auto; font-size:14.5px; color:var(--text-main); line-height:1.7; word-break:break-word; padding-right:5px;">${renderTodo}</div></div>`;
 
-        let renderDiary = (rec.diary && rec.diary.trim() !== '') ? Utils.sanitizeHTML(rec.diary) : '<span style="color:#94a3b8; font-style:italic;">등록된 일기가 없습니다.</span>';
-        html += `<div id="tab-content-diary" style="display:none; background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:16px; min-height: 200px; position:relative;">
+        let renderDiary = (rec.diary && rec.diary.trim() !== '') ? Utils.sanitizeHTML(rec.diary) : '<span style="color:var(--text-muted); font-style:italic;">등록된 일기가 없습니다.</span>';
+        html += `<div id="tab-content-diary" style="display:none; background:var(--surface); border:1px solid var(--border-color); padding:15px; border-radius:16px; min-height: 200px; position:relative;">
                 <div style="font-size:14px; font-weight:800; color:var(--text-main); margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
-                    <span>📝 오늘 하루 요약</span><button style="background:none; border:none; color:#8b5cf6; font-weight:bold; cursor:pointer; font-size:13px; padding:0;" onclick="SFX.play('pop'); document.getElementById('record-modal').style.display='none'; openTextModal('diary', '${dStr}')">✏️ 수정하기</button>
+                    <span>📝 오늘 하루 요약</span><button style="background:none; border:none; color:var(--primary); font-weight:bold; cursor:pointer; font-size:13px; padding:0;" onclick="SFX.play('pop'); document.getElementById('record-modal').style.display='none'; openTextModal('diary', '${dStr}')">✏️ 수정하기</button>
                 </div><div style="max-height: 220px; overflow-y: auto; font-size:14.5px; color:var(--text-main); line-height:1.7; word-break:break-word; padding-right:5px;">${renderDiary}</div></div>`;
         
         document.getElementById('modal-body').innerHTML = html; document.getElementById('record-modal').style.display = 'block';
@@ -1693,34 +1701,34 @@
     async function renderBoardList() {
         editingPostId = null; // 초기화
         const area = document.getElementById('board-content-area');
-        area.innerHTML = "<div style='text-align:center; padding:40px; color:#64748b; font-weight:bold;'>서버에서 게시글을 불러오는 중... ⏳</div>";
+        area.innerHTML = "<div style='text-align:center; padding:40px; color:var(--text-muted); font-weight:bold;'>서버에서 게시글을 불러오는 중... ⏳</div>";
         try {
             let res = await fetchServer("board_list");
             if (res.success && res.data) {
                 let html = `<div style="padding:15px; overflow-y:auto; flex-grow:1;"><div style="display:flex; justify-content:flex-end; margin-bottom:15px;">
-                                <button class="btn-primary" style="width:auto; padding:10px 20px; font-size:14px;" onclick="SFX.play('pop'); renderBoardWrite()">✏️ 글쓰기</button>
-                            </div><div style="background:#fff; border-radius:12px; border:1px solid #e2e8f0; overflow:hidden;">`;
+                                <button class="btn-primary" style="width:auto; padding:10px 20px; font-size:14px; background:var(--text-main);" onclick="SFX.play('pop'); renderBoardWrite()">✏️ 글쓰기</button>
+                            </div><div style="background:var(--surface); border-radius:16px; border:1px solid var(--border-color); overflow:hidden;">`;
                 
                 if (res.data.length > 0) {
                     res.data.forEach(item => {
-                        html += `<div style="padding:15px; border-bottom:1px solid #f1f5f9; cursor:pointer;" onclick="SFX.play('tap'); renderBoardRead('${item.id}')">
-                                    <div style="font-size:15px; font-weight:800; color:var(--text-main); margin-bottom:6px;">${Utils.escapeHTML(item.title)} <span style="color:#0ea5e9;font-size:13px;">[${item.commentsCount||0}]</span></div>
-                                    <div style="font-size:12px; color:#94a3b8; display:flex; justify-content:space-between;">
+                        html += `<div style="padding:16px; border-bottom:1px solid var(--border-color); cursor:pointer;" onclick="SFX.play('tap'); renderBoardRead('${item.id}')">
+                                    <div style="font-size:15px; font-weight:800; color:var(--text-main); margin-bottom:6px;">${Utils.escapeHTML(item.title)} <span style="color:var(--primary);font-size:13px;font-weight:700;">[${item.commentsCount||0}]</span></div>
+                                    <div style="font-size:12px; color:var(--text-muted); display:flex; justify-content:space-between;">
                                         <span>👤 ${Utils.escapeHTML(item.author)} | 👁️ ${item.views}</span>
                                         <span>${item.date}</span>
                                     </div>
                                  </div>`;
                     });
-                } else { html += `<div style="padding:30px; text-align:center; color:#94a3b8;">등록된 글이 없습니다. 첫 글을 남겨보세요!</div>`; }
+                } else { html += `<div style="padding:30px; text-align:center; color:var(--text-muted);">등록된 글이 없습니다. 첫 글을 남겨보세요!</div>`; }
                 html += `</div></div>`;
                 area.innerHTML = html;
-            } else { area.innerHTML = "<div style='text-align:center; color:#94a3b8; padding:30px;'>불러오지 못했습니다.</div>"; }
+            } else { area.innerHTML = "<div style='text-align:center; color:var(--text-muted); padding:30px;'>불러오지 못했습니다.</div>"; }
         } catch(e) { area.innerHTML = "<div style='text-align:center; color:#ef4444; padding:30px;'>통신 오류가 발생했습니다.</div>"; }
     }
 
     async function renderBoardRead(id) {
         const area = document.getElementById('board-content-area');
-        area.innerHTML = "<div style='text-align:center; padding:40px; color:#64748b; font-weight:bold;'>글을 불러오는 중... ⏳</div>";
+        area.innerHTML = "<div style='text-align:center; padding:40px; color:var(--text-muted); font-weight:bold;'>글을 불러오는 중... ⏳</div>";
         try {
             let res = await fetchServer("board_read", { id: id });
             if (res.success && res.data) {
@@ -1728,43 +1736,43 @@
                 const safeHTML = Utils.sanitizeHTML(item.content);
                 
                 // 댓글 렌더링
-                let commentsHtml = `<div style="margin-top:25px; border-top:2px dashed #e2e8f0; padding-top:20px;">
+                let commentsHtml = `<div style="margin-top:25px; border-top:1px solid var(--border-color); padding-top:20px;">
                                     <h5 style="margin:0 0 15px 0; font-size:15px; color:var(--text-main);">💬 댓글 (${item.comments ? item.comments.length : 0})</h5>`;
                 if (item.comments && item.comments.length > 0) {
                     item.comments.forEach(c => {
-                        commentsHtml += `<div style="background:#f8fafc; padding:12px; border-radius:10px; margin-bottom:10px; border:1px solid #f1f5f9;">
-                            <div style="font-weight:900; color:var(--primary-dark); font-size:13px; margin-bottom:4px;">${Utils.escapeHTML(c.author)} <span style="font-size:11px; color:#94a3b8; font-weight:normal;">${c.date}</span></div>
+                        commentsHtml += `<div style="background:#f9fafb; padding:12px 14px; border-radius:12px; margin-bottom:10px; border:1px solid var(--border-color);">
+                            <div style="font-weight:800; color:var(--text-main); font-size:13px; margin-bottom:4px;">${Utils.escapeHTML(c.author)} <span style="font-size:11px; color:var(--text-muted); font-weight:normal; margin-left:6px;">${c.date}</span></div>
                             <div style="font-size:14px; color:var(--text-main); line-height:1.5;">${Utils.escapeHTML(c.text)}</div>
                         </div>`;
                     });
                 }
                 commentsHtml += `<div style="display:flex; gap:8px; margin-top:15px;">
-                    <input type="text" id="board-comment-input" class="input-field" style="margin-bottom:0; flex-grow:1; font-size:14px; padding:10px;" placeholder="따뜻한 댓글을 남겨주세요...">
-                    <button class="btn-primary" style="width:auto; padding:10px 18px; font-size:14px;" onclick="SFX.play('tap'); submitBoardComment('${item.id}')">등록</button>
+                    <input type="text" id="board-comment-input" class="input-field" style="margin-bottom:0; flex-grow:1; font-size:14px; padding:12px; border-radius:12px;" placeholder="따뜻한 댓글을 남겨주세요...">
+                    <button class="btn-primary" style="width:auto; padding:12px 20px; font-size:14px; background:var(--text-main);" onclick="SFX.play('tap'); submitBoardComment('${item.id}')">등록</button>
                 </div></div>`;
 
-                // 수정/삭제 버튼 (본인인 경우)
+                // 🚨 수정/삭제 버튼 고퀄리티 UI 적용
                 let actionButtons = '';
                 if (item.author === activeUser) {
                     actionButtons = `
-                        <button class="btn-primary" style="background:#f59e0b; padding:10px; font-size:14px;" onclick="SFX.play('tap'); renderBoardEdit()">✏️ 수정</button>
-                        <button class="btn-primary" style="background:#ef4444; padding:10px; font-size:14px;" onclick="SFX.play('tap'); deleteBoardPost('${item.id}')">🗑️ 삭제</button>
+                        <button class="action-pill" style="border:1px solid #fcd34d; background:#fffbeb; color:#d97706; padding:12px 20px;" onclick="SFX.play('tap'); renderBoardEdit()">✏️ 수정</button>
+                        <button class="action-pill" style="border:1px solid #fca5a5; background:#fef2f2; color:#ef4444; padding:12px 20px;" onclick="SFX.play('tap'); deleteBoardPost('${item.id}')">🗑️ 삭제</button>
                     `;
                 }
 
                 area.innerHTML = `
                     <div style="padding:15px; overflow-y:auto; flex-grow:1; display:flex; flex-direction:column;">
-                        <div style="background:#fff; padding:20px; border-radius:12px; border:1px solid #e2e8f0; min-height: 250px; display:flex; flex-direction:column;">
+                        <div style="background:var(--surface); padding:20px; border-radius:16px; border:1px solid var(--border-color); min-height: 250px; display:flex; flex-direction:column;">
                             <h4 style="margin:0 0 10px 0; font-size:18px; color:var(--text-main); line-height:1.4;">${Utils.escapeHTML(item.title)}</h4>
-                            <div style="font-size:12px; color:#94a3b8; padding-bottom:12px; border-bottom:1px solid #f1f5f9; margin-bottom:15px; display:flex; justify-content:space-between;">
-                                <span>👤 ${Utils.escapeHTML(item.author)}</span>
+                            <div style="font-size:12px; color:var(--text-muted); padding-bottom:12px; border-bottom:1px solid var(--border-color); margin-bottom:15px; display:flex; justify-content:space-between;">
+                                <span style="font-weight:700;">👤 ${Utils.escapeHTML(item.author)}</span>
                                 <span>${item.date} | 👁️ ${item.views}</span>
                             </div>
-                            <div style="font-size:14.5px; color:#334155; line-height:1.7; word-break:break-word; flex-grow:1;">${safeHTML}</div>
+                            <div style="font-size:14.5px; color:var(--text-main); line-height:1.7; word-break:break-word; flex-grow:1;">${safeHTML}</div>
                             ${commentsHtml}
                         </div>
-                        <div style="display:flex; gap:10px; margin-top:15px; flex-shrink:0;">
-                            <button class="btn-primary" style="background:#64748b; box-shadow:none; flex:1;" onclick="SFX.play('tap'); renderBoardList()">⬅️ 목록으로</button>
+                        <div style="display:flex; gap:10px; margin-top:15px; flex-shrink:0; justify-content:flex-end;">
+                            <button class="action-pill" style="margin-right:auto; padding:12px 20px; background:#f3f4f6; border-color:var(--border-color);" onclick="SFX.play('tap'); renderBoardList()">⬅️ 목록</button>
                             ${actionButtons}
                         </div>
                     </div>
@@ -1805,28 +1813,21 @@
         if(!currentBoardItem) return;
         editingPostId = currentBoardItem.id;
         const area = document.getElementById('board-content-area');
+        
         area.innerHTML = `
-            <div class="unified-toolbar" style="border-radius:0;">
-                <button class="ed-btn" onclick="formatText('bold')" title="굵게"><b>B</b></button>
-                <button class="ed-btn" onclick="formatText('italic')" title="기울임"><i>I</i></button>
-                <button class="ed-btn" onclick="formatText('underline')" title="밑줄"><u>U</u></button>
-                <button class="ed-btn" onclick="formatText('strikeThrough')" title="취소선"><s>S</s></button>
-                <div style="width:1px; background:#cbd5e1; margin:0 2px;"></div>
-                <button class="color-btn color-black" onclick="formatText('foreColor', '#1e293b')"></button>
-                <button class="color-btn color-red" onclick="formatText('foreColor', '#ef4444')"></button>
-                <button class="color-btn color-blue" onclick="formatText('foreColor', '#3b82f6')"></button>
-                <button class="color-btn color-yellow" onclick="formatText('hiliteColor', '#fef08a')"></button>
-            </div>
             <div style="padding:15px; flex-grow:1; overflow-y:auto; display:flex; flex-direction:column;">
-                <input type="text" id="board-write-title" class="input-field" placeholder="제목을 입력하세요 (최대 30자)" maxlength="30" style="margin-bottom:12px; font-weight:bold; flex-shrink:0;">
-                <div id="board-write-content" class="rich-editor" contenteditable="true" placeholder="내용을 수정해주세요." style="flex-grow:1; min-height: 200px; background:#fff;"></div>
-                
-                <div style="display:flex; gap:10px; margin-top:20px; flex-shrink:0;">
-                    <button class="btn-primary" style="background:#f1f5f9; color:#475569; box-shadow:none;" onclick="SFX.play('tap'); renderBoardRead('${currentBoardItem.id}')">수정 취소</button>
-                    <button class="btn-primary" id="board-submit-btn" onclick="SFX.play('success'); submitBoardPost()">수정 완료</button>
+                <input type="text" id="board-write-title" class="input-field" placeholder="제목을 입력하세요 (최대 30자)" maxlength="30" style="margin-bottom:12px; font-weight:800; flex-shrink:0;">
+                <div class="editor-container" style="flex-grow:1; display:flex; flex-direction:column;">
+                    <div id="board-edit-toolbar-container"></div>
+                    <div id="board-write-content" class="rich-editor" contenteditable="true" placeholder="내용을 수정해주세요." style="flex-grow:1;"></div>
+                </div>
+                <div style="display:flex; gap:10px; margin-top:15px; flex-shrink:0;">
+                    <button class="btn-primary" style="background:#f3f4f6; color:var(--text-main); border:1px solid var(--border-color); box-shadow:none;" onclick="SFX.play('tap'); renderBoardRead('${currentBoardItem.id}')">취소</button>
+                    <button class="btn-primary" id="board-submit-btn" style="background:var(--text-main);" onclick="SFX.play('success'); submitBoardPost()">수정 완료</button>
                 </div>
             </div>
         `;
+        injectToolbar('board-edit-toolbar-container');
         document.getElementById('board-write-title').value = currentBoardItem.title;
         document.getElementById('board-write-content').innerHTML = currentBoardItem.content;
     }
@@ -1834,28 +1835,21 @@
     function renderBoardWrite() {
         editingPostId = null;
         const area = document.getElementById('board-content-area');
+        
         area.innerHTML = `
-            <div class="unified-toolbar" style="border-radius:0;">
-                <button class="ed-btn" onclick="formatText('bold')" title="굵게"><b>B</b></button>
-                <button class="ed-btn" onclick="formatText('italic')" title="기울임"><i>I</i></button>
-                <button class="ed-btn" onclick="formatText('underline')" title="밑줄"><u>U</u></button>
-                <button class="ed-btn" onclick="formatText('strikeThrough')" title="취소선"><s>S</s></button>
-                <div style="width:1px; background:#cbd5e1; margin:0 2px;"></div>
-                <button class="color-btn color-black" onclick="formatText('foreColor', '#1e293b')"></button>
-                <button class="color-btn color-red" onclick="formatText('foreColor', '#ef4444')"></button>
-                <button class="color-btn color-blue" onclick="formatText('foreColor', '#3b82f6')"></button>
-                <button class="color-btn color-yellow" onclick="formatText('hiliteColor', '#fef08a')"></button>
-            </div>
             <div style="padding:15px; flex-grow:1; overflow-y:auto; display:flex; flex-direction:column;">
-                <input type="text" id="board-write-title" class="input-field" placeholder="제목을 입력하세요 (최대 30자)" maxlength="30" style="margin-bottom:12px; font-weight:bold; flex-shrink:0;">
-                <div id="board-write-content" class="rich-editor" contenteditable="true" placeholder="다짐이나 질문을 자유롭게 남겨주세요." style="flex-grow:1; min-height: 200px; background:#fff;"></div>
-                
-                <div style="display:flex; gap:10px; margin-top:20px; flex-shrink:0;">
-                    <button class="btn-primary" style="background:#f1f5f9; color:#475569; box-shadow:none;" onclick="SFX.play('tap'); renderBoardList()">취소</button>
-                    <button class="btn-primary" id="board-submit-btn" onclick="SFX.play('success'); submitBoardPost()">등록하기</button>
+                <input type="text" id="board-write-title" class="input-field" placeholder="제목을 입력하세요 (최대 30자)" maxlength="30" style="margin-bottom:12px; font-weight:800; flex-shrink:0;">
+                <div class="editor-container" style="flex-grow:1; display:flex; flex-direction:column;">
+                    <div id="board-write-toolbar-container"></div>
+                    <div id="board-write-content" class="rich-editor" contenteditable="true" placeholder="다짐이나 질문을 자유롭게 남겨주세요." style="flex-grow:1;"></div>
+                </div>
+                <div style="display:flex; gap:10px; margin-top:15px; flex-shrink:0;">
+                    <button class="btn-primary" style="background:#f3f4f6; color:var(--text-main); border:1px solid var(--border-color); box-shadow:none;" onclick="SFX.play('tap'); renderBoardList()">취소</button>
+                    <button class="btn-primary" id="board-submit-btn" style="background:var(--text-main);" onclick="SFX.play('success'); submitBoardPost()">등록하기</button>
                 </div>
             </div>
         `;
+        injectToolbar('board-write-toolbar-container');
     }
 
     async function submitBoardPost() {
