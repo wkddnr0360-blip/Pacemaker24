@@ -1673,7 +1673,7 @@
             if (displayMonster.status === "egg") {
                 swMonsterImg.style.display = 'none';
                 swMonsterEgg.style.display = 'block';
-                swProgressCircle.style.strokeDashoffset = 100.53;
+                swProgressCircle.style.strokeDashoffset = 144.51;
                 swTimeLeft.innerText = "부화 대기";
             } else if (displayMonster.status === "retired" || isMax) {
                 swMonsterEgg.style.display = 'none';
@@ -1692,7 +1692,7 @@
                 let requiredSecs = nextSecs - prevSecs;
                 let stageProgress = requiredSecs > 0 ? Math.min(1, Math.max(0, secsInStage / requiredSecs)) : 1;
                 
-                let offset = 100.53 - (stageProgress * 100.53);
+                let offset = 144.51 - (stageProgress * 144.51);
                 swProgressCircle.style.strokeDashoffset = offset;
                 
                 let hoursLeft = Math.max(0, (nextSecs/3600) - totalHours);
@@ -2114,7 +2114,7 @@
                     let pokeId = m.pokeIds[0];
                     let imgUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokeId}.png`;
                     
-                    html += `<div style="background: var(--surface); border: 1px solid var(--border-color); padding: 10px; border-radius: 12px; display:flex; align-items:center; gap:10px;">
+                    html += `<div style="background: var(--surface); border: 1px solid var(--border-color); padding: 10px; border-radius: 12px; display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="SFX.play('pop'); showEvolutionChain('${type}', '${m.id}')">
                                 <img src="${imgUrl}" style="width:55px; height:55px; object-fit:contain; transform:scale(1.1); filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1));" loading="lazy">
                                 <div style="font-size: 13px; font-weight: 700; color: var(--text-main); line-height: 1.3;">
                                     ${m.name}${megaStr}
@@ -2143,6 +2143,59 @@
             }
         }
     }
+
+    window.showEvolutionChain = async function(type, subId) {
+        const tData = MONSTER_DATA[type];
+        if (!tData) return;
+        const m = tData.monsters.find(x => x.id === subId);
+        if (!m) return;
+
+        const modal = document.getElementById('evolution-chain-modal');
+        const content = document.getElementById('evo-chain-content');
+        document.getElementById('evo-chain-title').innerText = `${m.name} 진화 과정`;
+        
+        modal.style.display = 'flex';
+        content.innerHTML = '<div style="padding:30px; text-align:center;">로딩 중... ⏳</div>';
+        
+        let html = '';
+        let evoHours = getEvolutionHours(m);
+        
+        let displayedStages = [];
+        for (let i = 0; i < m.pokeIds.length; i++) {
+            if (i > 0 && m.pokeIds[i] === m.pokeIds[i-1] && m.stages[i] === m.stages[i-1]) continue;
+            displayedStages.push({ index: i, pokeId: m.pokeIds[i], stageName: m.stages[i], reqHours: evoHours[i] });
+        }
+        
+        for (let idx = 0; idx < displayedStages.length; idx++) {
+            let stage = displayedStages[idx];
+            let isMega = stage.index >= 3 && m.megaClass;
+            if(stage.index >= 3 && m.stages[3] !== m.stages[2]) isMega = true;
+
+            let reqText = stage.index === 0 ? "기본 형태" : `누적 <b style="color:var(--primary);">${stage.reqHours}시간</b> 달성 시`;
+            let badgeHtml = isMega ? `<span style="background:linear-gradient(45deg, #facc15, #f59e0b); color:#78350f; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:800; margin-left:6px;">메가진화</span>` : '';
+
+            let imgUrl = stage.pokeId >= 10000 
+                ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${stage.pokeId}.png`
+                : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${stage.pokeId}.png`;
+
+            if (idx > 0) {
+                html += `<div style="color:var(--primary); font-size:24px; font-weight:900; margin: 0; animation: float 2s infinite;">⬇️</div>`;
+            }
+
+            html += `
+            <div style="width:100%; background:var(--surface); border:2px solid ${isMega ? '#fcd34d' : 'var(--border-color)'}; border-radius:16px; padding:15px; display:flex; align-items:center; gap:15px; box-shadow:0 4px 10px rgba(0,0,0,0.05); position:relative; cursor:pointer;" onclick="playPokemonCry(${stage.pokeId}, this.querySelector('img'), ${isMega}, '${m.name}')">
+                <div style="width:70px; height:70px; background:${isMega ? 'rgba(253, 230, 138, 0.3)' : 'var(--bg-sec)'}; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; border:1px solid ${isMega ? '#f59e0b' : 'var(--border-color)'};">
+                    <img src="${imgUrl}" style="width:55px; height:55px; object-fit:contain; transform:scale(1.2); filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${stage.pokeId}.png'">
+                </div>
+                <div style="display:flex; flex-direction:column; justify-content:center;">
+                    <div style="font-size:16px; font-weight:800; color:var(--text-main); display:flex; align-items:center;">${stage.stageName} ${badgeHtml}</div>
+                    <div style="font-size:12.5px; font-weight:600; color:var(--text-muted); margin-top:6px;">${reqText}</div>
+                </div>
+            </div>`;
+        }
+        if (displayedStages.length === 1) html += `<div style="margin-top:15px; font-size:12px; color:var(--text-muted); font-weight:bold; text-align:center; padding:10px; background:var(--bg-sec); border-radius:8px;">이 포켓몬은 추가 진화가 없습니다. (단일 형태)</div>`;
+        content.innerHTML = html;
+    };
 
     function setDisplayMonster(id) {
         monsterData.displayId = id; setL('monsterData', JSON.stringify(monsterData));
