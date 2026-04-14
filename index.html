@@ -537,25 +537,25 @@
 </div>
 
 <div id="pokemon-info-modal" class="overlay-base">
-    <div class="modal-box" style="padding:0; background:var(--bg); height:85vh;">
+    <div class="modal-box" style="padding:0; background:var(--bg); height:85vh; max-width:480px;">
         <div class="modal-header">
             <h3 style="margin:0; font-size:18px; font-weight:800; color:var(--text-main);">📖 포켓몬 도감</h3>
             <button class="modal-close-btn" onclick="SFX.play('tap'); document.getElementById('pokemon-info-modal').style.display='none'; document.body.style.overflow='';">✕</button>
         </div>
-        <div style="padding: 10px 20px; border-bottom: 1px solid var(--border-color); background: var(--surface);">
-            <input type="text" id="pokedex-search-input" class="input-field" placeholder="포켓몬 이름 또는 진화 단계 검색..." style="margin:0; width:100%;" onkeyup="openPokemonInfoModal(this.value)">
+        <div style="padding:12px 16px; border-bottom:1px solid var(--border-color); background:var(--surface); box-sizing:border-box;">
+            <input type="text" id="pokedex-search-input" class="input-field" placeholder="포켓몬 검색..." style="margin:0; padding:10px 12px; font-size:14px; width:100%; box-sizing:border-box;" onkeyup="openPokemonInfoModal(this.value)">
         </div>
-        <div class="modal-content-scroll" id="pokemon-info-content" style="padding: 20px;"></div>
+        <div class="modal-content-scroll" id="pokemon-info-content" style="padding:16px;"></div>
     </div>
 </div>
 
 <div id="evolution-chain-modal" class="overlay-base">
-    <div class="modal-box" style="padding:0; background:var(--bg); height:85vh;">
+    <div class="modal-box" style="padding:0; background:var(--bg); height:85vh; max-width:480px;">
         <div class="modal-header">
             <h3 id="evo-chain-title" style="margin:0; font-size:18px; font-weight:800; color:var(--text-main);">진화 과정</h3>
             <button class="modal-close-btn" onclick="SFX.play('tap'); document.getElementById('evolution-chain-modal').style.display='none';">✕</button>
         </div>
-        <div class="modal-content-scroll" id="evo-chain-content" style="padding: 20px;"></div>
+        <div class="modal-content-scroll" id="evo-chain-content" style="padding:16px;"></div>
     </div>
 </div>
 
@@ -578,19 +578,19 @@
             <button id="set-btn-sound" class="setting-btn" onclick="SFX.play('tap'); toggleSetting('sound')">켜짐</button>
         </div>
 
-        <div class="setting-item" style="flex-direction:column; align-items:flex-start; gap:10px; background:var(--bg-sec);">
-            <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                <span style="color:var(--text-main); font-weight:800;">⏰ 나만의 브라우저 알람</span>
-                <div style="display:flex; gap:6px;">
-                    <button id="btn-request-noti" class="action-pill" style="padding:6px 10px; font-size:12px; background:var(--primary); color:white; border:none;" onclick="SFX.play('tap'); requestNotificationPermission()">🔔 권한 허용</button>
-                    <button class="action-pill" style="padding:6px 10px; font-size:12px;" onclick="SFX.play('tap'); triggerBrowserAlarm(true)">즉시 테스트</button>
-                </div>
+        <div class="setting-item" style="flex-direction:column; align-items:flex-start; gap:12px; background:var(--bg-sec); padding:16px;">
+            <div style="font-weight:800; color:var(--text-main); width:100%;">🔔 알림 설정</div>
+            
+            <div style="display:flex; gap:8px; width:100%; flex-wrap:wrap;">
+                <button id="btn-request-noti" class="action-pill" style="padding:8px 12px; font-size:13px; background:var(--primary); color:white; border:none; flex:1; min-width:100px;" onclick="SFX.play('tap'); requestNotificationPermission()">🔔 권한 허용</button>
+                <button class="action-pill" style="padding:8px 12px; font-size:13px; flex:1; min-width:100px;" onclick="SFX.play('tap'); triggerBrowserAlarm(true)">🔔 테스트</button>
             </div>
-            <div style="display:flex; gap:8px; width:100%; align-items:center;">
-                <input type="time" id="new-alarm-time" class="input-field" style="margin-bottom:0; padding:10px; font-weight:bold; background:var(--surface);">
-                <button class="btn-primary" style="width:auto; padding:10px 16px; font-size:14px;" onclick="SFX.play('tap'); addCustomAlarm()">추가</button>
+            
+            <div style="display:grid; grid-template-columns:1fr auto; gap:8px; width:100%;">
+                <input type="time" id="new-alarm-time" class="input-field" style="margin-bottom:0; padding:10px; font-weight:bold; background:var(--surface); grid-column:1;">
+                <button class="btn-primary" style="width:auto; padding:10px 18px; font-size:13px; grid-column:2;" onclick="SFX.play('tap'); addCustomAlarm()">추가</button>
             </div>
-            <div id="custom-alarm-list" style="width:100%; display:flex; flex-wrap:wrap; gap:8px; margin-top:5px;"></div>
+            <div id="custom-alarm-list" style="width:100%; display:flex; flex-wrap:wrap; gap:6px;"></div>
         </div>
         
         <div class="setting-item" style="cursor:pointer;" onclick="SFX.play('pop'); openPokemonInfoModal();">
@@ -674,8 +674,16 @@
                 <div class="guide-desc">맨 아래 <b>[▶ 재생]</b> 버튼을 누르면 시간이 기록됩니다. 포기하지 말고 열심히 달려보세요!</div>
             </div>
             <div class="guide-box">
-                <div class="guide-title">🐉 3. 몬스터 길러보기 (NEW!)</div>
-                <div class="guide-desc"><b>홈 화면의 몬스터 박스</b>를 눌러 가방에 들어가세요. 선택 대기 중인 항목을 누르면 <b>[속성 선택]</b> 버튼이 나타나고, 원하는 속성을 선택하면 그 속성의 몬스터가 부화합니다! 공부할수록 몬스터가 멋지게 진화됩니다.</div>
+                <div class="guide-title">🐉 3. 몬스터 진화 시스템</div>
+                <div class="guide-desc">
+                    공부 시간에 따라 파트너가 성장하며 멋지게 진화합니다.<br>
+                    • <b>알 (0h)</b>: 속성을 선택해 부화<br>
+                    • <b>1단계 (0~8h)</b>: 기본 형태<br>
+                    • <b>2단계 (8~19h)</b>: 1차 진화<br>
+                    • <b>3단계 (19~30h)</b>: 2차 진화<br>
+                    • <b>최종/메가 (30~40h)</b>: 최종 폼 또는 메가 진화<br>
+                    • <b>마스터 (40h 달성)</b>: 육성 완료 및 도감 영구 보존! (새 알 지급)
+                </div>
             </div>
             <div class="guide-box">
                 <div class="guide-title">🎒 4. 도감과 전시</div>
@@ -805,7 +813,7 @@
     // ==========================================
     // 📦 1. 시스템 설정 및 전역 변수
     // ==========================================
-    const APP_VERSION = "1.0.0 정식 버전"; 
+    const APP_VERSION = "1.0.0 dev2"; 
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz44IxYKNNHOxY3RlfCCCHxyVhSH4taIpN_8R1FMZ_7be6J9g8IFT3ecyvTn2-yWbYC/exec";
     
     let activeUser = localStorage.getItem('activeUser');
@@ -871,7 +879,13 @@
         }
     };
 
-    // --- 🐉 포켓몬 API 기반 몬스터 시스템 (4단계 진화: 기본 → 진화1 → 진화2 → 메가진화) ---
+    // ==========================================
+    // --- 🐉 포켓몬 API 기반 몬스터 시스템 ---
+    // ==========================================
+    // [개발자 참고용 주석 - 진화 스펙]
+    // 1. 진화 시스템은 '시간(h)'을 기준으로 작동합니다. (240시간 = 4주 설계 기반)
+    // 2. 알(0h) -> 기본형태(1단계/0~8h) -> 1차진화(2단계/8~19h) -> 2차진화(3단계/19~30h) -> 최종/메가진화(4단계/30~40h) -> 마스터(은퇴/40h)
+    // 3. 향후 새로운 속성이나 포켓몬을 추가할 때는 MONSTER_DATA 객체의 구조를 유지하여 확장해야 버그를 방지할 수 있습니다.
     const PokeAPI = {
         cache: {},
         async getPokemon(id) {
@@ -1206,7 +1220,10 @@
         }
     };
     
-    // 동적 진화 체계: 메가진화 유무에 따라 최종 30h 또는 40h 분기
+    // [개발자 참고용 주석] 동적 진화 체계
+    // 각 포켓몬의 진화 요구 누적 시간을 배열로 반환합니다.
+    // 배열의 마지막 값이 해당 몬스터의 '마스터/은퇴 요구 시간'이 됩니다.
+    // 메가 진화가 있는 경우 [0, 8, 19, 30, 40], 없는 경우 [0, 8, 19, 30]으로 분기처리 됩니다.
     function getEvolutionHours(spec) {
         if (!spec) return [0, 8, 19, 30];
         let isMega = spec.stages[2] !== spec.stages[3];
@@ -1635,8 +1652,10 @@
                 ? `<div style="font-size: 50px; text-align: center; line-height: 1;">⚪</div>`
                 : `<img src="${imageUrl}" 
                         style="
-                            width: 110px;
-                            height: 110px;
+                            width: 100px;
+                            height: 100px;
+                            max-width: 100%;
+                            max-height: 100%;
                             object-fit: contain;
                             transform: scale(1.2);
                             filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
@@ -2172,48 +2191,100 @@
 
         const modal = document.getElementById('evolution-chain-modal');
         const content = document.getElementById('evo-chain-content');
-        document.getElementById('evo-chain-title').innerText = `${m.name} 진화 과정`;
+        document.getElementById('evo-chain-title').innerText = `${m.name} 육성 및 진화 과정`;
         
         modal.style.display = 'flex';
         content.innerHTML = '<div style="padding:30px; text-align:center;">로딩 중... ⏳</div>';
         
         let html = '';
         let evoHours = getEvolutionHours(m);
+        let maxHours = evoHours[evoHours.length - 1]; // 30 또는 40
         
         let displayedStages = [];
+        
+        // 1. 알 (부화 전) 단계
+        displayedStages.push({
+            type: "egg",
+            stageName: "미확인 알",
+            desc: "가방에서 부화 (누적 0시간)"
+        });
+
+        // 2. 포켓몬 진화 단계들
         for (let i = 0; i < m.pokeIds.length; i++) {
             if (i > 0 && m.pokeIds[i] === m.pokeIds[i-1] && m.stages[i] === m.stages[i-1]) continue;
-            displayedStages.push({ index: i, pokeId: m.pokeIds[i], stageName: m.stages[i], reqHours: evoHours[i] });
+            
+            let isMega = (i >= 3 && m.megaClass) || (i >= 3 && m.stages[3] !== m.stages[2]);
+            displayedStages.push({ 
+                type: "monster",
+                index: i, 
+                pokeId: m.pokeIds[i], 
+                stageName: m.stages[i], 
+                reqHours: evoHours[i],
+                isMega: isMega
+            });
         }
         
+        // 3. 마스터 (최종 완료) 단계
+        displayedStages.push({
+            type: "max",
+            stageName: "👑 마스터 (MAX)",
+            desc: `누적 <b style="color:#d97706;">${maxHours}시간</b> 달성 시 도감 등록`
+        });
+
+        html += `<div style="position:relative; padding:10px 0;">`;
+        html += `<div style="position:absolute; left:39px; top:40px; bottom:40px; width:2px; background:var(--border-color); z-index:1;"></div>`;
+
         for (let idx = 0; idx < displayedStages.length; idx++) {
             let stage = displayedStages[idx];
-            let isMega = stage.index >= 3 && m.megaClass;
-            if(stage.index >= 3 && m.stages[3] !== m.stages[2]) isMega = true;
+            
+            if (stage.type === "egg") {
+                html += `
+                <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px; position:relative; z-index:2;">
+                    <div style="width:60px; height:60px; background:linear-gradient(135deg, #f5f5f5, #e5e5e5); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; border:2px solid var(--border-color); box-shadow:0 4px 10px rgba(0,0,0,0.05); margin-left:10px;">
+                        <div style="font-size:26px;">⚪</div>
+                    </div>
+                    <div style="flex-grow:1; background:var(--surface); border:1px solid var(--border-color); border-radius:16px; padding:12px 15px; box-shadow:0 2px 8px rgba(0,0,0,0.03);">
+                        <div style="font-size:15px; font-weight:800; color:var(--text-main);">${stage.stageName}</div>
+                        <div style="font-size:12.5px; font-weight:600; color:var(--text-muted); margin-top:4px;">${stage.desc}</div>
+                    </div>
+                </div>`;
+            } else if (stage.type === "monster") {
+                let badgeHtml = stage.isMega ? `<span style="background:linear-gradient(45deg, #facc15, #f59e0b); color:#78350f; padding:2px 6px; border-radius:6px; font-size:10px; font-weight:800; margin-left:6px;">메가진화</span>` : '';
+                let reqText = stage.reqHours === 0 ? "부화 직후 (0시간)" : `누적 <b style="color:var(--primary);">${stage.reqHours}시간</b> 달성 시`;
 
-            let reqText = stage.index === 0 ? "기본 형태" : `누적 <b style="color:var(--primary);">${stage.reqHours}시간</b> 달성 시`;
-            let badgeHtml = isMega ? `<span style="background:linear-gradient(45deg, #facc15, #f59e0b); color:#78350f; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:800; margin-left:6px;">메가진화</span>` : '';
+                let imgUrl = stage.pokeId >= 10000 
+                    ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${stage.pokeId}.png`
+                    : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${stage.pokeId}.png`;
 
-            let imgUrl = stage.pokeId >= 10000 
-                ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${stage.pokeId}.png`
-                : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${stage.pokeId}.png`;
-
-            if (idx > 0) {
-                html += `<div style="color:var(--primary); font-size:24px; font-weight:900; margin: 0; animation: float 2s infinite;">⬇️</div>`;
+                html += `
+                <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px; position:relative; z-index:2;">
+                    <div style="width:60px; height:60px; background:${stage.isMega ? 'rgba(253, 230, 138, 0.4)' : 'var(--surface)'}; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; border:2px solid ${stage.isMega ? '#f59e0b' : 'var(--primary)'}; box-shadow:0 4px 10px rgba(0,0,0,0.05); margin-left:10px; cursor:pointer;" onclick="playPokemonCry(${stage.pokeId}, this.querySelector('img'), ${stage.isMega}, '${m.name}')">
+                        <img src="${imgUrl}" style="width:48px; height:48px; object-fit:contain; transform:scale(1.2); filter:drop-shadow(0 2px 4px rgba(0,0,0,0.15));" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${stage.pokeId}.png'">
+                    </div>
+                    <div style="flex-grow:1; background:var(--surface); border:2px solid ${stage.isMega ? '#fcd34d' : 'var(--border-color)'}; border-radius:16px; padding:12px 15px; box-shadow:0 2px 8px rgba(0,0,0,0.03); cursor:pointer;" onclick="playPokemonCry(${stage.pokeId}, this.previousElementSibling.querySelector('img'), ${stage.isMega}, '${m.name}')">
+                        <div style="font-size:15px; font-weight:800; color:var(--text-main); display:flex; align-items:center;">${stage.stageName} ${badgeHtml}</div>
+                        <div style="font-size:12.5px; font-weight:600; color:var(--text-muted); margin-top:4px;">${reqText}</div>
+                    </div>
+                </div>`;
+            } else if (stage.type === "max") {
+                html += `
+                <div style="display:flex; align-items:center; gap:15px; position:relative; z-index:2;">
+                    <div style="width:60px; height:60px; background:linear-gradient(135deg, #FFD700, #FFA500); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; border:2px solid #D4AF37; box-shadow:0 4px 15px rgba(255,215,0,0.4); margin-left:10px;">
+                        <div style="font-size:24px;">👑</div>
+                    </div>
+                    <div style="flex-grow:1; background:var(--surface); border:2px solid #fcd34d; border-radius:16px; padding:12px 15px; box-shadow:0 4px 15px rgba(255,215,0,0.15);">
+                        <div style="font-size:15px; font-weight:900; color:var(--text-main);">${stage.stageName}</div>
+                        <div style="font-size:12.5px; font-weight:800; color:#d97706; margin-top:4px;">${stage.desc}</div>
+                    </div>
+                </div>`;
             }
-
-            html += `
-            <div style="width:100%; background:var(--surface); border:2px solid ${isMega ? '#fcd34d' : 'var(--border-color)'}; border-radius:16px; padding:15px; display:flex; align-items:center; gap:15px; box-shadow:0 4px 10px rgba(0,0,0,0.05); position:relative; cursor:pointer;" onclick="playPokemonCry(${stage.pokeId}, this.querySelector('img'), ${isMega}, '${m.name}')">
-                <div style="width:70px; height:70px; background:${isMega ? 'rgba(253, 230, 138, 0.3)' : 'var(--bg-sec)'}; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; border:1px solid ${isMega ? '#f59e0b' : 'var(--border-color)'};">
-                    <img src="${imgUrl}" style="width:55px; height:55px; object-fit:contain; transform:scale(1.2); filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${stage.pokeId}.png'">
-                </div>
-                <div style="display:flex; flex-direction:column; justify-content:center;">
-                    <div style="font-size:16px; font-weight:800; color:var(--text-main); display:flex; align-items:center;">${stage.stageName} ${badgeHtml}</div>
-                    <div style="font-size:12.5px; font-weight:600; color:var(--text-muted); margin-top:6px;">${reqText}</div>
-                </div>
-            </div>`;
         }
-        if (displayedStages.length === 1) html += `<div style="margin-top:15px; font-size:12px; color:var(--text-muted); font-weight:bold; text-align:center; padding:10px; background:var(--bg-sec); border-radius:8px;">이 포켓몬은 추가 진화가 없습니다. (단일 형태)</div>`;
+        
+        html += `</div>`; // 타임라인 래퍼 끝
+        
+        if (m.pokeIds.length === 4 && m.pokeIds.every((val, i, arr) => val === arr[0])) {
+            html += `<div style="margin-top:15px; font-size:12.5px; color:var(--text-muted); font-weight:bold; text-align:center; padding:12px; background:var(--bg-sec); border-radius:12px;">이 포켓몬은 추가 진화가 없습니다. (단일 형태)</div>`;
+        }
         content.innerHTML = html;
     };
 
