@@ -20,7 +20,7 @@
 
 <style>
     :root { 
-        --primary: #0095f6; /* [패치 노트] 인스타 블루 (달린 시간 컨셉) */
+        --primary: #0095f6; 
         --primary-dark: #1877f2; 
         --bg: #fafafa; 
         --surface: #ffffff; 
@@ -31,10 +31,9 @@
         --target: #8b5cf6; 
         --border-color: #dbdbdb; 
         --bg-sec: #f9fafb;
-        --insta-purple: #c13584; /* [패치 노트] 인스타 보라 (목표 시간 컨셉) */
+        --insta-purple: #c13584; 
     }
 
-    /* 🌙 다크모드 완벽 지원 */
     @media (prefers-color-scheme: dark) {
         :root {
             --primary: #0095f6;
@@ -54,6 +53,7 @@
         .modal-box { background: var(--surface); border: 1px solid var(--border-color); }
         .cal-day { background: var(--surface); border: 1px solid var(--border-color); }
         #toast-notification { background: var(--surface); border: 1px solid var(--border-color); color: var(--text-main); }
+        .dash-monster-box { background: var(--bg-sec) !important; border-color: var(--border-color) !important; }
     }
 
     html, body { overscroll-behavior: none; overflow-x: hidden; width: 100%; margin: 0; padding: 0; scroll-behavior: smooth; }
@@ -88,15 +88,24 @@
     .auth-box h1 { font-size: 24px; color: var(--text-main); margin-bottom: 8px; font-weight: 800; }
     
     .dash-card { background: var(--surface); padding: 40px 30px; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); width: 100%; max-width: 380px; text-align: center; position: relative; border: 1px solid var(--border-color); }
-    .dash-today-summary { background: var(--bg-sec); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; margin-bottom: 30px; display: flex; flex-direction: column; gap: 10px; }
+    .dash-today-summary { background: var(--bg-sec); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
     .dash-today-summary strong { font-size: 34px; font-variant-numeric: tabular-nums; font-weight: 900; letter-spacing: -1px; }
     
+    /* 몬스터 시스템 UI */
+    .dash-monster-box { background: var(--surface); border: 2px solid var(--border-color); border-radius: 20px; padding: 15px; text-align: center; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); position: relative; overflow: hidden; }
+    .monster-icon { font-size: 65px; margin: 10px 0; animation: float 3s ease-in-out infinite; display: inline-block; }
+    @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
+    .monster-exp-container { width: 100%; height: 10px; background: var(--bg-sec); border-radius: 5px; margin-top: 10px; overflow: hidden; border: 1px solid var(--border-color); }
+    .monster-exp-fill { height: 100%; background: linear-gradient(90deg, #8b5cf6, #d946ef); width: 0%; transition: width 0.5s ease-out; }
+    .monster-label { font-size: 14px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
+    .monster-subtext { font-size: 11px; color: var(--text-muted); font-weight: 700; margin-top: 8px; }
+
     .dash-btn { width: 100%; padding: 18px; border-radius: 16px; font-size: 15px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; transition: transform 0.2s; touch-action: manipulation;}
     .dash-btn:active { transform: scale(0.96); }
     .dash-btn-outline { width: 100%; padding: 16px; border-radius: 14px; font-size: 14px; font-weight: 800; border: 1px solid var(--border-color); background: var(--surface); color: var(--text-main); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; touch-action: manipulation;}
     .dash-btn-outline:active { background: var(--bg-sec); transform: scale(0.98); }
     
-    #todo-alert-banner { display:none; width: 100%; background: var(--bg-sec); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 25px; text-align: left; cursor: pointer; box-sizing: border-box; transition: transform 0.2s; touch-action: manipulation;}
+    #todo-alert-banner { display:none; width: 100%; background: var(--bg-sec); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 20px; text-align: left; cursor: pointer; box-sizing: border-box; transition: transform 0.2s; touch-action: manipulation;}
     #todo-alert-banner:active { transform: scale(0.98); }
 
     .dday-badge { color: var(--text-main); padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 800; cursor: pointer; transition: transform 0.2s; display: inline-flex; align-items: center; gap: 6px; position: relative; z-index: 1; border: 2px solid transparent; background-image: linear-gradient(var(--surface), var(--surface)), linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); background-origin: border-box; background-clip: padding-box, border-box; }
@@ -186,17 +195,6 @@
     .modal-total-time strong { font-size: 26px; color: var(--text-main); font-weight: 900; letter-spacing: -0.5px; }
     .modal-total-time strong.target-text { color: var(--text-muted); }
     
-    .timeline { padding-left: 10px; border-left: 2px solid var(--border-color); margin-left: 10px; padding-bottom: 10px; }
-    .timeline-item { position: relative; padding-bottom: 20px; padding-left: 20px; }
-    .timeline-item:last-child { padding-bottom: 0; }
-    .timeline-item::before { content: ''; position: absolute; left: -26px; top: 2px; width: 10px; height: 10px; border-radius: 50%; background: var(--border-color); border: 3px solid var(--bg); }
-    .timeline-item.focused::before { background: var(--primary); }
-    .timeline-item.planned::before { background: var(--text-muted); }
-    .tl-time { font-size: 14px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
-    .tl-content { background: var(--bg-sec); padding: 12px; border-radius: 12px; font-size: 14px; border: 1px solid var(--border-color); }
-    .tl-badge { display: inline-block; background: var(--border-color); color: var(--text-main); padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 12px; letter-spacing: -0.5px;}
-    .tl-note { color: var(--text-main); line-height: 1.5; font-weight: 500; word-break: break-word; white-space: pre-wrap; margin-top: 6px;}
-
     .guide-box { padding: 16px; border-radius: 16px; margin-bottom: 14px; text-align: left; background: var(--bg-sec); border: 1px solid var(--border-color); box-sizing: border-box; }
     .guide-title { font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; letter-spacing: -0.5px;}
     .guide-desc { font-size: 13.5px; color: var(--text-muted); line-height: 1.6; word-break: keep-all; font-weight: 500;}
@@ -213,17 +211,9 @@
     .modal-close-btn:hover { background: var(--bg-sec); }
 
     .reading-content {
-        max-height: 280px; 
-        overflow-y: auto; 
-        font-size: 15px; 
-        color: var(--text-main); 
-        line-height: 1.8; 
-        letter-spacing: -0.3px; 
-        word-break: break-word; 
-        padding: 10px;
-        background: var(--bg-sec);
-        border-radius: 12px;
-        border: 1px solid var(--border-color);
+        max-height: 280px; overflow-y: auto; font-size: 15px; color: var(--text-main); 
+        line-height: 1.8; letter-spacing: -0.3px; word-break: break-word; padding: 10px;
+        background: var(--bg-sec); border-radius: 12px; border: 1px solid var(--border-color);
     }
 
     #insta-card-container { position: fixed; top: -9999px; left: -9999px; width: 1080px; height: 1500px; opacity: 0; pointer-events: none; z-index: -9999; }
@@ -261,10 +251,10 @@
                  <button style="background:transparent; border:1px solid var(--border-color); padding:6px 10px; border-radius:10px; font-size:16px; color:var(--text-main); cursor:pointer;" onclick="SFX.play('pop'); document.getElementById('settings-modal').style.display='flex'; document.body.style.overflow='hidden';">⚙️</button>
              </div>
         </div>
-        <div style="display:flex; flex-direction:column; align-items:center; text-align:center;">
-            <div style="font-size: 40px; margin-bottom: 5px;">👋</div>
-            <h2 style="margin-bottom:25px; margin-top:0;">반갑습니다,<br><span id="dash-user-name" style="color:var(--primary);">User</span>님!</h2>
+        <div style="display:flex; flex-direction:column; align-items:center; text-align:center; margin-bottom:15px;">
+            <h2 style="margin-bottom:0; margin-top:0;">반갑습니다,<br><span id="dash-user-name" style="color:var(--primary);">User</span>님!</h2>
         </div>
+        
         <div id="todo-alert-banner" style="display:none;" onclick="SFX.play('tap'); teleportToTodo(this.dataset.targetDStr)">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
                 <span style="font-size: 13px; font-weight: 800; color: var(--text-main);">🔔 다가오는 일정</span>
@@ -272,6 +262,16 @@
             </div>
             <div id="todo-alert-text" style="font-size: 14.5px; color: var(--text-muted); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
         </div>
+
+        <div class="dash-monster-box">
+            <div class="monster-label" id="monster-title">Lv.1 | 미확인 알 (부화 대기)</div>
+            <div class="monster-icon" id="monster-emoji">🥚</div>
+            <div class="monster-exp-container">
+                <div class="monster-exp-fill" id="monster-progress"></div>
+            </div>
+            <div class="monster-subtext" id="monster-desc">이번 달 총 0시간 몰입 중</div>
+        </div>
+
         <div class="dash-today-summary">
             <div style="display:flex; flex-direction:column; gap:4px;">
                 <span style="font-size:13px; color:var(--text-muted); font-weight:800;">🎯 오늘의 목표 시간</span>
@@ -405,7 +405,6 @@
                 <span style="color:var(--text-main); font-weight:800;">⏰ 나만의 브라우저 알람</span>
                 <button class="action-pill" style="padding:6px 10px; font-size:12px;" onclick="SFX.play('tap'); triggerBrowserAlarm(true)">즉시 테스트</button>
             </div>
-            <div style="font-size:12px; color:var(--text-muted); font-weight:normal;">설정한 시간이 되면 격려 메시지와 함께 알림이 뜹니다.</div>
             <div style="display:flex; gap:8px; width:100%; align-items:center;">
                 <input type="time" id="new-alarm-time" class="input-field" style="margin-bottom:0; padding:10px; font-weight:bold; background:var(--surface);">
                 <button class="btn-primary" style="width:auto; padding:10px 16px; font-size:14px;" onclick="SFX.play('tap'); addCustomAlarm()">추가</button>
@@ -416,6 +415,11 @@
         <div class="setting-item" style="cursor:pointer;" onclick="SFX.play('pop'); document.getElementById('settings-modal').style.display='none'; document.getElementById('guide-modal').style.display='flex'; document.body.style.overflow='hidden';">
             <span>📖 앱 사용 가이드 보기</span>
             <span style="color:var(--text-muted); font-size:12px;">▶</span>
+        </div>
+
+        <div class="setting-item" style="border-color: #8b5cf6; background: #f5f3ff;">
+            <span style="color:#6d28d9;">🧪 [실험실] 몬스터 알 랜덤 뽑기</span>
+            <button style="background:#8b5cf6; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:bold; font-size:13px; cursor:pointer;" onclick="SFX.play('success'); giveRandomEgg()">부화</button>
         </div>
 
         <div class="setting-item" style="border-color: #fca5a5; background: #fef2f2;">
@@ -436,8 +440,8 @@
         </div>
         <div style="max-height: 55vh; overflow-y: auto; padding-right: 5px;">
             <div class="guide-box">
-                <div class="guide-title">🚀 2.1 UI/속도 최적화 패치 (NEW)</div>
-                <div class="guide-desc">• 🎨 <b>디데이 뱃지</b>: 인스타 스토리 감성의 그라데이션이 적용되었습니다.<br>• ⚡ <b>라운지 초고속화</b>: 스터디 라운지 진입 시 캐싱 데이터를 활용하여 로딩이 개선되었습니다.<br>• 🛡️ <b>오류 방지</b>: 글/댓글 수정 직후 뒤로가기를 눌러도 백그라운드에서 안전하게 전송되도록 통신 예외처리를 강화했습니다.</div>
+                <div class="guide-title">🚀 1.0.0 정식 버전 업데이트</div>
+                <div class="guide-desc">• 🐉 <b>몬스터 메이트 시스템</b>: 홈 화면에서 매월 귀여운 몬스터를 키울 수 있습니다. (공부 시간 비례 240시간 최종 진화)<br>• 🛠️ <b>에디터 버그 수정</b>: 일기 작성 시 태그 서식이 그대로 노출되던 버그를 완벽하게 픽스했습니다.<br>• 📊 <b>타임라인 다이어트</b>: 스크롤이 너무 길던 시간표를 '24H 히트맵 바'와 '요약형 메모 리스트'로 깔끔하게 압축했습니다.<br>• ⚡ <b>데이터 무손실 구조</b>: 몬스터 데이터는 공부 기록 자체에 종속되어 통신 오류 시에도 절대 날아가지 않습니다.</div>
             </div>
         </div>
         <button class="btn-primary" style="margin-top:15px;" onclick="SFX.play('tap'); document.getElementById('patch-note-modal').style.display='none'; document.body.style.overflow='';">확인</button>
@@ -452,20 +456,20 @@
         </div>
         <div style="max-height: 60vh; overflow-y: auto; padding-right: 5px;">
             <div class="guide-box">
-                <div class="guide-title">⏳ 1단계. 디데이 설정</div>
-                <div class="guide-desc">홈 화면 좌측 상단의 <b>[⏳ 디데이 설정 +]</b> 버튼을 눌러 목표일을 등록하세요.</div>
+                <div class="guide-title">⏳ 1. 디데이 & 목표 설정</div>
+                <div class="guide-desc">홈 화면에서 디데이를 설정하고, 시간표 탭에서 🎯(목표 구간)을 체크해 하루 계획을 세우세요.</div>
             </div>
             <div class="guide-box">
-                <div class="guide-title">▶️ 2단계. 스톱워치 실행</div>
-                <div class="guide-desc">맨 아래 <b>[▶ 재생]</b> 버튼을 누르면 시간이 기록됩니다. 30분 단위로 체크됩니다.</div>
+                <div class="guide-title">▶️ 2. 스톱워치 켜기 & 몬스터 키우기</div>
+                <div class="guide-desc">맨 아래 <b>[▶ 재생]</b> 버튼을 누르면 시간이 기록됩니다. 누적된 시간에 따라 홈 화면의 몬스터가 6단계에 걸쳐 진화합니다! (매월 1일 리셋)</div>
             </div>
             <div class="guide-box">
-                <div class="guide-title">📝 3단계. 메모와 일기 (저장은 자동!)</div>
-                <div class="guide-desc">할 일, 일기를 리치 에디터로 자유롭게 기록하세요. 자동 저장됩니다.</div>
+                <div class="guide-title">📝 3. 리치 메모 & 타임라인</div>
+                <div class="guide-desc">시간대별 메모와 일기를 예쁘게 기록하세요. 상세 기록 탭에서 다이어트된 타임라인으로 한눈에 모아볼 수 있습니다.</div>
             </div>
             <div class="guide-box">
-                <div class="guide-title">🛡️ 4단계. 절대 안전망 (새벽 5시 리셋)</div>
-                <div class="guide-desc">우리의 하루는 밤 12시가 아니라 <b>매일 새벽 5시에 리셋</b>됩니다. 여러 기기 동시 접속 시 똑똑하게 방어해줍니다.</div>
+                <div class="guide-title">🛡️ 4. 데이터 안전망 (새벽 5시 리셋)</div>
+                <div class="guide-desc">우리의 하루는 밤 12시가 아니라 <b>매일 새벽 5시</b>에 리셋됩니다. 데이터는 백그라운드에서 자동 동기화됩니다.</div>
             </div>
         </div>
         <button class="btn-primary" style="margin-top:20px;" onclick="SFX.play('success'); document.getElementById('guide-modal').style.display='none'; document.body.style.overflow='';">확인했어요 🔥</button>
@@ -587,7 +591,7 @@
     // ==========================================
     // 📦 1. 시스템 설정 및 전역 변수
     // ==========================================
-    const APP_VERSION = "2.1.0 성능 & 감성 패치"; 
+    const APP_VERSION = "1.0.0 정식 버전"; 
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz44IxYKNNHOxY3RlfCCCHxyVhSH4taIpN_8R1FMZ_7be6J9g8IFT3ecyvTn2-yWbYC/exec";
     
     let activeUser = localStorage.getItem('activeUser');
@@ -621,6 +625,15 @@
     let editingPostId = null; 
     let currentBoardItem = null;
 
+    // --- 🐉 몬스터 시스템 설정 ---
+    const MONSTER_DATA = {
+        fire: { name: "불꽃 속성", emojis: ["🥚", "🕯️", "🔥", "🦊", "🦁", "🐉"], stages: ["미확인 알", "성냥불", "모닥불", "불여우", "염화사자", "화염룡"] },
+        water: { name: "물방울 속성", emojis: ["🥚", "💧", "🌊", "🐧", "🐬", "🐳"], stages: ["미확인 알", "이슬", "파도", "아기펭귄", "아쿠아돌핀", "창해고래"] },
+        grass: { name: "대지 속성", emojis: ["🥚", "🌱", "🌿", "🐢", "🦖", "🌳"], stages: ["미확인 알", "새싹", "덩굴", "대지거북", "다이노", "세계수"] }
+    };
+    const EVOLUTION_HOURS = [0, 3, 10, 50, 120, 240]; 
+    let monsterState = { month: "", type: "fire" };
+
     // ==========================================
     // 🛠️ 2. 유틸리티 및 시스템 함수
     // ==========================================
@@ -628,14 +641,10 @@
         pad: (num) => String(num).padStart(2, '0'),
         escapeHTML: (str) => typeof str !== 'string' ? str : str.replace(/[&<>'"]/g, match => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[match])),
         sanitizeHTML: (str) => {
+            // [패치] 다이어트된 태그 필터 (서식 파괴 방지)
             if (!str) return "";
             let s = str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            s = s.replace(/&lt;(b|i|u|s|em|strong|strike|div|br|ul|ol|li|p|h[1-6]|\/b|\/i|\/u|\/s|\/em|\/strong|\/strike|\/div|\/ul|\/ol|\/li|\/p|\/h[1-6]|\/span|\/font)&gt;/gi, '<$1>');
-            s = s.replace(/&lt;br\/?&gt;/gi, '<br>');
-            s = s.replace(/&lt;font color="([^"]+)"&gt;/gi, '<font color="$1">');
-            s = s.replace(/&lt;span style="([^"]+)"&gt;/gi, function(match, p1) {
-                if(p1.includes('background-color') || p1.includes('color') || p1.includes('font-family')) { return `<span style="${p1}">`; } return '<span>';
-            });
+            s = s.replace(/&lt;(\/?(?:b|i|u|s|em|strong|strike|div|br|ul|ol|li|p|h[1-6]|span|font))([^&>]*)&gt;/gi, '<$1$2>');
             return s;
         },
         getAbsMins: (h, m) => (Number(h) < 5 ? Number(h) + 24 : Number(h)) * 60 + Number(m),
@@ -741,6 +750,84 @@
     });
 
     // ==========================================
+    // 🐉 몬스터 메이트 시스템 코어
+    // ==========================================
+    function initMonster() {
+        let currentMonth = Utils.getLogicalDateString().substring(0, 7);
+        let savedState = getL('monsterState');
+        if (savedState) {
+            try { monsterState = JSON.parse(savedState); } catch(e) {}
+        }
+        
+        // 달이 바뀌었거나 초기 상태면 새 알 랜덤 부화
+        if (monsterState.month !== currentMonth) {
+            const keys = Object.keys(MONSTER_DATA);
+            const randomType = keys[Math.floor(Math.random() * keys.length)];
+            monsterState = { month: currentMonth, type: randomType };
+            setL('monsterState', JSON.stringify(monsterState));
+            showToast("🥚 새로운 달력! 새로운 알이 배달되었습니다.");
+        }
+        updateMonsterUI();
+    }
+
+    function giveRandomEgg() {
+        const keys = Object.keys(MONSTER_DATA);
+        let currentMonth = Utils.getLogicalDateString().substring(0, 7);
+        const randomType = keys[Math.floor(Math.random() * keys.length)];
+        monsterState = { month: currentMonth, type: randomType };
+        setL('monsterState', JSON.stringify(monsterState));
+        updateMonsterUI();
+        showToast("🧪 실험실: 새로운 알이 배양되었습니다!");
+    }
+
+    function updateMonsterUI() {
+        let currentMonth = Utils.getLogicalDateString().substring(0, 7);
+        let totalSeconds = 0;
+        
+        // 파생 상태 계산: dailyRecords에서 해당 월의 누적 시간을 합산 (안전성 보장)
+        for (let date in dailyRecords) {
+            if (date.startsWith(currentMonth) && dailyRecords[date].totalTime) {
+                let parts = dailyRecords[date].totalTime.split('h');
+                let h = parseInt(parts[0]) || 0;
+                let m = parseInt(parts[1].replace('m', '').trim()) || 0;
+                totalSeconds += (h * 3600) + (m * 60);
+            }
+        }
+
+        let totalHours = Math.floor(totalSeconds / 3600);
+        let currentLevel = totalHours + 1; // 1시간 = 1레벨
+        
+        let currentStageIdx = 0;
+        for (let i = EVOLUTION_HOURS.length - 1; i >= 0; i--) {
+            if (totalHours >= EVOLUTION_HOURS[i]) { currentStageIdx = i; break; }
+        }
+
+        let typeData = MONSTER_DATA[monsterState.type];
+        let emoji = typeData.emojis[currentStageIdx];
+        let stageName = typeData.stages[currentStageIdx];
+        
+        let nextHours = EVOLUTION_HOURS[currentStageIdx + 1];
+        let progressPercent = 100;
+        let descText = `이번 달 ${totalHours}시간째 함께하는 중`;
+
+        if (nextHours) {
+            let prevHours = EVOLUTION_HOURS[currentStageIdx];
+            let hoursInStage = totalHours - prevHours;
+            let requiredHours = nextHours - prevHours;
+            progressPercent = (hoursInStage / requiredHours) * 100;
+            descText = `다음 진화까지 ${nextHours - totalHours}시간 남음`;
+        } else {
+            descText = `최종 진화 완료! (이달의 마스터)`;
+        }
+
+        document.getElementById('monster-emoji').innerText = emoji;
+        document.getElementById('monster-title').innerText = `Lv.${currentLevel} | ${stageName} (${typeData.name})`;
+        document.getElementById('monster-progress').style.width = `${progressPercent}%`;
+        document.getElementById('monster-desc').innerText = descText;
+    }
+
+
+    // ==========================================
     // 💾 3. 로컬 DB 엔진
     // ==========================================
     const DBEngine = {
@@ -837,7 +924,7 @@
             setL('targetBlocks', JSON.stringify(targetBlocks)); 
         }
 
-        ['backupSeconds', 'alarmedBlocks', 'settings', 'lastLogicalDate', 'customAlarms'].forEach(k => { 
+        ['backupSeconds', 'alarmedBlocks', 'settings', 'lastLogicalDate', 'customAlarms', 'monsterState'].forEach(k => { 
             if (d[k] !== undefined && d[k] !== "") {
                 if (isCloudNewer || !getL(k)) setL(k, typeof d[k] === 'object' ? JSON.stringify(d[k]) : d[k]); 
             }
@@ -881,7 +968,7 @@
         };
         backup['lastUpdateTime'] = getL('lastUpdateTime') || Date.now().toString(); 
         backup['ddayConfig'] = getL('ddayConfig') || "";
-        ['blockSeconds', 'targetBlocks', 'backupSeconds', 'dailyRecords', 'alarmedBlocks', 'settings', 'lastLogicalDate', 'customAlarms'].forEach(k => { backup[k] = getL(k) || ""; });
+        ['blockSeconds', 'targetBlocks', 'backupSeconds', 'dailyRecords', 'alarmedBlocks', 'settings', 'lastLogicalDate', 'customAlarms', 'monsterState'].forEach(k => { backup[k] = getL(k) || ""; });
         for (let i=0; i<48; i++) { let n = getL(`note_${i}`); backup[`note_${i}`] = (!n || n === "null" || n.trim() === "") ? "" : n; }
         return backup;
     }
@@ -995,6 +1082,7 @@
             if (isRunning) stopStopwatch();
         } else { setL('lastLogicalDate', currentLogicalDate); }
 
+        initMonster(); // 몬스터 데이터 갱신
         updateUI(true); syncTodayRecord(); renderCalendar(); updateHighlight(); updateDashboardTodoAlert(); updateDdayUI();
         
         if (batonTaken && !skipSync) { triggerAutoSync(); if(!silent) showToast("🔥 타임워프! 바통을 이어받았습니다."); } 
@@ -1191,6 +1279,7 @@
             setL('targetBlocks', JSON.stringify(targetBlocks)); setL('backupSeconds', JSON.stringify(backupSeconds)); setL('alarmedBlocks', JSON.stringify(alarmedBlocks));
             setL('blockSeconds', JSON.stringify(blockSeconds)); setL('lastLogicalDate', currentLogicDate); 
             
+            initMonster(); // 일자 변경 시 월 변경 체킹
             updateUI(true); updateHighlight(); renderCalendar(); updateDashboardTodoAlert(); updateDdayUI();
             triggerAutoSync(true); showToast("🌅 새로운 하루가 시작되었습니다! 보드가 리셋되었습니다."); 
         }
@@ -1341,7 +1430,7 @@
         }
 
         if(domCache.items.length === 0) initListUI(); else updateNotesFromLocal();
-        updateHighlight(); updateUI(true); updateDdayUI(); 
+        updateHighlight(); updateUI(true); updateDdayUI(); initMonster();
     }
 
     function updateNotesFromLocal() {
@@ -1371,6 +1460,9 @@
             dailyRecords[dStr] = { totalTime: finalTime, targetTime: finalTargetTime, details: det, diary: existingDiary, todo: existingTodo };
         } else { delete dailyRecords[dStr]; }
         try { setL('dailyRecords', JSON.stringify(dailyRecords)); } catch (e) {}
+        
+        // 데이터 저장 직후 몬스터 정보 갱신
+        updateMonsterUI();
     }
 
     function openTextModal(type, targetDateStr = null) {
@@ -1449,7 +1541,7 @@
         if (viewName === 'dashboard') {
             document.getElementById('stopwatch-popup').style.display = 'none'; document.getElementById('dashboard-view').style.display = 'flex';
             document.getElementById('dash-today-time').innerText = totalStudyString; document.getElementById('dash-today-target').innerText = targetStudyString;
-            updateDashboardTodoAlert(); window.scrollTo(0, 0); updateDdayUI();
+            updateDashboardTodoAlert(); window.scrollTo(0, 0); updateDdayUI(); updateMonsterUI();
         } else if (viewName === 'calendar') {
             document.getElementById('stopwatch-popup').style.display = 'none'; document.getElementById('calendar-view').style.display = 'flex';
             syncTodayRecord(); renderCalendar(); setTimeout(updateSpacers, 50); window.scrollTo(0, 0);
@@ -1668,21 +1760,61 @@
         `;
 
         let valid = rec.details ? rec.details.filter(d => d.min > 0 || d.isTarget || (d.note && d.note !== "null" && d.note.trim() !== "")) : [];
-        html += `<div id="tab-content-timeline" style="display:block; background:var(--surface); border:1px solid var(--border-color); padding:15px; border-radius:16px; min-height: 200px;">`;
+        let timelineHtml = `<div id="tab-content-timeline" style="display:block; background:var(--surface); border:1px solid var(--border-color); padding:15px; border-radius:16px; min-height: 200px;">`;
+
+        // 1. 24H 히트맵 시각화 바
+        let barHtml = `<div style="display:flex; width:100%; height:12px; border-radius:6px; overflow:hidden; background:var(--bg-sec); border:1px solid var(--border-color); margin-bottom:6px;">`;
+        let timeMap = {};
+        if(valid.length > 0) valid.forEach(d => { timeMap[d.time] = d; });
+        
+        for (let i = 0; i < 48; i++) {
+            let tStr = timeData[i].time;
+            let d = timeMap[tStr];
+            let bg = 'transparent';
+            if (d) {
+                if (d.min >= 30) bg = 'var(--success)';
+                else if (d.min > 0) bg = 'var(--primary)';
+                else if (d.isTarget) bg = 'var(--border-color)';
+            }
+            barHtml += `<div style="flex:1; background:${bg}; border-right:1px solid rgba(255,255,255,0.1);"></div>`;
+        }
+        barHtml += `</div><div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); font-weight:800; margin-bottom:15px; padding:0 2px;"><span>05:00</span><span>17:00</span><span>04:30</span></div>`;
+        timelineHtml += barHtml;
+
+        // 2. 다이어트식 트리노트 리스트
         if(valid.length > 0) {
-            html += `<div class="timeline" style="max-height: 250px; overflow-y: auto; padding-right:10px; margin-left:0;">`;
+            timelineHtml += `<div style="max-height: 220px; overflow-y: auto; padding-right:5px;">`;
+            let lastGroup = "";
+            
             valid.forEach(d => {
-                let isFocused = d.min > 0; let isPlanned = d.isTarget && !isFocused; 
-                let n = (d.note && d.note !== "null" && d.note.trim() !== "") ? Utils.escapeHTML(d.note.trim()) : "";
-                let contentInner = "";
-                let badgeStr = isFocused ? `<div class="tl-badge" ${n===''?'style="margin-bottom:0;"':''}>🔥 ${d.min}분 몰입</div>` : (isPlanned ? `<div class="tl-badge" style="background:var(--text-main);color:var(--surface);" ${n===''?'style="margin-bottom:0;"':''}>🎯 목표 구간</div>` : "");
-                if (badgeStr && n !== "") contentInner = `${badgeStr}<div class="tl-note">${n}</div>`;
-                else if (badgeStr && n === "") contentInner = `${badgeStr}`; else if (!badgeStr && n !== "") contentInner = `<div class="tl-note">${n}</div>`;
-                html += `<div class="timeline-item ${isFocused ? 'focused' : (isPlanned ? 'planned' : '')}"><div class="tl-time">${d.time}</div><div class="tl-content" ${n === '' ? 'style="padding: 10px 14px;"' : ''}>${contentInner}</div></div>`;
+                let isFocused = d.min > 0;
+                let n = (d.note && d.note !== "null" && d.note.trim() !== "") ? Utils.sanitizeHTML(d.note.trim()) : "";
+
+                // 시간대별 그룹핑
+                let hour = parseInt(d.time.split(':')[0]);
+                let group = (hour >= 5 && hour < 12) ? "🌅 아침" : (hour >= 12 && hour < 18) ? "☀️ 낮" : (hour >= 18 && hour <= 23) ? "🌙 저녁" : "🦉 새벽";
+
+                if (group !== lastGroup) {
+                    timelineHtml += `<div style="font-size:12px; font-weight:800; color:var(--text-muted); margin: 12px 0 6px 2px;">${group}</div>`;
+                    lastGroup = group;
+                }
+
+                let badgeHtml = isFocused ? `<span style="color:var(--primary); font-weight:800; font-size:13px; margin-right:8px; width:45px; display:inline-block;">🔥 ${d.min}분</span>` : `<span style="color:var(--text-muted); font-weight:800; font-size:13px; margin-right:8px; width:45px; display:inline-block;">🎯 계획</span>`;
+
+                timelineHtml += `<div style="display:flex; align-items:flex-start; margin-bottom:8px; background:var(--bg-sec); padding:10px 12px; border-radius:12px; border:1px solid var(--border-color);">
+                    <div style="width:45px; font-weight:800; color:var(--text-main); font-size:13.5px; font-variant-numeric:tabular-nums; margin-right:8px; padding-top:1px;">${d.time}</div>
+                    <div style="flex-grow:1; display:flex; flex-direction:column;">
+                        <div>${badgeHtml}</div>
+                        ${n ? `<div style="margin-top:4px; font-size:13.5px; color:var(--text-main); line-height:1.5; font-weight:500;">${n}</div>` : ''}
+                    </div>
+                </div>`;
             });
-            html += `</div>`;
-        } else { html += `<div class="tl-empty-state" style="padding:15px 0;">세부 기록이 없습니다.</div>`; }
-        html += `</div>`;
+            timelineHtml += `</div>`;
+        } else {
+            timelineHtml += `<div style="padding:20px 0; text-align:center; color:var(--text-muted); font-size:13px; font-weight:700;">세부 기록이 없습니다.</div>`;
+        }
+        timelineHtml += `</div>`;
+        html += timelineHtml;
 
         let renderTodo = rec.todo ? Utils.sanitizeHTML(rec.todo) : '<span style="color:var(--text-muted); font-style:italic;">등록된 할 일이 없습니다.</span>';
         html += `<div id="tab-content-todo" style="display:none; background:var(--surface); border:1px solid var(--border-color); padding:15px; border-radius:16px; min-height: 200px; position:relative;">
@@ -1709,7 +1841,6 @@
         editingPostId = null;
         const area = document.getElementById('board-content-area');
         
-        // 🚀 속도 개선: 캐시 데이터를 즉시 보여주고 백그라운드 최신화
         if (boardCache.length > 0 && (Date.now() - boardCacheTime < 300000)) { 
             renderBoardListUI(boardCache);
             fetchServer("board_list").then(res => {
@@ -1936,7 +2067,7 @@
         const btn = document.getElementById('board-submit-btn');
         
         const title = titleInput.value.trim(); const content = contentInput.innerHTML.trim();
-        const currentEditId = editingPostId; // 백그라운드 처리를 위한 식별자 확보
+        const currentEditId = editingPostId; 
         
         if (!title) return showToast("제목을 입력해주세요.");
         if (!content || content === '<br>') return showToast("내용을 입력해주세요.");
