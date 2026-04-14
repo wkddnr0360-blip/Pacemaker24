@@ -108,8 +108,8 @@
     .bag-item { background: var(--surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
     .bag-item.active { border: 2px solid var(--primary); background: rgba(0, 149, 246, 0.05) !important; }
     
-    .bag-grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 5px 0; }
-    .bag-item-grid { background: var(--surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 15px 5px 12px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+    .bag-grid-container { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 5px 0; }
+    .bag-item-grid { background: var(--surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 15px 5px 12px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.02); min-width: 0; overflow: hidden; }
     .bag-item-grid.active { border: 2px solid var(--primary); background: rgba(0, 149, 246, 0.05) !important; }
 
     .dash-btn { width: 100%; padding: 18px; border-radius: 16px; font-size: 15px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; transition: transform 0.2s; touch-action: manipulation;}
@@ -366,11 +366,11 @@
 
         <div class="dash-monster-box" onclick="SFX.play('pop'); openMonsterBag()">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
-                <div style="text-align: left;">
+                <div style="text-align: left; min-width: 0; flex-grow: 1; padding-right: 10px;">
                     <div style="font-size: 11px; color: var(--text-muted); font-weight: 800; margin-bottom: 2px;">내 파트너 몬스터</div>
-                    <div id="monster-title" style="font-size: 15px; font-weight: 800; color: var(--text-main);">불러오는 중...</div>
+                    <div id="monster-title" style="font-size: 15px; font-weight: 800; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">불러오는 중...</div>
                 </div>
-                <div style="background: var(--bg); border: 1px solid var(--border-color); font-size: 11px; padding: 6px 10px; border-radius: 12px; font-weight: 800; color: var(--text-main);">가방 열기 🎒</div>
+                <div style="background: var(--bg); border: 1px solid var(--border-color); font-size: 11px; padding: 6px 10px; border-radius: 12px; font-weight: 800; color: var(--text-main); flex-shrink: 0;">가방 열기 🎒</div>
             </div>
             <div style="display: flex; align-items: center; gap: 15px;">
                 <div id="monster-emoji" style="width: 105px; height: 105px; flex-shrink: 0; position: relative;">
@@ -2915,13 +2915,40 @@
         }
     }
 
+    window.requestNotificationPermission = function() {
+        if (!("Notification" in window)) {
+            alert("이 브라우저는 알림을 지원하지 않습니다.");
+            return;
+        }
+        Notification.requestPermission().then(permission => {
+            if (permission === "granted") {
+                showToast("✅ 브라우저 알림이 허용되었습니다!");
+                triggerBrowserAlarm(true, "알림 설정 완료! 🔥 페이스메이커와 함께 달려요!");
+            } else {
+                alert("알림이 차단되었습니다. 브라우저 주소창 왼쪽의 자물쇠 아이콘(또는 설정)을 눌러 알림을 '허용'으로 변경해주세요.");
+            }
+            if(window.updateNotificationBtnUI) window.updateNotificationBtnUI();
+        });
+    };
+
+    window.updateNotificationBtnUI = function() {
+        const btn = document.getElementById('btn-request-noti');
+        if (btn) {
+            if ("Notification" in window && Notification.permission === "granted") {
+                btn.innerText = "✅ 알림 켜짐"; btn.style.background = "var(--success)"; btn.style.color = "white";
+            } else {
+                btn.innerText = "🔔 권한 허용"; btn.style.background = "var(--primary)"; btn.style.color = "white";
+            }
+        }
+    };
+
     function triggerBrowserAlarm(isTest = false, customMsg = null) {
         if (!("Notification" in window)) { if(isTest) alert("브라우저 알림을 지원하지 않는 환경입니다."); return; }
         let msg = customMsg || getFunAlarmMessage();
         if (Notification.permission === "granted") {
             new Notification(isTest ? "🔔 [테스트] 맞춤 알람" : "🔔 페이스메이커 알람", { body: msg + `\n🎯 목표: ${targetStudyString} | ⏱ 현재: ${totalStudyString}`, icon: "icon-512.png" });
         } else if (Notification.permission !== "denied") {
-            Notification.requestPermission().then(permission => { if (permission === "granted") triggerBrowserAlarm(isTest, customMsg); });
+            if (isTest) alert("알림 권한이 필요합니다. '🔔 권한 허용' 버튼을 먼저 눌러주세요.");
         } else if (isTest) { alert("알림 권한이 차단되어 있습니다. 설정에서 허용해주세요."); }
     }
 
@@ -3212,6 +3239,7 @@
         const a = document.getElementById('set-btn-alarm'), s = document.getElementById('set-btn-sound');
         if(a) { a.innerText = isAlarmOn ? "켜짐" : "꺼짐"; a.className = isAlarmOn ? "setting-btn" : "setting-btn off"; }
         if(s) { s.innerText = isSoundOn ? "켜짐" : "꺼짐"; s.className = isSoundOn ? "setting-btn" : "setting-btn off"; }
+        if(window.updateNotificationBtnUI) window.updateNotificationBtnUI();
     }
     
     function toggleTarget(i) { targetBlocks[i] = domCache.targets[i].checked; setL('targetBlocks', JSON.stringify(targetBlocks)); saveAndRefresh(); triggerAutoSync(true); }
@@ -3345,9 +3373,9 @@
                 <div style="width:76px; height:76px; background:var(--bg-sec); border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid var(--primary); flex-shrink:0;">
                     <img src="${mImg}" style="width:60px; height:60px; object-fit:contain; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2)); transform:scale(1.15);">
                 </div>
-                <div style="display:flex; flex-direction:column; flex-grow:1;">
+                <div style="display:flex; flex-direction:column; flex-grow:1; min-width:0;">
                     <span style="font-size:11px; color:var(--primary); font-weight:800; margin-bottom:3px;">📸 이 날의 파트너 스냅샷</span>
-                    <span style="font-size:16px; color:var(--text-main); font-weight:800; letter-spacing:-0.3px;">${mName}</span>
+                    <span style="font-size:16px; color:var(--text-main); font-weight:800; letter-spacing:-0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${mName}</span>
                     <div style="font-size:12px; color:var(--text-muted); font-weight:600; margin-top:6px; display:flex; align-items:center; gap:6px;">
                         <span style="background:var(--bg-sec); padding:2px 6px; border-radius:6px; border:1px solid var(--border-color); color:var(--text-main);">${rec.monster.stageName}</span>
                         <span>누적 <b style="color:var(--primary);">${rec.monster.hours}</b>시간 돌파!</span>
