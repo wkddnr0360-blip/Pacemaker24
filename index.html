@@ -448,6 +448,11 @@
                 <button class="btn-primary" style="background:#ec4899; padding:12px; font-size:13px;" onclick="SFX.play('success'); labChangeType()">✨ 속성변경</button>
             </div>
             
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <button class="btn-primary" style="background:#10b981; padding:12px; font-size:13px;" onclick="SFX.play('success'); labShowAllPokedex()">📖 전체도감</button>
+                <button class="btn-primary" style="background:#f59e0b; padding:12px; font-size:13px;" onclick="SFX.play('success'); labResetPokedex()">↩️ 도감초기화</button>
+            </div>
+            
             <button class="btn-primary" style="background:#ef4444;" onclick="SFX.play('tap'); labResetMonster()">🗑️ 전체 초기화</button>
         </div>
 
@@ -668,39 +673,34 @@
     let editingPostId = null; 
     let currentBoardItem = null;
 
-    // --- 🐉 몬스터 가방 시스템 (7단계, 6속성, 5종류/속성, 4주 제한) ---
+    // --- 🐉 몬스터 가방 시스템 (7단계, 6속성, 3종류/속성, 4주 제한) ---
+    // 각 몬스터는 포켓몬 진화처럼 성장감 있는 디자인으로 설계됨
     const MONSTER_DATA = {
         fire: {
             name: "불꽃",
             color: "239, 68, 68",
             monsters: [
-                { id: "fire_phoenix", name: "피닉스", emojis: ["🥚", "🕯️", "🔥", "🔥‍🐉", "🦅", "🐉", "🔥👑"], stages: ["미확인 알", "초심 불씨", "타오르는 불", "작은 불사조", "불사조", "불꽃 군주", "영원의 불정신"] },
-                { id: "fire_lion", name: "라이언", emojis: ["🥚", "💥", "🌶️", "🦁", "👑🦁", "⚔️🐉", "🌋"], stages: ["미확인 알", "분노의 입자", "작은 불꽃", "용감한 사자", "화염 사자왕", "전설의 용사", "용암의 신"] },
-                { id: "fire_spark", name: "스파클", emojis: ["🥚", "✨", "⚡", "🧡", "❤️‍🔥", "💎", "🌟"], stages: ["미확인 알", "반짝이는 점", "휘몰아치는 불꽃", "작은 화염정령", "화염정령", "불의 화신", "영원한 빛"] },
-                { id: "fire_salamander", name: "살라만더", emojis: ["🥚", "🌡️", "🔥", "🦎", "🐉", "👹", "🔥‍⚔️"], stages: ["미확인 알", "뜨거운 알", "타오르는 도마뱀", "불의 도마뱀", "화염 도마뱀", "지옥의 군주", "불의 차원"] },
-                { id: "fire_fox", name: "파이롯", emojis: ["🥚", "💫", "🔥", "🦊", "🦊‍🔥", "9️⃣🦊", "✨👑"], stages: ["미확인 알", "따뜻한 알", "작은 불 여우", "한 꼬리 여우", "두 꼬리 여우", "아홉 꼬리 여우", "불의 신수"] }
+                { id: "fire_phoenix", name: "피닉스", emojis: ["🥚", "🕯️", "🔥", "🐦‍🔥", "🦅‍🔥", "👑🔥", "🌋👑"], stages: ["미확인 알", "촛불 불씨", "타오르는 불", "작은 불새", "거대한 불새", "불의 왕", "영원한 불정령"] },
+                { id: "fire_salamander", name: "살라만더", emojis: ["🥚", "🌱", "🦎", "🦎🔥", "🐉🔥", "👹🔥", "🔥⚔️"], stages: ["미확인 알", "뜨거운 씨앗", "작은 도마뱀", "불의 도마뱀", "거대 화염 도마뱀", "지옥의 군주", "불의 차원 지배자"] },
+                { id: "fire_fox", name: "파이롯", emojis: ["🥚", "🦊", "🦊🔥", "🦊🔥🔥", "9️⃣🦊", "👑🦊✨", "⭐👑"], stages: ["미확인 알", "어린 여우", "불 여우", "이귀 여우", "구미호", "불의 신수", "영원한 신"] }
             ]
         },
         water: {
             name: "물방울",
             color: "59, 130, 246",
             monsters: [
-                { id: "water_whale", name: "화이", emojis: ["🥚", "💧", "🌊", "🐋", "🐋🌊", "⛵🐋", "🌊👑"], stages: ["미확인 알", "맑은 물", "작은 파도", "고래 새끼", "거대 고래", "심해의 왕", "대양의 신"] },
-                { id: "water_penguin", name: "펭귀", emojis: ["🥚", "💙", "❄️", "🐧", "🧊🐧", "⛸️🐧", "🐧👑"], stages: ["미확인 알", "차가운 이슬", "얇은 얼음판", "귀여운 펭귄", "용감한 펭귄", "얼음의 장군", "북극의 황제"] },
-                { id: "water_dolphin", name: "돌피", emojis: ["🥚", "🌊", "💦", "🐬", "🐬‍💙", "🌈🐬", "⛵🌟"], stages: ["미확인 알", "투명한 물", "물의 입자", "작은 돌고래", "똑똑한 돌고래", "파도의 마법사", "대양의 정령"] },
-                { id: "water_turtle", name: "터틀", emojis: ["🥚", "🌱", "💧", "🐢", "🐢‍🌊", "🛡️🐢", "🌊‍♻️"], stages: ["미확인 알", "젖은 모래", "얕은 물", "물개미 거북", "보호용 거북", "고대 거북 신", "무한 시간의 수호자"] },
-                { id: "water_mermaid", name: "머라", emojis: ["🥚", "🫧", "🌊", "🧜‍♀️", "👸🧜", "👑🧜‍♀️", "🌊✨"], stages: ["미확인 알", "미스터리한 진주", "신비한 물거품", "어린 인어", "아름다운 인어", "인어 여왕", "신비의 해양 여신"] }
+                { id: "water_whale", name: "화이", emojis: ["🥚", "💧", "🌊", "🐋", "🐋💙", "🐋👑", "🌊👑"], stages: ["미확인 알", "맑은 물", "작은 파도", "고래 새끼", "거대한 고래", "심해의 왕", "대양의 신"] },
+                { id: "water_penguin", name: "펭귀", emojis: ["🥚", "💙", "❄️", "🐧", "🧊🐧", "⛸️👑", "🏔️👑"], stages: ["미확인 알", "차가운 이슬", "얇은 얼음판", "귀여운 펭귄", "용감한 펭귄", "얼음의 장군", "북극의 황제"] },
+                { id: "water_dolphin", name: "돌피", emojis: ["🥚", "💦", "🌊", "🐬", "🐬🌊", "🌈🐬", "💎🌊"], stages: ["미확인 알", "물 입자", "작은 파도", "작은 돌고래", "똑똑한 돌고래", "파도의 마법사", "대양의 정령"] }
             ]
         },
         grass: {
             name: "대지",
             color: "16, 185, 129",
             monsters: [
-                { id: "grass_dinosaur", name: "디노", emojis: ["🥚", "🌱", "🌿", "🦖", "🦕", "🐲", "👑🦖"], stages: ["미확인 알", "새싹", "자라나는 풀", "작은 공룡", "거대 공룡", "선사시대의 왕", "힘의 화신"] },
-                { id: "grass_turtle", name: "테라", emojis: ["🥚", "🌱", "🍃", "🐢", "🐢🌿", "🛡️🌳", "🌍"], stages: ["미확인 알", "흙의 입자", "어린 풀", "풀 거북", "숲의 거북", "대자연", "세계수"] },
-                { id: "grass_fairy", name: "플로라", emojis: ["🥚", "🌸", "🌺", "🧚", "🧚‍♀️💚", "👑🧚", "🌸✨"], stages: ["미확인 알", "꽃의 꿈", "작은 꽃봉오리", "꽃의 요정", "아름다운 선녀", "숲의 여왕", "봄의 여신"] },
-                { id: "grass_treant", name: "우드", emojis: ["🥚", "🌱", "🌲", "🌳", "🌳💪", "🏰🌳", "♻️👑"], stages: ["미확인 알", "나무의 생각", "작은 나무", "나무 정령", "고대 나무", "세계수의 수량자", "자연의 신"] },
-                { id: "grass_caterpillar", name: "몬타나", emojis: ["🥚", "🌿", "🪲", "🐛", "🦗", "🦋", "🌈🦋👑"], stages: ["미확인 알", "초록 빛", "자라나는 풀잎", "작은 애벌레", "자라는 애벌레", "아름다운 나비", "변태의 신"] }
+                { id: "grass_dinosaur", name: "디노", emojis: ["🥚", "🌱", "🦖", "🦕", "🐲", "👑🐉", "🌋👑"], stages: ["미확인 알", "새싹", "작은 공룡", "큰 공룡", "강력한 공룡", "고대의 왕", "힘의 화신"] },
+                { id: "grass_treant", name: "우드", emojis: ["🥚", "🌿", "🌲", "🌳", "🌳💪", "🏰🌳", "♻️👑"], stages: ["미확인 알", "어린 새싹", "작은 나무", "나무 정령", "고대한 나무", "세계수의 수호자", "자연의 신"] },
+                { id: "grass_fairy", name: "플로라", emojis: ["🥚", "🌸", "🧚", "🧚‍♀️💚", "👑🧚", "🌸✨👑", "🌳✨"], stages: ["미확인 알", "꽃 씨앗", "꽃의 요정", "아름다운 요정", "요정 여왕", "봄의 정령", "자연의 여신"] }
             ]
         },
         light: {
@@ -708,10 +708,8 @@
             color: "250, 204, 21",
             monsters: [
                 { id: "light_angel", name: "라이트", emojis: ["🥚", "✨", "⭐", "😇", "👼", "👸😇", "⭐👑"], stages: ["미확인 알", "첫 반짝임", "연한 빛", "작은 천사", "날개 천사", "천상의 전사", "빛의 신"] },
-                { id: "light_unicorn", name: "호른", emojis: ["🥚", "💫", "🌟", "🦄", "✨🦄", "👑🦄", "🌈✨"], stages: ["미확인 알", "신비한 기운", "반짝이는 존재", "어린 유니콘", "위대한 유니콘", "신성한 유니콘", "기적의 신수"] },
-                { id: "light_phoenix_light", name: "솔라", emojis: ["🥚", "💛", "☀️", "🔆", "☀️‍🐉", "⚡☀️", "☀️👑"], stages: ["미확인 알", "따뜻한 기운", "작은 태양", "빛나는 수탉", "태양의 화신", "태양 신", "우주의 중심"] },
-                { id: "light_spirit", name: "문지", emojis: ["🥚", "🌙✨", "💫", "👻", "✨👻", "🌟👻", "🌙👑"], stages: ["미확인 알", "밝은 꿈", "반짝이는 영혼", "밝은 정령", "빛의 정령", "차원을 넘는 존재", "빛과 어둠의 조화"] },
-                { id: "light_owl", name: "루미", emojis: ["🥚", "🌙", "👀", "🦉", "🦉✨", "🎓🦉", "🌟🦉"], stages: ["미확인 알", "영혜의 눈동자", "밝게 빛나는 눈", "지혜로운 올빼미", "영광의 올빼미", "지혜의 화신", "빛의 수호자"] }
+                { id: "light_unicorn", name: "호른", emojis: ["🥚", "💫", "🌟", "🦄", "✨🦄", "👑🦄", "🌈✨👑"], stages: ["미확인 알", "신비한 기운", "빛나는 존재", "어린 유니콘", "위대한 유니콘", "신성한 유니콘", "기적의 신수"] },
+                { id: "light_phoenix", name: "솔라", emojis: ["🥚", "💛", "☀️", "🔆", "🐦☀️", "☀️👑", "✨🌟"], stages: ["미확인 알", "따뜻한 기운", "작은 태양", "밝은 수탉", "태양의 화신", "태양 신", "우주의 중심"] }
             ]
         },
         dark: {
@@ -719,21 +717,17 @@
             color: "107, 33, 168",
             monsters: [
                 { id: "dark_vampire", name: "밤파", emojis: ["🥚", "🌑", "🦇", "🧛", "🧛‍♂️", "👑🧛", "🌙⚔️"], stages: ["미확인 알", "그림자 입자", "어둠의 신호", "작은 뱀파이어", "우아한 뱀파이어", "밤의 군주", "영원의 군주"] },
-                { id: "dark_wolf", name: "숲늘", emojis: ["🥚", "🌑", "👿", "🐺", "🐺👑", "⚔️🐺", "🌙"], stages: ["미확인 알", "야행성 본능", "어둠 속의 눈", "늑대 새끼", "검은 늑대", "늑대의 왕", "밤의 제왕"] },
-                { id: "dark_shadow", name: "쉐도", emojis: ["🥚", "👤", "🌑", "👹", "😈", "👿", "💀👑"], stages: ["미확인 알", "사라지는 형상", "흐릿한 그림자", "작은 의혼", "어둠의 의혼", "차원의 주자", "자유로운 영혼"] },
-                { id: "dark_raven", name: "레이븐", emojis: ["🥚", "🐦‍⬛", "🌑", "🦅‍⬛", "🦅🖤", "☠️🦅", "🌑👑"], stages: ["미확인 알", "검은 비", "검은 깃털", "까마귀", "까마귀 영주", "죽음의 전령", "어둠의 수호신"] },
-                { id: "dark_reaper", name: "레이저", emojis: ["🥚", "💀", "⚰️", "👻", "☠️", "💀‍⚔️", "💀👑"], stages: ["미확인 알", "시간의 흐름", "죽음의 냄새", "영혼의 거두기", "죽음의 인도자", "운명의 지배자", "절대의 신"] }
+                { id: "dark_wolf", name: "숲늘", emojis: ["🥚", "👿", "🐺", "🐺👑", "⚔️🐺", "🌙🐺", "👑🌙"], stages: ["미확인 알", "야행성 본능", "어둠 속의 눈", "늑대 새끼", "검은 늑대", "늑대의 왕", "밤의 제왕"] },
+                { id: "dark_reaper", name: "레이저", emojis: ["🥚", "💀", "☠️", "👻", "☠️👣", "💀‍⚔️", "💀👑"], stages: ["미확인 알", "시간의 흐름", "죽음의 냄새", "영혼의 안내자", "죽음의 인도자", "운명의 지배자", "절대의 신"] }
             ]
         },
         electric: {
             name: "번개",
             color: "234, 179, 8",
             monsters: [
-                { id: "electric_eagle", name: "라이튼", emojis: ["🥚", "⚡", "🌩️", "🦅", "⚡🦅", "👑⚡🦅", "🌪️"], stages: ["미확인 알", "정전기", "번개 입자", "어린 독수리", "전격 독수리", "하늘의 왕", "천둥의 신"] },
-                { id: "electric_tiger", name: "항구", emojis: ["🥚", "⚡", "💛", "🐯", "⚡🐯", "👑🐯⚡", "🔥⚡"], stages: ["미확인 알", "저작음", "번개 줄무늬", "작은 호랑이", "전기 호랑이", "포식자의 왕", "전격의 화신"] },
-                { id: "electric_rabbit", name: "번니", emojis: ["🥚", "⚡", "💨", "🐰", "⚡🐰", "👑🐰💛", "⚡✨"], stages: ["미확인 알", "빠른 움직임", "스파크", "빠른 토끼", "번개 토끼", "속도의 신", "전갈의 왕"] },
-                { id: "electric_dragon", name: "썬더", emojis: ["🥚", "⚡", "☄️", "🐉", "⚡🐉", "👑⚡🐉", "🌪️⚡"], stages: ["미확인 알", "번개 냄새", "강력한 방전", "번개 용", "전격 용", "하늘의 지배자", "번개의 신"] },
-                { id: "electric_conductor", name: "오론", emojis: ["🥚", "💡", "⚙️", "🤖", "⚡🤖", "👑⚡🤖", "🔋👑"], stages: ["미확인 알", "에너지 흐름", "작은 회로", "전기 생명체", "완성된 기계", "에너지의 화신", "기술의 신"] }
+                { id: "electric_eagle", name: "라이튼", emojis: ["🥚", "⚡", "🌩️", "🦅", "⚡🦅", "👑⚡", "🌪️⚡"], stages: ["미확인 알", "정전기", "번개 입자", "어린 독수리", "전격 독수리", "하늘의 왕", "천둥의 신"] },
+                { id: "electric_tiger", name: "항구", emojis: ["🥚", "💛", "💨", "🐯", "⚡🐯", "👑🐯⚡", "🔥⚡"], stages: ["미확인 알", "번개 줄무늬", "빠른 움직임", "작은 호랑이", "전격 호랑이", "포식자의 왕", "전격의 화신"] },
+                { id: "electric_dragon", name: "썬더", emojis: ["🥚", "☄️", "💥", "🐉", "⚡🐉", "👑⚡🐉", "🌪️⚡👑"], stages: ["미확인 알", "번개 냄새", "강한 방전", "번개 용", "전격 용", "하늘의 지배자", "번개의 신"] }
             ]
         }
     };
@@ -1090,79 +1084,113 @@
 
     // 🎒 몬스터 가방 UI
     function openMonsterBag() {
-        const content = document.getElementById('monster-bag-content');
-        let html = '';
-        
-        let eggs = monsterData.inventory.filter(m => m.status === "egg");
-        let active = monsterData.inventory.filter(m => m.status === "active");
-        let retired = monsterData.inventory.filter(m => m.status === "retired");
+        try {
+            const content = document.getElementById('monster-bag-content');
+            if (!content) {
+                showToast("❌ 가방 UI를 찾을 수 없습니다.");
+                return;
+            }
+            
+            let html = '';
+            
+            // 정확한 상태 필터링
+            let eggs = monsterData.inventory.filter(m => m.status === "egg");
+            let active = monsterData.inventory.filter(m => m.status === "active");
+            let retired = monsterData.inventory.filter(m => m.status === "retired");
 
-        html += `<div style="font-weight:800; color:var(--primary); margin-bottom:10px;">🔥 현재 육성 중</div>`;
-        if (active.length > 0) {
-            html += active.map(m => generateBagItemHtml(m)).join('');
-        } else {
-            html += `<div style="font-size:13px; color:var(--text-muted); padding:10px; text-align:center; background:var(--surface); border-radius:12px; margin-bottom:15px;">육성 중인 몬스터가 없습니다. 알을 부화시켜보세요!</div>`;
+            html += `<div style="font-weight:800; color:var(--primary); margin-bottom:10px;">🔥 현재 육성 중</div>`;
+            if (active.length > 0) {
+                html += active.map(m => generateBagItemHtml(m)).filter(h => h).join('');
+            } else {
+                html += `<div style="font-size:13px; color:var(--text-muted); padding:10px; text-align:center; background:var(--surface); border-radius:12px; margin-bottom:15px;">육성 중인 몬스터가 없습니다. 알을 부화시켜보세요!</div>`;
+            }
+
+            html += `<div style="font-weight:800; color:var(--text-main); margin-bottom:10px; margin-top:20px;">🥚 부화 대기 (알)</div>`;
+            if (eggs.length > 0) {
+                html += eggs.map(m => generateBagItemHtml(m)).filter(h => h).join('');
+            } else {
+                html += `<div style="font-size:13px; color:var(--text-muted); padding:10px; text-align:center; background:var(--surface); border-radius:12px; margin-bottom:15px;">알이 없습니다. (매월 1일에 지급됩니다)</div>`;
+            }
+
+            html += `<div style="font-weight:800; color:var(--text-main); margin-bottom:10px; margin-top:20px;">📖 지난 몬스터 도감 (${retired.length}마리)</div>`;
+            if (retired.length > 0) {
+                // 대량 도감은 수동 렌더링으로 성능 개선
+                let bagHtml = '';
+                for (let m of retired) {
+                    let itemHtml = generateBagItemHtml(m);
+                    if (itemHtml) bagHtml += itemHtml;
+                }
+                html += bagHtml;
+            } else {
+                html += `<div style="font-size:13px; color:var(--text-muted); padding:10px; text-align:center; background:var(--surface); border-radius:12px; margin-bottom:15px;">아직 다 키운 몬스터가 없습니다.</div>`;
+            }
+
+            content.innerHTML = html;
+            
+            // modal 열기
+            let modal = document.getElementById('monster-bag-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            } else {
+                showToast("❌ 모달 창을 열 수 없습니다.");
+            }
+        } catch(err) {
+            console.error('[openMonsterBag] Error:', err);
+            showToast("❌ 가방 열기에 실패했습니다. 새로고침 후 다시 시도해주세요.");
         }
-
-        html += `<div style="font-weight:800; color:var(--text-main); margin-bottom:10px; margin-top:20px;">🥚 부화 대기 (알)</div>`;
-        if (eggs.length > 0) {
-            html += eggs.map(m => generateBagItemHtml(m)).join('');
-        } else {
-            html += `<div style="font-size:13px; color:var(--text-muted); padding:10px; text-align:center; background:var(--surface); border-radius:12px; margin-bottom:15px;">알이 없습니다. (매월 1일에 지급됩니다)</div>`;
-        }
-
-        html += `<div style="font-weight:800; color:var(--text-main); margin-bottom:10px; margin-top:20px;">📖 지난 몬스터 도감</div>`;
-        if (retired.length > 0) {
-            html += retired.map(m => generateBagItemHtml(m)).join('');
-        } else {
-            html += `<div style="font-size:13px; color:var(--text-muted); padding:10px; text-align:center; background:var(--surface); border-radius:12px; margin-bottom:15px;">아직 다 키운 몬스터가 없습니다.</div>`;
-        }
-
-        content.innerHTML = html;
-        document.getElementById('monster-bag-modal').style.display = 'flex';
-        document.body.style.overflow = 'hidden';
     }
 
     function generateBagItemHtml(m) {
-        let isDisplay = m.id === monsterData.displayId;
-        let typeData = MONSTER_DATA[m.type];
-        if (!typeData) return "";
-        
-        let monsterSpec = getMonsterSpec(m);
-        if (!monsterSpec) return "";
-        
-        let totalHours = Math.floor(calculateActiveMonsterExp(m) / 3600);
-        let currentStageIdx = 0;
-        for (let i = EVOLUTION_HOURS.length - 1; i >= 0; i--) {
-            if (totalHours >= EVOLUTION_HOURS[i]) { currentStageIdx = i; break; }
+        try {
+            // 데이터 검증
+            if (!m || !m.type || !m.monsterSubId) return "";
+            
+            let isDisplay = m.id === monsterData.displayId;
+            let typeData = MONSTER_DATA[m.type];
+            if (!typeData) return "";
+            
+            let monsterSpec = getMonsterSpec(m);
+            if (!monsterSpec) return "";
+            
+            let totalHours = Math.floor(calculateActiveMonsterExp(m) / 3600);
+            let currentStageIdx = 0;
+            for (let i = EVOLUTION_HOURS.length - 1; i >= 0; i--) {
+                if (totalHours >= EVOLUTION_HOURS[i]) { currentStageIdx = i; break; }
+            }
+            let emoji = monsterSpec.emojis[currentStageIdx];
+            
+            let info = ""; let btn = "";
+            if (m.status === "egg") {
+                info = `<span style="font-size:12px; color:var(--text-muted);">부화 대기</span>`;
+                btn = `<button class="setting-btn" style="background:var(--success);" onclick="SFX.play('success'); selectMonsterTypeForHatch('${m.id}')">속성 선택</button>`;
+            } else if (m.status === "active") {
+                let startObj = new Date(m.startDate + "T00:00:00");
+                let todayObj = new Date(Utils.getLogicalDateString() + "T00:00:00");
+                let daysLeft = MONSTER_LIFESPAN_DAYS - Math.floor((todayObj - startObj) / (1000 * 60 * 60 * 24));
+                info = `<span style="font-size:12px; color:var(--text-muted);">Lv.${totalHours+1} | 마감 ${daysLeft}일 남음</span>`;
+                if(!isDisplay) btn = `<button class="setting-btn" onclick="SFX.play('tap'); setDisplayMonster('${m.id}')">전시하기</button>`;
+                else btn = `<span style="font-size:12px; color:var(--primary); font-weight:bold;">전시 중</span>`;
+            } else {
+                info = `<span style="font-size:11px; color:var(--text-muted);">${m.startDate.slice(2).replace(/-/g,'.')} ~ ${m.endDate?.slice(2).replace(/-/g,'.') || '진화중'}</span>`;
+                if(!isDisplay) btn = `<button class="setting-btn" onclick="SFX.play('tap'); setDisplayMonster('${m.id}')">전시하기</button>`;
+                else btn = `<span style="font-size:12px; color:var(--primary); font-weight:bold;">전시 중</span>`;
+            }
+    
+            return `<div class="bag-item ${isDisplay ? 'active' : ''}">
+                <div style="font-size:30px; margin-right:15px; width:35px; text-align:center;">${emoji}</div>
+                <div style="flex-grow:1; display:flex; flex-direction:column;">
+                    <span style="font-size:14px; font-weight:800; color:var(--text-main); margin-bottom:2px;">[${typeData.name}/${monsterSpec.name}] ${monsterSpec.stages[currentStageIdx]}</span>
+                    ${info}
+                </div>
+                <div>${btn}</div>
+            </div>`;
+        } catch(err) {
+            console.error('[generateBagItemHtml] Error:', err, m);
+            return `<div style="padding:10px; background:#ffe0e0; border-radius:8px; color:#e74c3c; font-size:12px;">
+                        ⚠️ 몬스터 렌더링 오류 (ID: ${m?.id || 'unknown'})
+                    </div>`;
         }
-        let emoji = monsterSpec.emojis[currentStageIdx];
-        
-        let info = ""; let btn = "";
-        if (m.status === "egg") {
-            info = `<span style="font-size:12px; color:var(--text-muted);">부화 대기</span>`;
-            btn = `<button class="setting-btn" style="background:var(--success);" onclick="SFX.play('success'); selectMonsterTypeForHatch('${m.id}')">속성 선택</button>`;
-        } else if (m.status === "active") {
-            let startObj = new Date(m.startDate + "T00:00:00");
-            let todayObj = new Date(Utils.getLogicalDateString() + "T00:00:00");
-            let daysLeft = MONSTER_LIFESPAN_DAYS - Math.floor((todayObj - startObj) / (1000 * 60 * 60 * 24));
-            info = `<span style="font-size:12px; color:var(--text-muted);">Lv.${totalHours+1} | 마감 ${daysLeft}일 남음</span>`;
-            if(!isDisplay) btn = `<button class="setting-btn" onclick="SFX.play('tap'); setDisplayMonster('${m.id}')">전시하기</button>`;
-            else btn = `<span style="font-size:12px; color:var(--primary); font-weight:bold;">전시 중</span>`;
-        } else {
-            info = `<span style="font-size:11px; color:var(--text-muted);">${m.startDate.slice(2).replace(/-/g,'.')} ~ ${m.endDate.slice(2).replace(/-/g,'.')}</span>`;
-            if(!isDisplay) btn = `<button class="setting-btn" onclick="SFX.play('tap'); setDisplayMonster('${m.id}')">전시하기</button>`;
-            else btn = `<span style="font-size:12px; color:var(--primary); font-weight:bold;">전시 중</span>`;
-        }
-
-        return `<div class="bag-item ${isDisplay ? 'active' : ''}">
-            <div style="font-size:30px; margin-right:15px; width:35px; text-align:center;">${emoji}</div>
-            <div style="flex-grow:1; display:flex; flex-direction:column;">
-                <span style="font-size:14px; font-weight:800; color:var(--text-main); margin-bottom:2px;">[${typeData.name}/${monsterSpec.name}] ${monsterSpec.stages[currentStageIdx]}</span>
-                ${info}
-            </div>
-            <div>${btn}</div>
-        </div>`;
     }
 
     function selectMonsterTypeForHatch(eggId) {
@@ -1310,6 +1338,77 @@
         updateMonsterUI(); 
         triggerAutoSync();
         showToast("🗑️ [실험실] 몬스터 데이터가 초기화되었습니다.");
+    }
+
+    function labShowAllPokedex() {
+        try {
+            showToast("⏳ 도감을 불러오는 중...");
+            
+            // 모든 몬스터 종을 최종 진화 상태로 도감에 추가
+            let addCount = 0;
+            let finalHours = EVOLUTION_HOURS[EVOLUTION_HOURS.length - 1];
+            
+            for (let type in MONSTER_DATA) {
+                let typeData = MONSTER_DATA[type];
+                for (let monster of typeData.monsters) {
+                    // 기존 도감 확인 (type + monsterSubId + retired 상태)
+                    let isExists = monsterData.inventory.some(m => 
+                        m.type === type && m.monsterSubId === monster.id && m.status === "retired"
+                    );
+                    
+                    if (!isExists) {
+                        monsterData.inventory.push({
+                            id: `p_${Date.now()}_${addCount}`,  // 고유 ID 생성
+                            type: type,
+                            monsterSubId: monster.id,
+                            status: "retired",
+                            startDate: Utils.getLogicalDateString(),
+                            totalSeconds: finalHours * 3600,
+                            bonusSeconds: 0
+                        });
+                        addCount++;
+                    }
+                }
+            }
+            
+            if (addCount === 0) {
+                showToast("ℹ️ 이미 모든 도감이 해금되어있습니다.");
+                return;
+            }
+            
+            // 저장 (안정성 체크)
+            let dataStr = JSON.stringify(monsterData);
+            if (dataStr.length > 4950000) {  // 5MB 근처 체크
+                showToast("⚠️ 저장소 용량 부족! 도감 일부만 추가됩니다.");
+                monsterData.inventory = monsterData.inventory.slice(-30);
+                dataStr = JSON.stringify(monsterData);
+            }
+            
+            setL('monsterData', dataStr);
+            
+            // 비동기로 UI 업데이트 (렌더링 블로킹 방지)
+            setTimeout(() => {
+                openMonsterBag();
+                triggerAutoSync();
+                showToast(`✅ [실험실] ${addCount}개의 몬스터 도감이 해금되었습니다!`);
+            }, 100);
+            
+        } catch(err) {
+            console.error('[labShowAllPokedex] Error:', err);
+            showToast("❌ 도감 로딩 중 오류가 발생했습니다.");
+        }
+    }
+
+    function labResetPokedex() {
+        if(!confirm("도감의 모든 항목을 초기화하시겠습니까?\n\n(육성 중/알은 유지됩니다)")) return;
+        
+        // pokedex_ id 패턴으로 된 항목만 제거
+        monsterData.inventory = monsterData.inventory.filter(m => !m.id.startsWith('pokedex_'));
+        
+        setL('monsterData', JSON.stringify(monsterData));
+        openMonsterBag();
+        triggerAutoSync();
+        showToast("↩️ [실험실] 도감이 초기화되었습니다.");
     }
 
     // ==========================================
