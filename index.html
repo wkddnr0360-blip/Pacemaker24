@@ -93,9 +93,9 @@
     .dash-today-summary strong { font-size: 34px; font-variant-numeric: tabular-nums; font-weight: 900; letter-spacing: -1px; }
     
     /* 🐉 몬스터 시스템 UI */
-    .dash-monster-box { background: var(--surface); border: 2px solid var(--border-color); border-radius: 20px; padding: 15px; text-align: center; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); position: relative; overflow: hidden; cursor: pointer; transition: transform 0.2s; }
+    .dash-monster-box { background: var(--surface); border: 2px solid var(--border-color); border-radius: 20px; padding: 20px; text-align: center; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); position: relative; overflow: hidden; cursor: pointer; transition: transform 0.2s; }
     .dash-monster-box:active { transform: scale(0.97); }
-    .monster-icon { font-size: 65px; margin: 15px 0; animation: float 3s ease-in-out infinite; display: inline-block; position: relative; z-index: 2;}
+    .monster-icon { animation: float 3s ease-in-out infinite; display: inline-block; position: relative; z-index: 2;}
     .monster-aurora { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80px; height: 80px; border-radius: 50%; z-index: 1; transition: all 0.5s ease; pointer-events: none; }
     @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
     .monster-exp-container { width: 100%; height: 10px; background: var(--bg-sec); border-radius: 5px; margin-top: 10px; overflow: hidden; border: 1px solid var(--border-color); }
@@ -205,7 +205,8 @@
     .guide-title { font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; letter-spacing: -0.5px;}
     .guide-desc { font-size: 13.5px; color: var(--text-muted); line-height: 1.6; word-break: keep-all; font-weight: 500;}
 
-    #settings-modal, #patch-note-modal, #guide-modal, #dday-modal, #monster-bag-modal { z-index: 2200; }
+    #settings-modal, #patch-note-modal, #guide-modal, #dday-modal, #monster-bag-modal, #pokemon-info-modal { z-index: 2200; }
+    #hatch-modal { z-index: 2300; }
     #diary-modal, #todo-modal, #capture-modal { z-index: 2100; }
     #record-modal, #board-modal { z-index: 2000; }
 
@@ -309,6 +310,21 @@
             filter: drop-shadow(0 0 30px rgba(255,215,0,1));
         }
     }
+    
+    .pulse-max { animation: pulse-max 1.5s ease-in-out infinite; }
+    @keyframes pulse-max { 0%, 100% { transform: scale(1); filter: drop-shadow(0 0 20px rgba(255,255,255,0.8)); } 50% { transform: scale(1.15); filter: drop-shadow(0 0 50px rgba(255,215,0,1)); } }
+    
+    /* 💥 메가진화 스킬 이펙트 애니메이션 */
+    @keyframes mega-attack {
+        10% { margin-left: -10px; filter: drop-shadow(0 0 20px #ef4444) brightness(1.3); }
+        30% { margin-left: 10px; margin-top: -10px; filter: drop-shadow(0 0 30px #eab308) brightness(1.5); }
+        50% { margin-left: -10px; margin-top: 10px; filter: drop-shadow(0 0 30px #3b82f6) brightness(1.4); }
+        70% { margin-left: 10px; filter: drop-shadow(0 0 20px #8b5cf6) brightness(1.3); }
+        90% { margin-left: 0px; margin-top: 0px; }
+    }
+    .mega-attack-anim {
+        animation: mega-attack 0.5s ease-out;
+    }
 
 </style>
 </head>
@@ -353,13 +369,24 @@
         </div>
 
         <div class="dash-monster-box" onclick="SFX.play('pop'); openMonsterBag()">
-            <div class="monster-aurora" id="monster-aurora"></div>
-            <div class="monster-label" id="monster-title">Lv.1 | 미확인 알 <span style="font-size:11px; color:var(--primary);">가방 보기 🎒</span></div>
-            <div class="monster-icon" id="monster-emoji">🥚</div>
-            <div class="monster-exp-container">
-                <div class="monster-exp-fill" id="monster-progress"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                <div style="text-align: left;">
+                    <div style="font-size: 11px; color: var(--text-muted); font-weight: 800; margin-bottom: 2px;">내 파트너 몬스터</div>
+                    <div id="monster-title" style="font-size: 15px; font-weight: 800; color: var(--text-main);">불러오는 중...</div>
+                </div>
+                <div style="background: var(--bg); border: 1px solid var(--border-color); font-size: 11px; padding: 6px 10px; border-radius: 12px; font-weight: 800; color: var(--text-main);">가방 열기 🎒</div>
             </div>
-            <div class="monster-subtext" id="monster-desc">이번 달 총 0시간 몰입 중</div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div id="monster-emoji" style="width: 90px; height: 90px; flex-shrink: 0; position: relative;">
+                    <div class="monster-display pulse-egg" style="background: linear-gradient(135deg, #E8E8E8 0%, #F5F5F5 100%); border-radius: 16px; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15);"><div style="font-size:40px; text-align:center; line-height:1;">🥚</div></div>
+                </div>
+                <div style="flex-grow: 1; text-align: left;">
+                    <div class="monster-subtext" id="monster-desc" style="font-size: 12px; color: var(--text-muted); font-weight: 700; margin-bottom: 8px; margin-top: 0; word-break: keep-all;">성장 정보를 불러오는 중입니다.</div>
+                    <div class="monster-exp-container" style="height: 10px; margin-top: 0; background: var(--bg); border-radius: 6px; border: 1px solid var(--border-color);">
+                        <div class="monster-exp-fill" id="monster-progress" style="border-radius: 6px; width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="dash-today-summary">
@@ -482,6 +509,26 @@
     </div>
 </div>
 
+<div id="hatch-modal" class="overlay-base">
+    <div class="modal-box" style="padding: 25px; max-width: 400px; display:block; text-align:center;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h3 style="margin:0; font-size:18px; font-weight:800; color:var(--text-main);">🥚 파트너 몬스터 부화</h3>
+            <button class="modal-close-btn" onclick="SFX.play('tap'); document.getElementById('hatch-modal').style.display='none';">✕</button>
+        </div>
+        <div id="hatch-modal-body"></div>
+    </div>
+</div>
+
+<div id="pokemon-info-modal" class="overlay-base">
+    <div class="modal-box" style="padding:0; background:var(--bg); height:85vh;">
+        <div class="modal-header">
+            <h3 style="margin:0; font-size:18px; font-weight:800; color:var(--text-main);">📖 수집 가능한 포켓몬 목록</h3>
+            <button class="modal-close-btn" onclick="SFX.play('tap'); document.getElementById('pokemon-info-modal').style.display='none'; document.body.style.overflow='';">✕</button>
+        </div>
+        <div class="modal-content-scroll" id="pokemon-info-content" style="padding: 20px;"></div>
+    </div>
+</div>
+
 <div id="settings-modal" class="overlay-base">
     <div class="modal-box" style="padding: 25px; max-width: 380px; display:block; overflow-y:auto; max-height:90vh;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -513,6 +560,11 @@
             <div id="custom-alarm-list" style="width:100%; display:flex; flex-wrap:wrap; gap:8px; margin-top:5px;"></div>
         </div>
         
+        <div class="setting-item" style="cursor:pointer;" onclick="SFX.play('pop'); openPokemonInfoModal();">
+            <span>📖 수집 가능한 포켓몬 도감 확인</span>
+            <span style="color:var(--text-muted); font-size:12px;">▶</span>
+        </div>
+
         <div class="setting-item" style="cursor:pointer;" onclick="SFX.play('pop'); document.getElementById('settings-modal').style.display='none'; document.getElementById('guide-modal').style.display='flex'; document.body.style.overflow='hidden';">
             <span>📖 앱 사용 가이드 보기</span>
             <span style="color:var(--text-muted); font-size:12px;">▶</span>
@@ -756,17 +808,61 @@
     let editingPostId = null; 
     let currentBoardItem = null;
 
-    // --- 🐉 몬스터 가방 시스템 (4단계 진화: 기본 → 진화1 → 진화2 → 메가진화) ---
-    // 포켓몬 이름 + 배경 이펙트로 성장감 표현
+    window.playPokemonCry = async function(pokeId, el, isMega) {
+        if (el && isMega) {
+            el.classList.remove('mega-attack-anim');
+            void el.offsetWidth; // 리플로우(Reflow) 강제 발생시켜 애니메이션 재시작
+            el.classList.add('mega-attack-anim');
+            setTimeout(() => el.classList.remove('mega-attack-anim'), 600);
+        } else if (el) {
+            let originalTrans = el.style.transform || 'scale(1.15)'; 
+            el.style.transition = 'transform 0.1s';
+            el.style.transform = originalTrans + ' translateY(-15px)';
+            setTimeout(() => { el.style.transform = originalTrans; }, 150);
+        }
+        
+        if (!isSoundOn) return;
+        try {
+            let data = await PokeAPI.getPokemon(pokeId);
+            if (data && data.cries && data.cries.latest) {
+                let audio = new Audio(data.cries.latest);
+                audio.volume = 0.4;
+                audio.play();
+            } else {
+                SFX.play('success'); 
+            }
+        } catch(e) {
+            SFX.play('success');
+        }
+    };
+
+    // --- 🐉 포켓몬 API 기반 몬스터 시스템 (4단계 진화: 기본 → 진화1 → 진화2 → 메가진화) ---
+    const PokeAPI = {
+        cache: {},
+        async getPokemon(id) {
+            if (this.cache[id]) return this.cache[id];
+            try {
+                const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+                const data = await res.json();
+                this.cache[id] = data;
+                return data;
+            } catch(e) {
+                console.error("PokeAPI Error:", e);
+                return null;
+            }
+        }
+    };
+
+    // 240시간(4주) 육성 시스템
     const MONSTER_DATA = {
         fire: {
             name: "불꽃",
             color: "239, 68, 68",
             bgGradients: [
-                "linear-gradient(135deg, #FFE5B4 0%, #FFB347 100%)",    // Lv.1-8: 초기
-                "linear-gradient(135deg, #FF8C42 0%, #FF5733 100%)",    // Lv.9-16: 진화1
-                "linear-gradient(135deg, #E74C3C 0%, #C0392B 100%)",    // Lv.17-24: 진화2
-                "linear-gradient(135deg, #8B0000 0%, #FF1744 100%)"     // Lv.25+: 메가진화
+                "linear-gradient(135deg, #FFE5B4 0%, #FFB347 100%)",
+                "linear-gradient(135deg, #FF8C42 0%, #FF5733 100%)",
+                "linear-gradient(135deg, #E74C3C 0%, #C0392B 100%)",
+                "linear-gradient(135deg, #8B0000 0%, #FF1744 100%)"
             ],
             effects: [
                 "brightness(0.95) drop-shadow(0 0 5px rgba(255,140,0,0.5))",
@@ -775,9 +871,24 @@
                 "brightness(1.3) drop-shadow(0 0 30px rgba(255,23,68,1)) saturate(1.5)"
             ],
             monsters: [
-                { id: "fire_charizard", name: "리자몽", pokeId: 6, emojis: ["🥚", "🔥", "🐦‍🔥", "🐉👑"], stages: ["알", "불도마뱀", "리자드", "리자몽"], baseStat: 267 },
-                { id: "fire_alakazam", name: "알라카잠", pokeId: 65, emojis: ["🥚", "💫", "🧠", "👑💫"], stages: ["알", "케이시", "윤겔라", "알라카잠"], baseStat: 485 },
-                { id: "fire_gengar", name: "유령", pokeId: 92, emojis: ["🥚", "👻", "👿", "😈👑"], stages: ["알", "고우스트", "고우스트", "유령"], baseStat: 500 }
+                { id: "fire_charizard", name: "리자몽", pokeIds: [4, 5, 6, 10034], stages: ["파이리", "리자드", "리자몽", "메가리자몽"], megaClass: "mega-charizard" },
+                { id: "fire_blaziken", name: "번치코", pokeIds: [255, 256, 257, 10050], stages: ["아차모", "영치기", "번치코", "메가번치코"], megaClass: "mega-blaziken" },
+                { id: "fire_infernape", name: "초염몽", pokeIds: [390, 391, 392, 392], stages: ["불꽃숭이", "파이숭이", "초염몽", "초염몽"], megaClass: "mega-infernape" },
+                { id: "fire_delphox", name: "마폭시", pokeIds: [653, 654, 655, 655], stages: ["푸네코", "테르나", "마폭시", "마폭시"], megaClass: "mega-delphox" },
+                { id: "fire_incineroar", name: "어흥염", pokeIds: [725, 726, 727, 727], stages: ["냐오불", "냐오히트", "어흥염", "어흥염"], megaClass: "mega-incineroar" },
+                { id: "fire_typhlosion", name: "블레이범", pokeIds: [155, 156, 157, 157], stages: ["브케인", "마그케인", "블레이범", "블레이범"], megaClass: "mega-typhlosion" },
+                { id: "fire_cinderace", name: "에이스번", pokeIds: [813, 814, 815, 815], stages: ["염버니", "래비풋", "에이스번", "에이스번"], megaClass: "mega-cinderace" },
+                { id: "fire_talonflame", name: "파이어로", pokeIds: [661, 662, 663, 663], stages: ["화살꼬마", "불화살빈", "파이어로", "파이어로"], megaClass: "mega-talonflame" },
+                { id: "fire_emboar", name: "염무왕", pokeIds: [498, 499, 500, 500], stages: ["뚜꾸리", "차오꿀", "염무왕", "염무왕"], megaClass: "mega-emboar" },
+                { id: "fire_houndoom", name: "헬가", pokeIds: [228, 229, 229, 10048], stages: ["델빌", "헬가", "헬가", "메가헬가"], megaClass: "mega-houndoom" },
+                { id: "fire_vulpix", name: "나인테일", pokeIds: [37, 37, 38, 38], stages: ["식스테일", "식스테일", "나인테일", "나인테일"], megaClass: "mega-ninetales" },
+                { id: "fire_growlithe", name: "윈디", pokeIds: [58, 58, 59, 59], stages: ["가디", "가디", "윈디", "윈디"], megaClass: "mega-arcanine" },
+                { id: "fire_flareon", name: "부스터", pokeIds: [133, 133, 136, 136], stages: ["이브이", "이브이", "부스터", "부스터"], megaClass: "mega-flareon" },
+                { id: "fire_ho_oh", name: "칠색조", pokeIds: [250, 250, 250, 250], stages: ["알", "칠색조", "칠색조", "칠색조"], megaClass: "mega-ho-oh" },
+                { id: "fire_entei", name: "앤테이", pokeIds: [244, 244, 244, 244], stages: ["알", "앤테이", "앤테이", "앤테이"], megaClass: "mega-entei" },
+                { id: "fire_camerupt", name: "폭타", pokeIds: [322, 323, 323, 10053], stages: ["둔타", "폭타", "폭타", "메가폭타"], megaClass: "mega-camerupt" },
+                { id: "fire_magmortar", name: "마그마번", pokeIds: [240, 126, 467, 467], stages: ["마그비", "마그마", "마그마번", "마그마번"], megaClass: "mega-magmortar" },
+                { id: "fire_centiskorch", name: "다태우지네", pokeIds: [850, 850, 851, 10185], stages: ["태우지네", "태우지네", "다태우지네", "거다이맥스"], megaClass: "mega-centiskorch" }
             ]
         },
         water: {
@@ -796,9 +907,25 @@
                 "brightness(1.3) drop-shadow(0 0 30px rgba(30,144,255,1)) saturate(1.5)"
             ],
             monsters: [
-                { id: "water_blastoise", name: "거북왕", pokeId: 9, emojis: ["🥚", "💧", "🐢", "🐢👑"], stages: ["알", "꼬부기", "어니부기", "거북왕"], baseStat: 268 },
-                { id: "water_dragonite", name: "망나뇽", pokeId: 149, emojis: ["🥚", "🌊", "🐲", "🐉👑"], stages: ["알", "미니용", "신뢰", "망나뇽"], baseStat: 600 },
-                { id: "water_lapras", name: "라프라스", pokeId: 131, emojis: ["🥚", "💙", "🐢", "🐢👑"], stages: ["알", "작은 라프", "중간 라프", "라프라스"], baseStat: 525 }
+                { id: "water_blastoise", name: "거북왕", pokeIds: [7, 8, 9, 10033], stages: ["꼬부기", "어니부기", "거북왕", "메가거북왕"], megaClass: "mega-blastoise" },
+                { id: "water_swampert", name: "대짱이", pokeIds: [258, 259, 260, 10064], stages: ["물짱이", "늪짱이", "대짱이", "메가대짱이"], megaClass: "mega-swampert" },
+                { id: "water_greninja", name: "개굴닌자", pokeIds: [656, 657, 658, 10116], stages: ["개구마르", "개구반장", "개굴닌자", "지우개굴닌자"], megaClass: "mega-greninja" },
+                { id: "water_feraligatr", name: "장크로다일", pokeIds: [158, 159, 160, 160], stages: ["리아코", "엘리게이", "장크로다일", "장크로다일"], megaClass: "mega-feraligatr" },
+                { id: "water_empoleon", name: "엠페르트", pokeIds: [393, 394, 395, 395], stages: ["팽도리", "팽태보", "엠페르트", "엠페르트"], megaClass: "mega-empoleon" },
+                { id: "water_gyarados", name: "갸라도스", pokeIds: [129, 129, 130, 10041], stages: ["잉어킹", "잉어킹", "갸라도스", "메가갸라도스"], megaClass: "mega-gyarados" },
+                { id: "water_inteleon", name: "인텔리레온", pokeIds: [816, 817, 818, 818], stages: ["울머기", "누겔레온", "인텔리레온", "인텔리레온"], megaClass: "mega-inteleon" },
+                { id: "water_primarina", name: "누리레느", pokeIds: [728, 729, 730, 730], stages: ["누리공", "키요공", "누리레느", "누리레느"], megaClass: "mega-primarina" },
+                { id: "water_samurott", name: "대검귀", pokeIds: [501, 502, 503, 503], stages: ["수댕이", "쌍검자비", "대검귀", "대검귀"], megaClass: "mega-samurott" },
+                { id: "water_milotic", name: "밀로틱", pokeIds: [349, 349, 350, 350], stages: ["빈티나", "빈티나", "밀로틱", "밀로틱"], megaClass: "mega-milotic" },
+                { id: "water_psyduck", name: "골덕", pokeIds: [54, 54, 55, 55], stages: ["고라파덕", "고라파덕", "골덕", "골덕"], megaClass: "mega-golduck" },
+                { id: "water_vaporeon", name: "샤미드", pokeIds: [133, 133, 134, 134], stages: ["이브이", "이브이", "샤미드", "샤미드"], megaClass: "mega-vaporeon" },
+                { id: "water_spheal", name: "씨카이저", pokeIds: [363, 364, 365, 365], stages: ["대굴레오", "씨레오", "씨카이저", "씨카이저"], megaClass: "mega-walrein" },
+                { id: "water_suicune", name: "스이쿤", pokeIds: [245, 245, 245, 245], stages: ["알", "스이쿤", "스이쿤", "스이쿤"], megaClass: "mega-suicune" },
+                { id: "water_lapras", name: "라프라스", pokeIds: [131, 131, 131, 10191], stages: ["라프라스", "라프라스", "라프라스", "거다이맥스"], megaClass: "mega-lapras" },
+                { id: "water_sharpedo", name: "샤크니아", pokeIds: [318, 319, 319, 10070], stages: ["샤프니아", "샤크니아", "샤크니아", "메가샤크니아"], megaClass: "mega-sharpedo" },
+                { id: "water_cloyster", name: "파르셀", pokeIds: [90, 91, 91, 91], stages: ["셀러", "파르셀", "파르셀", "파르셀"], megaClass: "mega-cloyster" },
+                { id: "water_glalie", name: "얼음귀신", pokeIds: [361, 361, 362, 10074], stages: ["눈꼬마", "눈꼬마", "얼음귀신", "메가얼음귀신"], megaClass: "mega-glalie" },
+                { id: "water_kingler", name: "킹크랩", pokeIds: [98, 98, 99, 10199], stages: ["크랩", "크랩", "킹크랩", "거다이맥스"], megaClass: "mega-kingler" }
             ]
         },
         grass: {
@@ -817,51 +944,26 @@
                 "brightness(1.3) drop-shadow(0 0 30px rgba(0,100,0,1)) saturate(1.5)"
             ],
             monsters: [
-                { id: "grass_venusaur", name: "이상해꽃", pokeId: 3, emojis: ["🥚", "🌱", "🌿", "🌸👑"], stages: ["알", "이상해씨", "이상해풀", "이상해꽃"], baseStat: 270 },
-                { id: "grass_exeggutor", name: "나시", pokeId: 103, emojis: ["🥚", "🥥", "🌴", "🌴👑"], stages: ["알", "알통몬", "야도란", "나시"], baseStat: 420 },
-                { id: "grass_vileplume", name: "라플레시아", pokeId: 45, emojis: ["🥚", "🌸", "🌺", "🌺👑"], stages: ["알", "풀싸롱", "매스꽃", "라플레시아"], baseStat: 490 }
-            ]
-        },
-        light: {
-            name: "빛",
-            color: "250, 204, 21",
-            bgGradients: [
-                "linear-gradient(135deg, #FFFACD 0%, #FFD700 100%)",
-                "linear-gradient(135deg, #FFD700 0%, #FFA500 100%)",
-                "linear-gradient(135deg, #FFA500 0%, #FF8C00 100%)",
-                "linear-gradient(135deg, #FF8C00 0%, #FFD700 100%)"
-            ],
-            effects: [
-                "brightness(0.95) drop-shadow(0 0 5px rgba(255,215,0,0.5))",
-                "brightness(1.05) drop-shadow(0 0 10px rgba(255,165,0,0.7))",
-                "brightness(1.15) drop-shadow(0 0 15px rgba(255,140,0,0.9))",
-                "brightness(1.3) drop-shadow(0 0 30px rgba(255,215,0,1)) saturate(1.5)"
-            ],
-            monsters: [
-                { id: "light_articuno", name: "프리져", pokeId: 144, emojis: ["🥚", "❄️", "🦅", "🦅👑"], stages: ["알", "미니아", "냉동조", "프리져"], baseStat: 580 },
-                { id: "light_zapdos", name: "썬더", pokeId: 145, emojis: ["🥚", "⚡", "🦅", "🦅👑"], stages: ["알", "전기새", "전격조", "썬더"], baseStat: 580 },
-                { id: "light_moltres", name: "파이어", pokeId: 146, emojis: ["🥚", "🔥", "🦅", "🦅👑"], stages: ["알", "불새", "화염조", "파이어"], baseStat: 580 }
-            ]
-        },
-        dark: {
-            name: "어둠",
-            color: "107, 33, 168",
-            bgGradients: [
-                "linear-gradient(135deg, #4B0082 0%, #663399 100%)",
-                "linear-gradient(135deg, #663399 0%, #483D8B 100%)",
-                "linear-gradient(135deg, #483D8B 0%, #2F4F4F 100%)",
-                "linear-gradient(135deg, #1a0033 0%, #330066 100%)"
-            ],
-            effects: [
-                "brightness(0.95) drop-shadow(0 0 5px rgba(138,43,226,0.5))",
-                "brightness(1.05) drop-shadow(0 0 10px rgba(75,0,130,0.7))",
-                "brightness(1.15) drop-shadow(0 0 15px rgba(47,79,79,0.9))",
-                "brightness(1.3) drop-shadow(0 0 30px rgba(75,0,130,1)) saturate(1.5)"
-            ],
-            monsters: [
-                { id: "dark_mewtwo", name: "뮤츠", pokeId: 150, emojis: ["🥚", "👾", "👿", "👑🔮"], stages: ["알", "미공개", "미공개", "뮤츠"], baseStat: 680 },
-                { id: "dark_absol", name: "악스", pokeId: 359, emojis: ["🥚", "⚫", "🐱", "🐱👑"], stages: ["알", "애그테", "애그테", "악스"], baseStat: 465 },
-                { id: "dark_hydreigon", name: "삼드래곤", pokeId: 635, emojis: ["🥚", "👻", "👿", "👑😈"], stages: ["알", "모노두", "디노", "삼드래곤"], baseStat: 600 }
+                { id: "grass_venusaur", name: "이상해꽃", pokeIds: [1, 2, 3, 10032], stages: ["이상해씨", "이상해풀", "이상해꽃", "메가이상해꽃"], megaClass: "mega-venusaur" },
+                { id: "grass_sceptile", name: "나무킹", pokeIds: [252, 253, 254, 10065], stages: ["나무지기", "나무돌이", "나무킹", "메가나무킹"], megaClass: "mega-sceptile" },
+                { id: "grass_meganium", name: "메가니움", pokeIds: [152, 153, 154, 154], stages: ["치코리타", "베이리프", "메가니움", "메가니움"], megaClass: "mega-meganium" },
+                { id: "grass_torterra", name: "토대부기", pokeIds: [387, 388, 389, 389], stages: ["모부기", "수풀부기", "토대부기", "토대부기"], megaClass: "mega-torterra" },
+                { id: "grass_decidueye", name: "모크나이퍼", pokeIds: [722, 723, 724, 724], stages: ["나몰빼미", "빼미스로우", "모크나이퍼", "모크나이퍼"], megaClass: "mega-decidueye" },
+                { id: "grass_serperior", name: "샤로다", pokeIds: [495, 496, 497, 497], stages: ["주리비얀", "샤비", "샤로다", "샤로다"], megaClass: "mega-serperior" },
+                { id: "grass_chesnaught", name: "브리가론", pokeIds: [650, 651, 652, 652], stages: ["도치마론", "도치보구", "브리가론", "브리가론"], megaClass: "mega-chesnaught" },
+                { id: "grass_rillaboom", name: "고릴타", pokeIds: [810, 811, 812, 812], stages: ["흥나숭", "채키몽", "고릴타", "고릴타"], megaClass: "mega-rillaboom" },
+                { id: "grass_meowscarada", name: "마스카나", pokeIds: [906, 907, 908, 908], stages: ["나오하", "나로테", "마스카나", "마스카나"], megaClass: "mega-meowscarada" },
+                { id: "grass_abomasnow", name: "눈설왕", pokeIds: [459, 459, 460, 10059], stages: ["눈쓰개", "눈쓰개", "눈설왕", "메가눈설왕"], megaClass: "mega-abomasnow" },
+                { id: "grass_leafeon", name: "리피아", pokeIds: [133, 133, 470, 470], stages: ["이브이", "이브이", "리피아", "리피아"], megaClass: "mega-leafeon" },
+                { id: "grass_bellsprout", name: "우츠보트", pokeIds: [69, 70, 71, 71], stages: ["모다피", "우츠동", "우츠보트", "우츠보트"], megaClass: "mega-victreebel" },
+                { id: "grass_budew", name: "로즈레이드", pokeIds: [406, 400, 407, 407], stages: ["꼬몽울", "로젤리아", "로즈레이드", "로즈레이드"], megaClass: "mega-roserade" },
+                { id: "grass_celebi", name: "세레비", pokeIds: [251, 251, 251, 251], stages: ["알", "세레비", "세레비", "세레비"], megaClass: "mega-celebi" },
+                { id: "grass_shaymin", name: "쉐이미", pokeIds: [492, 492, 492, 10006], stages: ["알", "쉐이미", "쉐이미", "스카이폼"], megaClass: "mega-shaymin" },
+                { id: "grass_pinsir", name: "쁘사이저", pokeIds: [127, 127, 127, 10040], stages: ["알", "쁘사이저", "쁘사이저", "메가쁘사이저"], megaClass: "mega-pinsir" },
+                { id: "grass_heracross", name: "헤라크로스", pokeIds: [214, 214, 214, 10047], stages: ["알", "헤라크로스", "헤라크로스", "메가헤라크로스"], megaClass: "mega-heracross" },
+                { id: "grass_beedrill", name: "독침붕", pokeIds: [13, 14, 15, 10036], stages: ["뿔충이", "딱충이", "독침붕", "메가독침붕"], megaClass: "mega-beedrill" },
+                { id: "grass_scizor", name: "핫삼", pokeIds: [123, 123, 212, 10046], stages: ["스라크", "스라크", "핫삼", "메가핫삼"], megaClass: "mega-scizor" },
+                { id: "grass_pidgeot", name: "피죤투", pokeIds: [16, 17, 18, 10073], stages: ["구구", "피죤", "피죤투", "메가피죤투"], megaClass: "mega-pidgeot" }
             ]
         },
         electric: {
@@ -880,16 +982,143 @@
                 "brightness(1.3) drop-shadow(0 0 30px rgba(255,255,0,1)) saturate(1.5)"
             ],
             monsters: [
-                { id: "electric_pikachu", name: "피카츄", pokeId: 25, emojis: ["🥚", "⚡", "🐭", "🐭👑"], stages: ["알", "피츄", "피카츄", "라이츄"], baseStat: 320 },
-                { id: "electric_electabuzz", name: "에레키", pokeId: 125, emojis: ["🥚", "⚡", "🔌", "🔌👑"], stages: ["알", "에레비", "에레비", "에레키"], baseStat: 425 },
-                { id: "electric_magnezone", name: "자포코일", pokeId: 462, emojis: ["🥚", "⚙️", "🧲", "🧲👑"], stages: ["알", "자석몬", "레어코일", "자포코일"], baseStat: 535 }
+                { id: "electric_ampharos", name: "전룡", pokeIds: [179, 180, 181, 10045], stages: ["메리프", "보송송", "전룡", "메가전룡"], megaClass: "mega-ampharos" },
+                { id: "electric_luxray", name: "렌트라", pokeIds: [403, 404, 405, 405], stages: ["꼬링크", "럭시오", "렌트라", "렌트라"], megaClass: "mega-luxray" },
+                { id: "electric_electivire", name: "에레키블", pokeIds: [239, 125, 466, 466], stages: ["에레키드", "에레브", "에레키블", "에레키블"], megaClass: "mega-electivire" },
+                { id: "electric_magnezone", name: "자포코일", pokeIds: [81, 82, 462, 462], stages: ["코일", "레어코일", "자포코일", "자포코일"], megaClass: "mega-magnezone" },
+                { id: "electric_raichu", name: "라이츄", pokeIds: [172, 25, 26, 26], stages: ["피츄", "피카츄", "라이츄", "라이츄"], megaClass: "mega-raichu" },
+                { id: "electric_manectric", name: "썬더볼트", pokeIds: [309, 310, 310, 10054], stages: ["썬더라이", "썬더볼트", "썬더볼트", "메가썬더볼트"], megaClass: "mega-manectric" },
+                { id: "electric_toxtricity", name: "스트린더", pokeIds: [848, 848, 849, 10184], stages: ["일렉젤", "일렉젤", "스트린더", "거다이맥스"], megaClass: "mega-toxtricity" },
+                { id: "electric_vikavolt", name: "투구뿌논", pokeIds: [736, 737, 738, 738], stages: ["턱지충이", "전지충이", "투구뿌논", "투구뿌논"], megaClass: "mega-vikavolt" },
+                { id: "electric_eelektross", name: "저리더프", pokeIds: [602, 603, 604, 604], stages: ["저리어", "저리릴", "저리더프", "저리더프"], megaClass: "mega-eelektross" },
+                { id: "electric_pawmot", name: "빠모트", pokeIds: [921, 922, 923, 923], stages: ["빠모", "빠모트", "빠르모트", "빠르모트"], megaClass: "mega-pawmot" },
+                { id: "electric_jolteon", name: "쥬피썬더", pokeIds: [133, 133, 135, 135], stages: ["이브이", "이브이", "쥬피썬더", "쥬피썬더"], megaClass: "mega-jolteon" },
+                { id: "electric_pachirisu", name: "파치리스", pokeIds: [417, 417, 417, 417], stages: ["파치리스", "파치리스", "파치리스", "파치리스"], megaClass: "mega-pachirisu" },
+                { id: "electric_dedenne", name: "데덴네", pokeIds: [702, 702, 702, 702], stages: ["데덴네", "데덴네", "데덴네", "데덴네"], megaClass: "mega-dedenne" },
+                { id: "electric_yamper", name: "펄스멍", pokeIds: [835, 835, 836, 836], stages: ["멍파치", "멍파치", "펄스멍", "펄스멍"], megaClass: "mega-boltund" },
+                { id: "electric_zapdos", name: "썬더", pokeIds: [145, 145, 145, 145], stages: ["알", "썬더", "썬더", "썬더"], megaClass: "mega-zapdos" },
+                { id: "electric_raikou", name: "라이코", pokeIds: [243, 243, 243, 243], stages: ["알", "라이코", "라이코", "라이코"], megaClass: "mega-raikou" },
+                { id: "electric_electrode", name: "붐볼", pokeIds: [100, 101, 101, 101], stages: ["찌리리공", "붐볼", "붐볼", "붐볼"], megaClass: "mega-electrode" },
+                { id: "electric_pincurchin", name: "찌르성게", pokeIds: [871, 871, 871, 871], stages: ["알", "찌르성게", "찌르성게", "찌르성게"], megaClass: "mega-pincurchin" },
+                { id: "electric_galvantula", name: "전툴라", pokeIds: [595, 595, 596, 596], stages: ["파쪼꼬", "파쪼꼬", "전툴라", "전툴라"], megaClass: "mega-galvantula" }
+            ]
+        },
+        psychic: {
+            name: "초능력",
+            color: "168, 85, 247",
+            bgGradients: [
+                "linear-gradient(135deg, #DDA0DD 0%, #DA70D6 100%)",
+                "linear-gradient(135deg, #DA70D6 0%, #BA55D3 100%)",
+                "linear-gradient(135deg, #BA55D3 0%, #9932CC 100%)",
+                "linear-gradient(135deg, #9932CC 0%, #8B008B 100%)"
+            ],
+            effects: [
+                "brightness(0.95) drop-shadow(0 0 5px rgba(221,160,221,0.5))",
+                "brightness(1.05) drop-shadow(0 0 10px rgba(186,85,211,0.7))",
+                "brightness(1.15) drop-shadow(0 0 15px rgba(153,50,204,0.9))",
+                "brightness(1.3) drop-shadow(0 0 30px rgba(153,50,204,1)) saturate(1.5)"
+            ],
+            monsters: [
+                { id: "psychic_alakazam", name: "후딘", pokeIds: [63, 64, 65, 10037], stages: ["캐이시", "윤겔라", "후딘", "메가후딘"], megaClass: "mega-alakazam" },
+                { id: "psychic_gardevoir", name: "가디안", pokeIds: [280, 281, 282, 10061], stages: ["랄토스", "킬리아", "가디안", "메가가디안"], megaClass: "mega-gardevoir" },
+                { id: "psychic_metagross", name: "메타그로스", pokeIds: [374, 375, 376, 10076], stages: ["메탕", "메탕구", "메타그로스", "메가메타그로스"], megaClass: "mega-metagross" },
+                { id: "psychic_gengar", name: "팬텀", pokeIds: [92, 93, 94, 10038], stages: ["고오스", "고우스트", "팬텀", "메가팬텀"], megaClass: "mega-gengar" },
+                { id: "psychic_reuniclus", name: "란쿨루스", pokeIds: [577, 578, 579, 579], stages: ["유니란", "듀란", "란쿨루스", "란쿨루스"], megaClass: "mega-reuniclus" },
+                { id: "psychic_gallade", name: "엘레이드", pokeIds: [280, 281, 475, 10068], stages: ["랄토스", "킬리아", "엘레이드", "메가엘레이드"], megaClass: "mega-gallade" },
+                { id: "psychic_slowbro", name: "야도란", pokeIds: [79, 79, 80, 10071], stages: ["야돈", "야돈", "야도란", "메가야도란"], megaClass: "mega-slowbro" },
+                { id: "psychic_hatterene", name: "브리무음", pokeIds: [856, 857, 858, 858], stages: ["몸지브림", "손지브림", "브리무음", "브리무음"], megaClass: "mega-hatterene" },
+                { id: "psychic_gothitelle", name: "고디모아젤", pokeIds: [574, 575, 576, 576], stages: ["고디탱", "고디보미", "고디모아젤", "고디모아젤"], megaClass: "mega-gothitelle" },
+                { id: "psychic_espeon", name: "에브이", pokeIds: [133, 133, 196, 196], stages: ["이브이", "이브이", "에브이", "에브이"], megaClass: "mega-espeon" },
+                { id: "psychic_togepi", name: "토게키스", pokeIds: [175, 176, 468, 468], stages: ["토게피", "토게틱", "토게키스", "토게키스"], megaClass: "mega-togekiss" },
+                { id: "psychic_mew", name: "뮤", pokeIds: [151, 151, 151, 151], stages: ["뮤", "뮤", "뮤", "뮤"], megaClass: "mega-mew" },
+                { id: "psychic_sylveon", name: "님피아", pokeIds: [133, 133, 700, 700], stages: ["이브이", "이브이", "님피아", "님피아"], megaClass: "mega-sylveon" },
+                { id: "psychic_mewtwo", name: "뮤츠", pokeIds: [150, 150, 150, 10043], stages: ["알", "뮤츠", "뮤츠", "메가뮤츠X"], megaClass: "mega-mewtwo" },
+                { id: "psychic_lugia", name: "루기아", pokeIds: [249, 249, 249, 249], stages: ["알", "루기아", "루기아", "루기아"], megaClass: "mega-lugia" },
+                { id: "psychic_lucario", name: "루카리오", pokeIds: [447, 448, 448, 10052], stages: ["리오르", "루카리오", "루카리오", "메가루카리오"], megaClass: "mega-lucario" },
+                { id: "psychic_lopunny", name: "이어롭", pokeIds: [427, 428, 428, 10055], stages: ["이어롤", "이어롭", "이어롭", "메가이어롭"], megaClass: "mega-lopunny" },
+                { id: "psychic_medicham", name: "요가램", pokeIds: [307, 307, 308, 10054], stages: ["요가랑", "요가랑", "요가램", "메가요가램"], megaClass: "mega-medicham" },
+                { id: "psychic_mawile", name: "입치트", pokeIds: [303, 303, 303, 10052], stages: ["알", "입치트", "입치트", "메가입치트"], megaClass: "mega-mawile" },
+                { id: "psychic_audino", name: "다부니", pokeIds: [531, 531, 531, 10069], stages: ["알", "다부니", "다부니", "메가다부니"], megaClass: "mega-audino" }
+            ]
+        },
+        dark: {
+            name: "어둠",
+            color: "107, 33, 168",
+            bgGradients: [
+                "linear-gradient(135deg, #4B0082 0%, #663399 100%)",
+                "linear-gradient(135deg, #663399 0%, #483D8B 100%)",
+                "linear-gradient(135deg, #483D8B 0%, #2F4F4F 100%)",
+                "linear-gradient(135deg, #1a0033 0%, #330066 100%)"
+            ],
+            effects: [
+                "brightness(0.95) drop-shadow(0 0 5px rgba(138,43,226,0.5))",
+                "brightness(1.05) drop-shadow(0 0 10px rgba(75,0,130,0.7))",
+                "brightness(1.15) drop-shadow(0 0 15px rgba(47,79,79,0.9))",
+                "brightness(1.3) drop-shadow(0 0 30px rgba(75,0,130,1)) saturate(1.5)"
+            ],
+            monsters: [
+                { id: "dark_tyranitar", name: "마기라스", pokeIds: [246, 247, 248, 10083], stages: ["애버라스", "데기라스", "마기라스", "메가마기라스"], megaClass: "mega-tyranitar" },
+                { id: "dark_hydreigon", name: "삼삼드래", pokeIds: [633, 634, 635, 635], stages: ["모노두", "디헤드", "삼삼드래", "삼삼드래"], megaClass: "mega-hydreigon" },
+                { id: "dark_krookodile", name: "악비아르", pokeIds: [551, 552, 553, 553], stages: ["깜눈크", "악비르", "악비아르", "악비아르"], megaClass: "mega-krookodile" },
+                { id: "dark_grimmsnarl", name: "오롱털", pokeIds: [859, 860, 861, 861], stages: ["임프딤프", "모그렘", "오롱털", "오롱털"], megaClass: "mega-grimmsnarl" },
+                { id: "dark_shiftry", name: "다탱구", pokeIds: [273, 274, 275, 275], stages: ["도토리", "잎새코", "다탱구", "다탱구"], megaClass: "mega-shiftry" },
+                { id: "dark_absol", name: "앱솔", pokeIds: [359, 359, 359, 10057], stages: ["앱솔", "앱솔", "앱솔", "메가앱솔"], megaClass: "mega-absol" },
+                { id: "dark_umbreon", name: "블래키", pokeIds: [133, 133, 197, 197], stages: ["이브이", "이브이", "블래키", "블래키"], megaClass: "mega-umbreon" },
+                { id: "dark_zoroark", name: "조로아크", pokeIds: [570, 571, 571, 571], stages: ["조로아", "조로아크", "조로아크", "조로아크"], megaClass: "mega-zoroark" },
+                { id: "dark_obstagoon", name: "가로막구리", pokeIds: [263, 264, 862, 862], stages: ["지그제구리", "직구리", "가로막구리", "가로막구리"], megaClass: "mega-obstagoon" },
+                { id: "dark_bisharp", name: "절각참", pokeIds: [624, 625, 625, 625], stages: ["자망칼", "절각참", "절각참", "절각참"], megaClass: "mega-bisharp" },
+                { id: "dark_purrloin", name: "레파르다스", pokeIds: [509, 509, 510, 510], stages: ["쌔비냥", "쌔비냥", "레파르다스", "레파르다스"], megaClass: "mega-liepard" },
+                { id: "dark_sneasel", name: "포푸니라", pokeIds: [215, 215, 461, 461], stages: ["포푸니", "포푸니", "포푸니라", "포푸니라"], megaClass: "mega-weavile" },
+                { id: "dark_darkrai", name: "다크라이", pokeIds: [491, 491, 491, 491], stages: ["알", "다크라이", "다크라이", "다크라이"], megaClass: "mega-darkrai" },
+                { id: "dark_yveltal", name: "이벨타르", pokeIds: [717, 717, 717, 717], stages: ["알", "이벨타르", "이벨타르", "이벨타르"], megaClass: "mega-yveltal" },
+                { id: "dark_sableye", name: "깜까미", pokeIds: [302, 302, 302, 10051], stages: ["알", "깜까미", "깜까미", "메가깜까미"], megaClass: "mega-sableye" },
+                { id: "dark_banette", name: "다크펫", pokeIds: [353, 354, 354, 10056], stages: ["어둠대신", "다크펫", "다크펫", "메가다크펫"], megaClass: "mega-banette" },
+                { id: "dark_aggron", name: "보스로라", pokeIds: [304, 305, 306, 10058], stages: ["가보리", "갱도라", "보스로라", "메가보스로라"], megaClass: "mega-aggron" },
+                { id: "dark_steelix", name: "강철톤", pokeIds: [95, 95, 208, 10072], stages: ["롱스톤", "롱스톤", "강철톤", "메가강철톤"], megaClass: "mega-steelix" },
+                { id: "dark_honchkrow", name: "돈크로우", pokeIds: [198, 198, 430, 430], stages: ["니로우", "니로우", "돈크로우", "돈크로우"], megaClass: "mega-honchkrow" }
+            ]
+        },
+        dragon: {
+            name: "드래곤",
+            color: "99, 102, 241",
+            bgGradients: [
+                "linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%)",
+                "linear-gradient(135deg, #A5B4FC 0%, #818CF8 100%)",
+                "linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)",
+                "linear-gradient(135deg, #4338CA 0%, #312E81 100%)"
+            ],
+            effects: [
+                "brightness(0.95) drop-shadow(0 0 5px rgba(99,102,241,0.5))",
+                "brightness(1.05) drop-shadow(0 0 10px rgba(79,70,229,0.7))",
+                "brightness(1.15) drop-shadow(0 0 15px rgba(67,56,202,0.9))",
+                "brightness(1.3) drop-shadow(0 0 30px rgba(49,46,129,1)) saturate(1.5)"
+            ],
+            monsters: [
+                { id: "dragon_salamence", name: "보만다", pokeIds: [371, 372, 373, 10089], stages: ["아공이", "쉘곤", "보만다", "메가보만다"], megaClass: "mega-salamence" },
+                { id: "dragon_garchomp", name: "한카리아스", pokeIds: [443, 444, 445, 10077], stages: ["딥상어동", "한바이트", "한카리아스", "메가한카리아스"], megaClass: "mega-garchomp" },
+                { id: "dragon_dragonite", name: "망나뇽", pokeIds: [147, 148, 149, 149], stages: ["미뇽", "신뇽", "망나뇽", "망나뇽"], megaClass: "mega-dragonite" },
+                { id: "dragon_haxorus", name: "액스라이즈", pokeIds: [610, 611, 612, 612], stages: ["터검니", "액스도", "액스라이즈", "액스라이즈"], megaClass: "mega-haxorus" },
+                { id: "dragon_goodra", name: "미끄래곤", pokeIds: [704, 705, 706, 706], stages: ["미끄메라", "미끄네일", "미끄래곤", "미끄래곤"], megaClass: "mega-goodra" },
+                { id: "dragon_altaria", name: "파비코리", pokeIds: [333, 334, 334, 10067], stages: ["파비코", "파비코리", "파비코리", "메가파비코리"], megaClass: "mega-altaria" },
+                { id: "dragon_flygon", name: "플라이곤", pokeIds: [328, 329, 330, 330], stages: ["톱치", "비브라바", "플라이곤", "플라이곤"], megaClass: "mega-flygon" },
+                { id: "dragon_dragapult", name: "드래펄트", pokeIds: [885, 886, 887, 887], stages: ["드라꼬", "드래런치", "드래펄트", "드래펄트"], megaClass: "mega-dragapult" },
+                { id: "dragon_kommo_o", name: "짜랑고우거", pokeIds: [782, 783, 784, 784], stages: ["짜랑꼬", "짜랑고우", "짜랑고우거", "짜랑고우거"], megaClass: "mega-kommo_o" },
+                { id: "dragon_baxcalibur", name: "드닐레이브", pokeIds: [996, 997, 998, 998], stages: ["드니차", "드니꽁", "드닐레이브", "드닐레이브"], megaClass: "mega-baxcalibur" },
+                { id: "dragon_applin", name: "애프룡", pokeIds: [840, 841, 841, 10186], stages: ["과사삭벌레", "애프룡", "애프룡", "거다이맥스"], megaClass: "mega-flapple" },
+                { id: "dragon_noibat", name: "음번", pokeIds: [714, 714, 715, 715], stages: ["음뱃", "음뱃", "음번", "음번"], megaClass: "mega-noivern" },
+                { id: "dragon_rayquaza", name: "레쿠쟈", pokeIds: [384, 384, 384, 10079], stages: ["알", "레쿠쟈", "레쿠쟈", "메가레쿠쟈"], megaClass: "mega-rayquaza" },
+                { id: "dragon_latias", name: "라티아스", pokeIds: [380, 380, 380, 10062], stages: ["알", "라티아스", "라티아스", "메가라티아스"], megaClass: "mega-latias" },
+                { id: "dragon_latios", name: "라티오스", pokeIds: [381, 381, 381, 10063], stages: ["알", "라티오스", "라티오스", "메가라티오스"], megaClass: "mega-latios" },
+                { id: "dragon_aerodactyl", name: "프테라", pokeIds: [142, 142, 142, 10042], stages: ["알", "프테라", "프테라", "메가프테라"], megaClass: "mega-aerodactyl" },
+                { id: "dragon_kangaskhan", name: "캥카", pokeIds: [115, 115, 115, 10039], stages: ["알", "캥카", "캥카", "메가캥카"], megaClass: "mega-kangaskhan" },
+                { id: "dragon_duraludon", name: "두랄루돈", pokeIds: [884, 884, 884, 10192], stages: ["알", "두랄루돈", "두랄루돈", "거다이맥스"], megaClass: "mega-duraludon" }
             ]
         }
     };
     
-    // 4단계 진화 (초기 → 진화1 → 진화2 → 메가진화)
-    // 각 단계: Lv.1-8, Lv.9-16, Lv.17-24, Lv.25+
-    const EVOLUTION_HOURS = [0, 8, 16, 24]; 
+    // 240시간 마스터 목표에 맞춘 빠른 4단계 진화 트리 (동기부여 최적화)
+    // 0h(기본) → 30h(진화1) → 80h(진화2) → 150h(메가진화) → 240h+(마스터)
+    const EVOLUTION_HOURS = [0, 30, 80, 150]; 
     const MONSTER_LIFESPAN_DAYS = 28;
 
     let monsterData = {
@@ -1050,7 +1279,7 @@
                             // 자동 마이그레이션: 구버전 데이터를 첫 번째 몬스터로 매핑
                             parsed.inventory.forEach(item => {
                                 if (item.emojis) {
-                                    item.monsterSubId = Object.keys(MONSTER_DATA[item.type].monsters)[0];
+                                    item.monsterSubId = MONSTER_DATA[item.type].monsters[0].id;
                                     item.emojis = undefined;
                                 }
                             });
@@ -1082,7 +1311,8 @@
             if (monsterData.lastEggMonth !== currentMonth) {
                 const types = Object.keys(MONSTER_DATA);
                 const randomType = types[Math.floor(Math.random() * types.length)];
-                const randomMonster = Object.keys(MONSTER_DATA[randomType].monsters)[Math.floor(Math.random() * 5)];
+                const typeData = MONSTER_DATA[randomType];
+                const randomMonster = typeData.monsters[Math.floor(Math.random() * typeData.monsters.length)].id;
                 let newId = "m_" + Date.now();
                 monsterData.inventory.push({ 
                     id: newId, 
@@ -1093,7 +1323,7 @@
                     totalSeconds: 0 
                 });
                 monsterData.lastEggMonth = currentMonth;
-                showToast("🥚 새로운 달! 가방에 새 알이 배달되었습니다.");
+                showToast(`🥚 매월 1일 보급! 새로운 알이 가방에 배달되었습니다.`);
             }
             
             checkMonsterLifespan();
@@ -1128,11 +1358,29 @@
         let todayObj = new Date(Utils.getLogicalDateString() + "T00:00:00");
         let diffDays = Math.floor((todayObj - startObj) / (1000 * 60 * 60 * 24));
         
+        // 서버 안정성 확보: 너무 많은 몬스터가 쌓여 저장소 초과 에러 방지
+        if (monsterData.inventory.length > 80) {
+            let eggs = monsterData.inventory.filter(m => m.status === 'egg');
+            let active = monsterData.inventory.filter(m => m.status === 'active');
+            let retired = monsterData.inventory.filter(m => m.status === 'retired');
+            
+            if (retired.length > 60) {
+                // 오래된 도감 순으로 정리 (가장 최신 60마리만 유지)
+                retired.sort((a,b) => new Date(a.startDate) - new Date(b.startDate));
+                retired = retired.slice(-60);
+                monsterData.inventory = [...active, ...eggs, ...retired];
+            }
+        }
+
         if (diffDays >= MONSTER_LIFESPAN_DAYS) {
+            // 💡 BUG FIX: 은퇴 처리 전, 현재까지의 총 경험치를 안전하게 캡처하여 동결시킵니다.
+            let finalSecs = calculateActiveMonsterExp(active); 
             active.status = "retired";
             active.endDate = Utils.getRelativeDateString(-1); // 어제 날짜로 마감
-            active.totalSeconds = calculateActiveMonsterExp(active); // 최종 경험치 동결
+            active.totalSeconds = finalSecs; 
             monsterData.activeId = null;
+            setL('monsterData', JSON.stringify(monsterData)); // 안전 저장
+            triggerAutoSync(true); // 클라우드 동기화
             showToast("✨ 몬스터가 4주간의 성장을 마치고 도감에 등록되었습니다!");
         }
     }
@@ -1145,9 +1393,7 @@
         
         let monsterSubId = monster.monsterSubId;
         if (!monsterSubId) {
-            // 구버전 호환: 첫 번째 몬스터로 기본값 설정
-            const firstKey = Object.keys(typeData.monsters)[0];
-            monsterSubId = firstKey;
+            monsterSubId = typeData.monsters[0].id;
         }
         
         const monsterSpec = typeData.monsters.find(m => m.id === monsterSubId);
@@ -1177,7 +1423,7 @@
         return totalSeconds + (monster.bonusSeconds || 0);
     }
 
-    function updateMonsterUI() {
+    async function updateMonsterUI() {
         let displayMonster = monsterData.inventory.find(m => m.id === monsterData.displayId);
         if (!displayMonster && monsterData.inventory.length > 0) displayMonster = monsterData.inventory[0];
         if (!displayMonster) return;
@@ -1185,11 +1431,12 @@
         let totalSeconds = calculateActiveMonsterExp(displayMonster);
         let totalHours = Math.floor(totalSeconds / 3600);
         
-        // 4단계 진화 매핑 (Lv.1-8, Lv.9-16, Lv.17-24, Lv.25+)
-        let currentStageIdx = 0;
+        let maxStageIdx = 0;
         for (let i = EVOLUTION_HOURS.length - 1; i >= 0; i--) {
-            if (totalHours >= EVOLUTION_HOURS[i]) { currentStageIdx = i; break; }
+            if (totalHours >= EVOLUTION_HOURS[i]) { maxStageIdx = i; break; }
         }
+        
+        let currentStageIdx = displayMonster.selectedStage !== undefined ? displayMonster.selectedStage : maxStageIdx;
 
         let typeData = MONSTER_DATA[displayMonster.type];
         if (!typeData) return;
@@ -1197,15 +1444,13 @@
         let monsterSpec = getMonsterSpec(displayMonster);
         if (!monsterSpec) return;
         
-        let emoji = monsterSpec.emojis[currentStageIdx];
-        let stageName = monsterSpec.stages[currentStageIdx];
-        let currentLevel = (currentStageIdx + 1) * 8; // Lv.8, 16, 24, 32+
-        
-        // 배경 그래디언트 및 이펙트
+        let stageName = displayMonster.status === "egg" ? "부화 전" : monsterSpec.stages[currentStageIdx];
         let bgGradient = typeData.bgGradients[currentStageIdx];
         let effectFilter = typeData.effects[currentStageIdx];
         
-        let nextHours = EVOLUTION_HOURS[currentStageIdx + 1];
+        let megaClass = currentStageIdx >= 3 ? (monsterSpec.megaClass || "") : "";
+        let isMax = totalHours >= 240;
+        let nextHours = isMax ? null : (EVOLUTION_HOURS[currentStageIdx + 1] || 240);
         let progressPercent = 100;
         let descText = "";
         let pulseClass = `pulse-stage-${currentStageIdx + 1}`;
@@ -1221,62 +1466,93 @@
             effectFilter = "brightness(1.1) saturate(1.3)";
             pulseClass = "pulse-retired";
         } else {
-            if (nextHours) {
+            if (isMax) {
+                descText = `👑 마스터 달성! 240시간 몰입 완료!`;
+                pulseClass = "pulse-max";
+                effectFilter = "brightness(1.4) drop-shadow(0 0 40px rgba(255,215,0,1)) saturate(1.8)";
+                bgGradient = "linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF4500 100%)";
+                stageName = "👑 마스터 (MAX)";
+            } else if (nextHours) {
                 let prevHours = EVOLUTION_HOURS[currentStageIdx];
                 let hoursInStage = totalHours - prevHours;
                 let requiredHours = nextHours - prevHours;
                 progressPercent = (hoursInStage / requiredHours) * 100;
                 let hoursLeft = Math.max(0, nextHours - totalHours);
-                descText = `⏳ 다음 진화까지 ${hoursLeft}시간 | 현재 ${stageName} (Lv.${currentLevel})`;
-            } else {
-                descText = `🌟 최종 진화 완성! 현재 ${stageName} (Lv.${currentLevel})`;
+                
+                if (currentStageIdx >= 3) {
+                    descText = `🌟 메가진화 달성! 마스터까지 ${hoursLeft}시간 남음`;
+                } else {
+                    descText = `⏳ 다음 진화까지 ${hoursLeft}시간 | 현재 ${stageName} (${totalHours}시간)`;
+                }
             }
         }
 
-        // DOM 업데이트
+        let pokeId = monsterSpec.pokeIds[currentStageIdx];
+        let isShiny = !!displayMonster.isShiny; 
+        let shinyMark = isShiny ? `<span style="color:#fbbf24; text-shadow:0 0 5px rgba(251,191,36,0.8);">✨</span> ` : "";
+        
+        // 기본 Fallback URL 구조 복구 (sprites 경로 추가됨)
+        let imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokeId}.png`;
+
+        // 동적 PokeAPI 호출 적용
+        if (displayMonster.status !== "egg") {
+            try {
+                let pokeData = await PokeAPI.getPokemon(pokeId);
+                if (pokeData && pokeData.sprites) {
+                    let other = pokeData.sprites.other || {};
+                    if (other['official-artwork'] && other['official-artwork'].front_default) {
+                        imageUrl = (isShiny && other['official-artwork'].front_shiny) ? other['official-artwork'].front_shiny : other['official-artwork'].front_default;
+                    } else if (pokeData.sprites.front_default) {
+                        imageUrl = (isShiny && pokeData.sprites.front_shiny) ? pokeData.sprites.front_shiny : pokeData.sprites.front_default; // 메가진화 등 official artwork이 없는 경우에 대한 안전 폴백
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to load image from API, using fallback.");
+            }
+        }
+
         let monsterEmojiEl = document.getElementById('monster-emoji');
         if (monsterEmojiEl) {
+            let imagePart = displayMonster.status === "egg" 
+                ? `<div style="font-size: 50px; text-align: center; line-height: 1;">🥚</div>`
+                : `<img src="${imageUrl}" 
+                        style="
+                            width: 95px;
+                            height: 95px;
+                            object-fit: contain;
+                            transform: scale(1.15);
+                            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
+                            image-rendering: auto;
+                            cursor: pointer;
+                        " 
+                        onclick="event.stopPropagation(); playPokemonCry(${pokeId}, this, ${currentStageIdx >= 3})"
+                        onerror="this.style.display='none'; this.nextElementSibling?.style.display='block';"
+                    >
+                    <div style="display:none; font-size:50px; text-align:center;">🐾</div>`;
+            
             monsterEmojiEl.innerHTML = `
-                <div class="monster-display ${pulseClass}" style="
+                <div class="monster-display ${pulseClass} ${megaClass}" style="
                     background: ${bgGradient};
                     filter: ${effectFilter};
-                    border-radius: 20px;
-                    padding: 40px 30px;
+                    border-radius: 16px;
+                    width: 100%;
+                    height: 100%;
                     display: flex;
-                    flex-direction: column;
                     align-items: center;
                     justify-content: center;
-                    min-height: 280px;
-                    position: relative;
-                    overflow: hidden;
-                    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-                    transition: all 0.6s ease;
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
                 ">
-                    <div style="font-size: 140px; text-align: center; line-height: 1; margin-bottom: 20px; text-shadow: 0 2px 10px rgba(0,0,0,0.3);">
-                        ${emoji}
-                    </div>
-                    <div style="
-                        text-align: center;
-                        background: rgba(255,255,255,0.15);
-                        padding: 15px 25px;
-                        border-radius: 15px;
-                        backdrop-filter: blur(10px);
-                        border: 1px solid rgba(255,255,255,0.3);
-                    ">
-                        <div style="font-size: 18px; font-weight: 900; color: white; text-shadow: 0 2px 5px rgba(0,0,0,0.5); margin-bottom: 5px;">
-                            ${monsterSpec.name}
-                        </div>
-                        <div style="font-size: 14px; color: rgba(255,255,255,0.9); text-shadow: 0 1px 3px rgba(0,0,0,0.5);">
-                            Lv.${currentLevel} • ${stageName}
-                        </div>
-                    </div>
+                    ${imagePart}
                 </div>
             `;
         }
 
         let titleEl = document.getElementById('monster-title');
         if (titleEl) {
-            titleEl.innerHTML = `${monsterSpec.name} - ${stageName} <span style="font-size:11px; color:var(--primary); cursor:pointer;" onclick="SFX.play('pop'); openMonsterBag();">가방 보기 🎒</span>`;
+            let displayName = displayMonster.status === "egg" ? "미확인 알" : 
+                              (displayMonster.nickname ? `${shinyMark}${displayMonster.nickname} <span style="font-size:11px; opacity:0.7;">(${monsterSpec.name})</span>` 
+                                                       : `${shinyMark}${monsterSpec.name}`);
+            titleEl.innerHTML = `<span style="color:var(--primary);">${displayName}</span> <span style="opacity:0.6; font-size:12px;">|</span> ${currentStageIdx >= 3 ? '⭐ 메가진화' : stageName}`;
         }
 
         let progressEl = document.getElementById('monster-progress');
@@ -1291,12 +1567,25 @@
     }
 
     // 🎒 몬스터 가방 UI
-    function openMonsterBag() {
+    async function openMonsterBag(preserveScroll = false) {
         try {
             const content = document.getElementById('monster-bag-content');
             if (!content) {
                 showToast("❌ 가방 UI를 찾을 수 없습니다.");
                 return;
+            }
+            
+            let scrollPos = preserveScroll ? content.scrollTop : 0;
+            if (!preserveScroll) {
+                content.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-muted);">가방을 열고 있습니다... 🎒<br>포켓몬 데이터를 동기화 중...</div>';
+            }
+            
+            let modal = document.getElementById('monster-bag-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            } else {
+                return showToast("❌ 모달 창을 열 수 없습니다.");
             }
             
             let html = '';
@@ -1308,40 +1597,46 @@
 
             html += `<div style="font-weight:800; color:var(--primary); margin-bottom:10px;">🔥 현재 육성 중</div>`;
             if (active.length > 0) {
-                html += active.map(m => generateBagItemHtml(m)).filter(h => h).join('');
+                let activeHtmls = await Promise.all(active.map(m => generateBagItemHtml(m)));
+                html += activeHtmls.filter(h => h).join('');
             } else {
-                html += `<div style="font-size:13px; color:var(--text-muted); padding:10px; text-align:center; background:var(--surface); border-radius:12px; margin-bottom:15px;">육성 중인 몬스터가 없습니다. 알을 부화시켜보세요!</div>`;
+                html += `<div style="font-size:13px; color:var(--text-muted); padding:15px; text-align:center; background:var(--surface); border-radius:12px; margin-bottom:15px;">육성 중인 몬스터가 없습니다. 알을 부화시켜보세요!</div>`;
             }
 
             html += `<div style="font-weight:800; color:var(--text-main); margin-bottom:10px; margin-top:20px;">🥚 부화 대기 (알)</div>`;
             if (eggs.length > 0) {
-                html += eggs.map(m => generateBagItemHtml(m)).filter(h => h).join('');
+                let eggHtmls = await Promise.all(eggs.map(m => generateBagItemHtml(m)));
+                html += eggHtmls.filter(h => h).join('');
             } else {
-                html += `<div style="font-size:13px; color:var(--text-muted); padding:10px; text-align:center; background:var(--surface); border-radius:12px; margin-bottom:15px;">알이 없습니다. (매월 1일에 지급됩니다)</div>`;
+                html += `<div style="font-size:13px; color:var(--text-muted); padding:15px; text-align:center; background:var(--surface); border-radius:12px; margin-bottom:15px;">알이 없습니다. (매월 1일에 지급됩니다)</div>`;
             }
 
-            html += `<div style="font-weight:800; color:var(--text-main); margin-bottom:10px; margin-top:20px;">📖 지난 몬스터 도감 (${retired.length}마리)</div>`;
+            // 속성별 도감 분류 및 진행도 표시
+            let totalUnique = new Set(retired.map(m => m.monsterSubId)).size;
+            let totalAvailable = Object.values(MONSTER_DATA).reduce((acc, t) => acc + t.monsters.length, 0);
+            
+            html += `<div style="font-weight:800; color:var(--text-main); margin-bottom:10px; margin-top:25px; display:flex; justify-content:space-between; align-items:center;">
+                        <span>📖 수집한 몬스터 도감</span>
+                        <span style="font-size:12px; color:var(--primary); background:rgba(0,149,246,0.1); padding:4px 10px; border-radius:12px;">수집률 ${totalUnique}/${totalAvailable} (${Math.round((totalUnique/totalAvailable)*100)}%)</span>
+                     </div>`;
+                     
             if (retired.length > 0) {
-                // 대량 도감은 수동 렌더링으로 성능 개선
-                let bagHtml = '';
-                for (let m of retired) {
-                    let itemHtml = generateBagItemHtml(m);
-                    if (itemHtml) bagHtml += itemHtml;
+                for (let typeKey of Object.keys(MONSTER_DATA)) {
+                    let typeRetired = retired.filter(m => m.type === typeKey);
+                    if (typeRetired.length > 0) {
+                        let tData = MONSTER_DATA[typeKey];
+                        html += `<div style="font-size:12px; font-weight:800; color:white; background:rgba(${tData.color},0.9); padding:5px 12px; border-radius:10px; margin:15px 0 10px 0; display:inline-block; box-shadow:0 2px 5px rgba(${tData.color},0.3);">🧬 ${tData.name} 속성</div>`;
+                        let retiredHtmls = await Promise.all(typeRetired.map(m => generateBagItemHtml(m)));
+                        html += retiredHtmls.filter(h => h).join('');
+                    }
                 }
-                html += bagHtml;
             } else {
-                html += `<div style="font-size:13px; color:var(--text-muted); padding:10px; text-align:center; background:var(--surface); border-radius:12px; margin-bottom:15px;">아직 다 키운 몬스터가 없습니다.</div>`;
+                html += `<div style="font-size:13px; color:var(--text-muted); padding:15px; text-align:center; background:var(--surface); border-radius:12px; margin-bottom:15px;">아직 육성을 완료한 몬스터가 없습니다.</div>`;
             }
 
             content.innerHTML = html;
-            
-            // modal 열기
-            let modal = document.getElementById('monster-bag-modal');
-            if (modal) {
-                modal.style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-            } else {
-                showToast("❌ 모달 창을 열 수 없습니다.");
+            if (preserveScroll) {
+                content.scrollTop = scrollPos;
             }
         } catch(err) {
             console.error('[openMonsterBag] Error:', err);
@@ -1349,7 +1644,7 @@
         }
     }
 
-    function generateBagItemHtml(m) {
+    async function generateBagItemHtml(m) {
         try {
             // 데이터 검증
             if (!m || !m.type || !m.monsterSubId) return "";
@@ -1362,12 +1657,40 @@
             if (!monsterSpec) return "";
             
             let totalHours = Math.floor(calculateActiveMonsterExp(m) / 3600);
-            let currentStageIdx = 0;
+            let maxStageIdx = 0;
             for (let i = EVOLUTION_HOURS.length - 1; i >= 0; i--) {
-                if (totalHours >= EVOLUTION_HOURS[i]) { currentStageIdx = i; break; }
+                if (totalHours >= EVOLUTION_HOURS[i]) { maxStageIdx = i; break; }
             }
-            let emoji = monsterSpec.emojis[currentStageIdx];
-            let currentLevel = (currentStageIdx + 1) * 8;  // 4단계: Lv.8, 16, 24, 32+
+            
+            let currentStageIdx = m.selectedStage !== undefined ? m.selectedStage : maxStageIdx;
+            
+            // 포켓몬 이미지 URL
+            let pokeId = monsterSpec.pokeIds[currentStageIdx]; 
+            let isShiny = !!m.isShiny;
+            let shinyMark = isShiny ? `<span style="color:#fbbf24; text-shadow:0 0 5px rgba(251,191,36,0.8);">✨</span> ` : "";
+            let imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokeId}.png`;
+            
+            if (m.status !== "egg") {
+                try {
+                    let pokeData = await PokeAPI.getPokemon(pokeId);
+                    if (pokeData && pokeData.sprites) {
+                        let other = pokeData.sprites.other || {};
+                        if (other['official-artwork'] && other['official-artwork'].front_default) {
+                            imageUrl = (isShiny && other['official-artwork'].front_shiny) ? other['official-artwork'].front_shiny : other['official-artwork'].front_default;
+                        } else if (pokeData.sprites.front_default) {
+                            imageUrl = (isShiny && pokeData.sprites.front_shiny) ? pokeData.sprites.front_shiny : pokeData.sprites.front_default;
+                        }
+                    }
+                } catch(e) {
+                    console.error("Failed to load bag image from API, using fallback.");
+                }
+            }
+            
+            // 240시간 단계별 레벨
+            let displayName = m.status === "egg" ? "미확인 알" :
+                              (m.nickname ? `${shinyMark}${m.nickname} <span style="font-size:11px; opacity:0.7;">(${monsterSpec.name})</span>` 
+                                          : `${shinyMark}${monsterSpec.name}`);
+            let stageName = m.status === "egg" ? "부화 전" : monsterSpec.stages[currentStageIdx];
             
             let info = ""; let btn = "";
             if (m.status === "egg") {
@@ -1377,9 +1700,9 @@
                 let startObj = new Date(m.startDate + "T00:00:00");
                 let todayObj = new Date(Utils.getLogicalDateString() + "T00:00:00");
                 let daysLeft = MONSTER_LIFESPAN_DAYS - Math.floor((todayObj - startObj) / (1000 * 60 * 60 * 24));
-                let nextHours = EVOLUTION_HOURS[currentStageIdx + 1];
+                let nextHours = totalHours >= 240 ? null : (EVOLUTION_HOURS[currentStageIdx + 1] || 240);
                 let hoursLeft = nextHours ? Math.max(0, nextHours - totalHours) : 0;
-                info = `<span style="font-size:12px; color:var(--text-muted);">Lv.${currentLevel} • 마감 ${daysLeft}일 남음 ${nextHours ? `• 진화까지 ${hoursLeft}h` : '• 최종 진화 완료'}</span>`;
+                info = `<span style="font-size:12px; color:var(--text-muted);">⏳ ${totalHours}시간 • 마감 ${daysLeft}일 남음 ${nextHours ? `• 진화까지 ${hoursLeft}h` : '• 메가/마스터 완료'}</span>`;
                 if(!isDisplay) btn = `<button class="setting-btn" onclick="SFX.play('tap'); setDisplayMonster('${m.id}')">전시하기</button>`;
                 else btn = `<span style="font-size:12px; color:var(--primary); font-weight:bold;">⭐ 전시 중</span>`;
             } else {
@@ -1387,17 +1710,40 @@
                 if(!isDisplay) btn = `<button class="setting-btn" onclick="SFX.play('tap'); setDisplayMonster('${m.id}')">전시하기</button>`;
                 else btn = `<span style="font-size:12px; color:var(--primary); font-weight:bold;">⭐ 전시 중</span>`;
             }
+            
+            let formBtn = maxStageIdx > 0 && m.status !== "egg" ? 
+                `<button class="setting-btn" style="margin-top:6px; background:var(--surface); color:var(--text-main); border:1px solid var(--border-color); padding:4px 8px; font-size:11px;" onclick="SFX.play('tap'); event.stopPropagation(); cycleMonsterForm('${m.id}')">🔄 폼 변경</button>` : '';
     
             let bgStyle = m.status === "retired" ? 
                 `background: linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(255,215,0,0.1) 100%);` : '';
             
+            let imagePart = m.status === "egg" 
+                ? `<div style="font-size:35px; margin-right:15px; width:60px; text-align:center; line-height: 1;">🥚</div>`
+                : `<img src="${imageUrl}" 
+                        style="
+                            width: 60px;
+                            height: 60px;
+                            object-fit: contain;
+                            margin-right: 15px;
+                            transform: scale(1.1);
+                            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2));
+                            cursor: pointer;
+                        " 
+                        onclick="event.stopPropagation(); playPokemonCry(${pokeId}, this, ${currentStageIdx >= 3})"
+                        onerror="this.style.display='none'; this.nextElementSibling?.style.display='block';"
+                    >
+                    <div style="display:none; font-size:35px; margin-right:15px; width:60px; text-align:center; line-height: 1;">🐾</div>`;
+            
             return `<div class="bag-item ${isDisplay ? 'active' : ''}" style="${bgStyle}">
-                <div style="font-size:28px; margin-right:15px; width:32px; text-align:center;">${emoji}</div>
+                ${imagePart}
                 <div style="flex-grow:1; display:flex; flex-direction:column;">
-                    <span style="font-size:13px; font-weight:800; color:var(--text-main); margin-bottom:2px;">${monsterSpec.name} - ${monsterSpec.stages[currentStageIdx]}</span>
+                    <span style="font-size:13px; font-weight:800; color:var(--text-main); margin-bottom:2px;">${displayName} - ${stageName}</span>
                     ${info}
                 </div>
-                <div>${btn}</div>
+                <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                    ${btn}
+                    ${formBtn}
+                </div>
             </div>`;
         } catch(err) {
             console.error('[generateBagItemHtml] Error:', err, m);
@@ -1407,42 +1753,84 @@
         }
     }
 
+    async function cycleMonsterForm(id) {
+        let m = monsterData.inventory.find(x => x.id === id);
+        if (!m || m.status === "egg") return;
+        let totalHours = Math.floor(calculateActiveMonsterExp(m) / 3600);
+        let maxStageIdx = 0;
+        for (let i = EVOLUTION_HOURS.length - 1; i >= 0; i--) {
+            if (totalHours >= EVOLUTION_HOURS[i]) { maxStageIdx = i; break; }
+        }
+        if (maxStageIdx === 0) return showToast("아직 진화하지 않아 모습을 변경할 수 없습니다.");
+
+        let currentStage = m.selectedStage !== undefined ? m.selectedStage : maxStageIdx;
+        let nextStage = currentStage + 1;
+        if (nextStage > maxStageIdx) nextStage = 0;
+        
+        m.selectedStage = nextStage;
+        setL('monsterData', JSON.stringify(monsterData));
+        updateMonsterUI();
+        
+        // 스크롤 점프 방지를 위해 가방 내용만 부드럽게 업데이트
+        let content = document.getElementById('monster-bag-content');
+        let scrollPos = content ? content.scrollTop : 0;
+        
+        await openMonsterBag(true);
+        if (document.getElementById('monster-bag-content')) document.getElementById('monster-bag-content').scrollTop = scrollPos;
+        
+        triggerAutoSync();
+        SFX.play('pop');
+        showToast("✨ 폼(모습)이 변경되었습니다!");
+    }
+
     function selectMonsterTypeForHatch(eggId) {
         let egg = monsterData.inventory.find(x => x.id === eggId);
         if (!egg || egg.status !== "egg") return;
         
         const types = Object.keys(MONSTER_DATA);
-        let html = `<div style="text-align:center; padding:20px;">
-                        <h3 style="margin:0 0 20px 0; color:var(--text-main); font-size:18px;">🥚 몬스터 속성을 선택하세요!</h3>
-                        <p style="color:var(--text-muted); font-size:13px; margin-bottom:20px;">선택한 속성의 몬스터 중 하나가 부화됩니다.</p>
-                        <div class="modal-total-time" style="flex-direction:column; justify-content:flex-start; gap:10px;">`;
+        let html = `<p style="color:var(--text-muted); font-size:13px; margin-bottom:20px; word-break:keep-all;">어떤 속성의 파트너를 키우시겠습니까?<br>선택한 속성의 몬스터 중 하나가 랜덤으로 부화합니다.</p>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">`;
         
         types.forEach(type => {
             const typeData = MONSTER_DATA[type];
-            const monsterCount = Object.keys(typeData.monsters).length;
-            html += `<button class="btn-primary" style="background:linear-gradient(135deg, rgba(${typeData.color}, 0.7) 0%, rgba(${typeData.color}, 1) 100%)); color:white; padding:15px; font-weight:800; cursor:pointer;"
+            html += `<button class="btn-primary" style="background:linear-gradient(135deg, rgba(${typeData.color}, 0.8) 0%, rgba(${typeData.color}, 1) 100%); color:white; padding:12px; font-weight:800; cursor:pointer; font-size:14px;"
                         onclick="SFX.play('success'); hatchEggWithType('${eggId}', '${type}')">
-                        🧬 ${typeData.name} (${monsterCount}종 중 선택)
+                        🧬 ${typeData.name}
                     </button>`;
         });
         
-        html += `</div></div>`;
-        document.getElementById('modal-body').innerHTML = html;
-        document.getElementById('record-modal').style.display = 'block';
+        html += `</div>`;
+        document.getElementById('hatch-modal-body').innerHTML = html;
+        document.getElementById('hatch-modal').style.display = 'flex';
     }
 
     function hatchEggWithType(eggId, selectedType) {
-        if (monsterData.activeId) return showToast("이미 육성 중인 몬스터가 있습니다. (4주 한정)");
+        if (monsterData.activeId) {
+            if (!confirm("⚠️ 현재 파트너 몬스터가 이미 존재합니다!\n\n새로운 알을 부화시키면 기존 몬스터는 현재까지의 상태로 성장을 멈추고 도감에 영구 보존됩니다.\n(도감 관전 및 홈 화면 전시 기능은 계속 유지됩니다.)\n\n정말 새 몬스터로 교체하시겠습니까?")) {
+                return;
+            }
+            
+            // 기존 몬스터 은퇴 처리
+            let active = monsterData.inventory.find(m => m.id === monsterData.activeId);
+            if (active) {
+                active.status = "retired";
+                active.endDate = Utils.getLogicalDateString();
+                active.totalSeconds = calculateActiveMonsterExp(active);
+            }
+        }
         
         let egg = monsterData.inventory.find(x => x.id === eggId);
         if (!egg) return;
         
         // 선택된 타입의 몬스터 중 랜덤 선택
         const typeData = MONSTER_DATA[selectedType];
-        const monsterKeys = Object.keys(typeData.monsters);
-        const randomMonsterSubId = monsterKeys[Math.floor(Math.random() * monsterKeys.length)];
-        const monsterSpec = typeData.monsters.find(m => m.id === randomMonsterSubId);
+        const monsterSpec = typeData.monsters[Math.floor(Math.random() * typeData.monsters.length)];
+        const randomMonsterSubId = monsterSpec.id;
         
+        let nickname = prompt(`✨ [${monsterSpec.name}] 이(가) 곧 부화합니다!\n원하신다면 특별한 이름(별명)을 지어주세요.\n(입력하지 않으면 기본 이름이 사용됩니다)`);
+        
+        egg.nickname = nickname ? nickname.substring(0, 10).trim() : "";
+        egg.isShiny = Math.random() < 0.1; // 10% 확률로 이로치 포켓몬
         egg.type = selectedType;
         egg.monsterSubId = randomMonsterSubId;
         egg.status = "active";
@@ -1453,6 +1841,7 @@
         monsterData.activeId = eggId;
         monsterData.displayId = eggId;
         
+        document.getElementById('hatch-modal').style.display = 'none';
         setL('monsterData', JSON.stringify(monsterData));
         openMonsterBag();
         updateMonsterUI();
@@ -1460,6 +1849,42 @@
         
         SFX.play('success');
         showToast(`✨ ${monsterSpec.name}이 부화했습니다! [${typeData.name} 속성]`);
+    }
+
+    function openPokemonInfoModal() {
+        let totalAvailable = 0;
+        let html = '';
+        for (let type in MONSTER_DATA) {
+            let tData = MONSTER_DATA[type];
+            totalAvailable += tData.monsters.length;
+            html += `<div style="margin-bottom: 20px;">
+                        <div style="font-size: 14px; font-weight: 800; color: white; background: rgba(${tData.color}, 0.9); padding: 6px 12px; border-radius: 8px; margin-bottom: 10px; display: inline-block;">
+                            🧬 ${tData.name} 속성 (${tData.monsters.length}종)
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">`;
+            
+            tData.monsters.forEach(m => {
+                let megaStr = m.megaClass ? ' <span style="font-size:10px; color:var(--text-muted);"><br>(메가/최종폼 포함)</span>' : '';
+                let pokeId = m.pokeIds[0];
+                let imgUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokeId}.png`;
+                
+                html += `<div style="background: var(--surface); border: 1px solid var(--border-color); padding: 10px; border-radius: 12px; display:flex; align-items:center; gap:10px;">
+                            <img src="${imgUrl}" style="width:40px; height:40px; object-fit:contain; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1));" loading="lazy">
+                            <div style="font-size: 13px; font-weight: 700; color: var(--text-main); line-height: 1.3;">
+                                ${m.name}${megaStr}
+                            </div>
+                         </div>`;
+            });
+            html += `</div></div>`;
+        }
+        
+        let header = `<div style="text-align:center; margin-bottom:25px; font-size:15px; font-weight:800; color:var(--text-main); background:var(--surface); padding:15px; border-radius:16px; border:1px solid var(--border-color);">
+                        현재 도감에 총 <span style="color:var(--primary); font-size:20px;">${totalAvailable}</span>종의 포켓몬이 발견되었습니다!
+                      </div>`;
+                      
+        document.getElementById('pokemon-info-content').innerHTML = header + html;
+        document.getElementById('pokemon-info-modal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
     }
 
     function setDisplayMonster(id) {
@@ -1472,8 +1897,7 @@
         const types = Object.keys(MONSTER_DATA);
         const randomType = types[Math.floor(Math.random() * types.length)];
         const typeData = MONSTER_DATA[randomType];
-        const monsterKeys = Object.keys(typeData.monsters);
-        const randomMonster = monsterKeys[Math.floor(Math.random() * monsterKeys.length)];
+        const randomMonster = typeData.monsters[Math.floor(Math.random() * typeData.monsters.length)].id;
         
         let newId = "m_" + Date.now();
         monsterData.inventory.push({ 
@@ -1484,6 +1908,7 @@
             startDate: "", 
             totalSeconds: 0 
         });
+        document.getElementById('settings-modal').style.display = 'none';
         setL('monsterData', JSON.stringify(monsterData)); 
         updateMonsterUI(); 
         triggerAutoSync();
@@ -1503,12 +1928,8 @@
     function labInstantEvolve() {
         if(!monsterData.activeId) return showToast("현재 육성 중인 몬스터가 없습니다.");
         let m = monsterData.inventory.find(x => x.id === monsterData.activeId);
-        let nextIdx = EVOLUTION_HOURS.length - 2;
-        let targetHours = EVOLUTION_HOURS[nextIdx];
-        let currentHours = Math.floor(calculateActiveMonsterExp(m) / 3600);
-        if (currentHours < targetHours) {
-            m.bonusSeconds = (m.bonusSeconds || 0) + ((targetHours - currentHours) * 3600);
-        }
+        m.bonusSeconds = (m.bonusSeconds || 0) + (100 * 3600);
+        document.getElementById('settings-modal').style.display = 'none';
         setL('monsterData', JSON.stringify(monsterData)); 
         updateMonsterUI(); 
         triggerAutoSync();
@@ -1521,11 +1942,11 @@
         const types = Object.keys(MONSTER_DATA);
         const randomType = types[Math.floor(Math.random() * types.length)];
         const typeData = MONSTER_DATA[randomType];
-        const monsterKeys = Object.keys(typeData.monsters);
-        const randomMonster = monsterKeys[Math.floor(Math.random() * monsterKeys.length)];
+        const randomMonster = typeData.monsters[Math.floor(Math.random() * typeData.monsters.length)].id;
         
         m.type = randomType;
         m.monsterSubId = randomMonster;
+        document.getElementById('settings-modal').style.display = 'none';
         setL('monsterData', JSON.stringify(monsterData)); 
         updateMonsterUI(); 
         triggerAutoSync();
@@ -1600,6 +2021,7 @@
             
             setL('monsterData', dataStr);
             
+            document.getElementById('settings-modal').style.display = 'none';
             // 비동기로 UI 업데이트 (렌더링 블로킹 방지)
             setTimeout(() => {
                 openMonsterBag();
@@ -1619,6 +2041,7 @@
         // pokedex_ id 패턴으로 된 항목만 제거
         monsterData.inventory = monsterData.inventory.filter(m => !m.id.startsWith('pokedex_'));
         
+        document.getElementById('settings-modal').style.display = 'none';
         setL('monsterData', JSON.stringify(monsterData));
         openMonsterBag();
         triggerAutoSync();
@@ -2161,7 +2584,16 @@
                 let now = Date.now();
                 if(now - lastStudyTime > 4 * 3600 * 1000) {
                     if(now - lastHungerAlarm > 4 * 3600 * 1000) {
-                        triggerBrowserAlarm(false, "몬스터가 배고파요! 🥺 다시 책상으로 돌아와주세요.");
+                        let active = monsterData.inventory.find(m => m.id === monsterData.activeId);
+                        let msg = "몬스터가 심심해해요! 🥺 다시 책상으로 돌아와주세요.";
+                        if(active && active.status !== "egg") {
+                            let spec = getMonsterSpec(active);
+                            let pokeName = active.nickname || (spec ? spec.name : "포켓몬");
+                            msg = `${pokeName}이(가) 당신을 애타게 찾고 있어요! 🥺`;
+                        } else if(active && active.status === "egg") {
+                            msg = "알이 식어가고 있어요! 다시 공부를 시작해주세요 🥺";
+                        }
+                        triggerBrowserAlarm(false, msg);
                         lastHungerAlarm = now;
                     }
                 }
@@ -2187,11 +2619,23 @@
     function getFunAlarmMessage() {
         let totalSecs = 0; blockSeconds.forEach(s => totalSecs+=s);
         let h = Math.floor(totalSecs / 3600);
-        if (h === 0) return "아직 시작도 안 하셨다구요? 어서 책상으로 가세요! 🔥";
-        if (h < 3) return `현재 ${h}시간째... 웜업 끝! 본격적으로 달려봅시다! 🏃‍♂️`;
-        if (h < 6) return `벌써 ${h}시간 돌파! 순조롭습니다. 페이스를 올려봐요! 🚀`;
-        if (h < 10) return `와, ${h}시간이나! 목표가 눈앞이에요. 조금만 더! 👏`;
-        return `미쳤다... ${h}시간 달성! 오늘 하루를 완벽하게 찢으셨습니다! 👑`;
+        
+        let active = monsterData.inventory.find(m => m.id === monsterData.activeId);
+        if (active && active.status !== "egg") {
+            let spec = getMonsterSpec(active);
+            let pokeName = active.nickname || (spec ? spec.name : "포켓몬");
+            if (h === 0) return `${pokeName}이(가) 당신이 오기만을 애타게 기다리고 있어요! 빨리 책상으로! 🔥`;
+            if (h < 3) return `${pokeName}이(가) 기지개를 켭니다! "달려보자구!" 🏃‍♂️`;
+            if (h < 6) return `${pokeName}이(가) 폭풍 성장 중! 페이스를 올려볼까요? 🚀`;
+            if (h < 10) return `${pokeName}이(가) 진화의 빛을 뿜어냅니다! 목표가 눈앞이에요! ✨`;
+            return `${pokeName}도 당신의 끈기에 감동했습니다! 최고의 파트너! 👑`;
+        } else {
+            if (h === 0) return "알 속의 파트너가 깨어나길 기다리고 있어요! 시작해볼까요? 🔥";
+            if (h < 3) return `현재 ${h}시간째... 웜업 끝! 본격적으로 달려봅시다! 🏃‍♂️`;
+            if (h < 6) return `벌써 ${h}시간 돌파! 순조롭습니다. 페이스를 올려봐요! 🚀`;
+            if (h < 10) return `와, ${h}시간이나! 목표가 눈앞이에요. 조금만 더! 👏`;
+            return `미쳤다... ${h}시간 달성! 오늘 하루를 완벽하게 찢으셨습니다! 👑`;
+        }
     }
 
     function triggerBrowserAlarm(isTest = false, customMsg = null) {
@@ -2282,6 +2726,35 @@
         
         let existingDiary = (dailyRecords[dStr] && dailyRecords[dStr].diary) ? dailyRecords[dStr].diary.trim() : "";
         let existingTodo = (dailyRecords[dStr] && dailyRecords[dStr].todo) ? dailyRecords[dStr].todo.trim() : "";
+
+        // ----- 파트너 몬스터 스냅샷 캡처 (안전 처리) -----
+        let monsterSnapshot = null;
+        try {
+            if (monsterData && monsterData.inventory && monsterData.displayId) {
+                let displayM = monsterData.inventory.find(m => m.id === monsterData.displayId);
+                if (displayM) {
+                    let spec = getMonsterSpec(displayM);
+                    if (spec) {
+                        let mTotalHours = Math.floor(calculateActiveMonsterExp(displayM) / 3600);
+                        let maxStageIdx = 0;
+                        for (let j = EVOLUTION_HOURS.length - 1; j >= 0; j--) {
+                            if (mTotalHours >= EVOLUTION_HOURS[j]) { maxStageIdx = j; break; }
+                        }
+                        let currentStageIdx = displayM.selectedStage !== undefined ? displayM.selectedStage : maxStageIdx;
+                        let stageName = displayM.status === "egg" ? "부화 전" : spec.stages[currentStageIdx];
+                        monsterSnapshot = {
+                            name: spec.name || "포켓몬",
+                            nickname: displayM.nickname || "",
+                            stageName: stageName,
+                            hours: mTotalHours,
+                            pokeId: spec.pokeIds[currentStageIdx] || 1,
+                            isShiny: !!displayM.isShiny
+                        };
+                    }
+                }
+            }
+        } catch(e) { console.error("Monster Snapshot Error:", e); }
+        // ------------------------------------------------
 
         if (has || existingDiary !== "" || existingTodo !== "") { 
             let finalTime = has ? totalStudyString : (dailyRecords[dStr] && dailyRecords[dStr].totalTime ? dailyRecords[dStr].totalTime : "00h 00m");
@@ -2579,6 +3052,28 @@
         document.getElementById('modal-title').innerText = `📅 ${dStr}`;
         let html = `<div class="modal-total-time"><div><span>목표 시간</span><strong class="target-text">${rec.targetTime || "00h 00m"}</strong></div><div><span>집중 시간</span><strong>${rec.totalTime}</strong></div></div>`;
         
+        // --- 몬스터 진행도 스냅샷 UI ---
+        if (rec.monster) {
+            let mName = rec.monster.nickname ? `${rec.monster.nickname} (${rec.monster.name})` : rec.monster.name;
+            if (rec.monster.isShiny) mName = `✨ ` + mName;
+            let mImg = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${rec.monster.pokeId}.png`;
+            html += `
+            <div style="background:var(--surface); border:1px solid var(--border-color); border-radius:16px; padding:15px; margin-bottom:15px; display:flex; align-items:center; gap:15px; box-shadow:0 4px 15px rgba(0,0,0,0.03); cursor:pointer;" onclick="SFX.play('tap')">
+                <div style="width:60px; height:60px; background:var(--bg-sec); border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid var(--primary); flex-shrink:0;">
+                    <img src="${mImg}" style="width:45px; height:45px; object-fit:contain; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2)); transform:scale(1.1);">
+                </div>
+                <div style="display:flex; flex-direction:column; flex-grow:1;">
+                    <span style="font-size:11px; color:var(--primary); font-weight:800; margin-bottom:3px;">📸 이 날의 파트너 스냅샷</span>
+                    <span style="font-size:15px; color:var(--text-main); font-weight:800; letter-spacing:-0.3px;">${mName}</span>
+                    <div style="font-size:12px; color:var(--text-muted); font-weight:600; margin-top:4px; display:flex; align-items:center; gap:6px;">
+                        <span style="background:var(--bg-sec); padding:2px 6px; border-radius:6px; border:1px solid var(--border-color); color:var(--text-main);">${rec.monster.stageName}</span>
+                        <span>누적 <b style="color:var(--primary);">${rec.monster.hours}</b>시간 돌파!</span>
+                    </div>
+                </div>
+            </div>`;
+        }
+        // -------------------------------
+
         html += `
         <div style="display:flex; gap:6px; margin-bottom:15px;">
             <button id="tab-btn-timeline" class="action-pill" style="flex:1; padding:10px 0; background:var(--bg-sec); border-color:var(--text-main);" onclick="switchTab('timeline')">🔥 시간표</button>
@@ -2906,6 +3401,147 @@
         try {
             let res;
             if (currentEditId) {
+                res = await fetchServer("board_edit", { id: currentEditId, title: title, content: content });
+            } else {
+                res = await fetchServer("board_write", { title: title, content: content, author: activeUser, date: timeStr });
+            }
+
+            if (res.success) { showToast(currentEditId ? "수정되었습니다." : "등록되었습니다."); boardCache = []; if(document.getElementById('board-modal').style.display === 'flex') renderBoardList(); } 
+            else { showToast("실패했습니다: " + (res.message || "다시 시도해주세요.")); if(document.getElementById('board-modal').style.display === 'flex'){btn.innerText = "완료"; btn.disabled = false;} }
+        } catch(e) { showToast("네트워크 오류 발생"); if(document.getElementById('board-modal').style.display === 'flex'){btn.innerText = "완료"; btn.disabled = false;} }
+    }
+
+    const THEMES = {
+        spring: { bg: 'linear-gradient(135deg, #fdf2f8, #fbcfe8, #f472b6)', color: '#831843', title: '🌸 벚꽃 흩날리는 몰입', totalColor: '#be185d', r: 219, g: 39, b: 119 },
+        summer: { bg: 'linear-gradient(135deg, #f0fdfa, #ccfbf1, #5eead4)', color: '#134e4a', title: '🌿 싱그러운 여름의 열정', totalColor: '#0f766e', r: 15, g: 118, b: 110 },
+        autumn: { bg: 'linear-gradient(135deg, #fff7ed, #ffedd5, #fdba74)', color: '#431407', title: '🍁 붉게 물든 가을의 질주', totalColor: '#c2410c', r: 234, g: 88, b: 12 },
+        winter: { bg: 'linear-gradient(135deg, #f0f9ff, #e0f2fe, #7dd3fc)', color: '#0c4a6e', title: '❄️ 차가운 겨울의 몰입', totalColor: '#0369a1', r: 2, g: 132, b: 199 }
+    };
+
+    async function generateInstaImage(themeKey) {
+        document.getElementById('theme-modal').style.display = 'none'; document.body.style.overflow = ''; saveAndRefresh();
+        let dStr = Utils.getLogicalDateString(); const rec = dailyRecords[dStr];
+        if (!rec || !rec.details || rec.details.length === 0) return alert("오늘 저장된 공부 기록이 없습니다!");
+
+        document.body.style.overflow = 'hidden'; showLoading(true, "📸 고해상도 렌더링 중...");
+        const card = document.getElementById('insta-card'); const theme = THEMES[themeKey];
+        card.style.background = theme.bg; card.style.color = theme.color;
+        document.getElementById('ic-title').innerText = theme.title; document.getElementById('ic-total').style.color = theme.totalColor;
+        document.getElementById('ic-date').innerText = dStr.replace(/-/g, '.'); document.getElementById('ic-total').innerText = rec.totalTime; document.getElementById('ic-user').innerText = activeUser;
+
+        const grid = document.getElementById('ic-heatmap-grid'); grid.innerHTML = ''; 
+        for (let i = 0; i < 48; i++) {
+            let sec = blockSeconds[i] || 0; let p = Math.min(1, sec / 1800); 
+            let rgbaColor = `rgba(${theme.r}, ${theme.g}, ${theme.b}, ${0.15 + p * 0.85})`;
+            grid.innerHTML += `<div style="width: 72px; height: 72px; border-radius: 14px; background-color: ${rgbaColor}; border: 2px solid rgba(255,255,255,0.4); box-shadow: 0 4px 8px rgba(0,0,0,0.06); flex-shrink: 0;"></div>`;
+        }
+
+        try {
+            await document.fonts.ready;
+            setTimeout(async () => {
+                try {
+                    const canvas = await html2canvas(card, { scale: 2, useCORS: true, logging: false, backgroundColor: null, width: 1080, height: 1500, windowWidth: 1080, windowHeight: 1500 });
+                    document.getElementById('capture-result-img').src = canvas.toDataURL("image/jpeg", 1.0);
+                    showLoading(false); document.body.style.overflow = 'auto'; document.getElementById('capture-modal').style.display = 'flex'; document.body.style.overflow='hidden';
+                } catch(err) { showLoading(false); document.body.style.overflow = ''; showToast("이미지 렌더링에 실패했습니다."); }
+            }, 300);
+        } catch (e) { showLoading(false); document.body.style.overflow = ''; showToast("이미지 생성에 실패했습니다."); }
+    }
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(reg => console.log('SW Ready!')).catch(err => console.log('SW Fail:', err)); });
+    }
+</script>
+</body>
+</html>
+</script>
+</body>
+</html>
+                res = await fetchServer("board_edit", { id: currentEditId, title: title, content: content });
+            } else {
+                res = await fetchServer("board_write", { title: title, content: content, author: activeUser, date: timeStr });
+            }
+
+            if (res.success) { showToast(currentEditId ? "수정되었습니다." : "등록되었습니다."); boardCache = []; if(document.getElementById('board-modal').style.display === 'flex') renderBoardList(); } 
+            else { showToast("실패했습니다: " + (res.message || "다시 시도해주세요.")); if(document.getElementById('board-modal').style.display === 'flex'){btn.innerText = "완료"; btn.disabled = false;} }
+        } catch(e) { showToast("네트워크 오류 발생"); if(document.getElementById('board-modal').style.display === 'flex'){btn.innerText = "완료"; btn.disabled = false;} }
+    }
+
+    const THEMES = {
+        spring: { bg: 'linear-gradient(135deg, #fdf2f8, #fbcfe8, #f472b6)', color: '#831843', title: '🌸 벚꽃 흩날리는 몰입', totalColor: '#be185d', r: 219, g: 39, b: 119 },
+        summer: { bg: 'linear-gradient(135deg, #f0fdfa, #ccfbf1, #5eead4)', color: '#134e4a', title: '🌿 싱그러운 여름의 열정', totalColor: '#0f766e', r: 15, g: 118, b: 110 },
+        autumn: { bg: 'linear-gradient(135deg, #fff7ed, #ffedd5, #fdba74)', color: '#431407', title: '🍁 붉게 물든 가을의 질주', totalColor: '#c2410c', r: 234, g: 88, b: 12 },
+        winter: { bg: 'linear-gradient(135deg, #f0f9ff, #e0f2fe, #7dd3fc)', color: '#0c4a6e', title: '❄️ 차가운 겨울의 몰입', totalColor: '#0369a1', r: 2, g: 132, b: 199 }
+    };
+
+    async function generateInstaImage(themeKey) {
+        document.getElementById('theme-modal').style.display = 'none'; document.body.style.overflow = ''; saveAndRefresh();
+        let dStr = Utils.getLogicalDateString(); const rec = dailyRecords[dStr];
+        if (!rec || !rec.details || rec.details.length === 0) return alert("오늘 저장된 공부 기록이 없습니다!");
+
+        document.body.style.overflow = 'hidden'; showLoading(true, "📸 고해상도 렌더링 중...");
+        const card = document.getElementById('insta-card'); const theme = THEMES[themeKey];
+        card.style.background = theme.bg; card.style.color = theme.color;
+        document.getElementById('ic-title').innerText = theme.title; document.getElementById('ic-total').style.color = theme.totalColor;
+        document.getElementById('ic-date').innerText = dStr.replace(/-/g, '.'); document.getElementById('ic-total').innerText = rec.totalTime; document.getElementById('ic-user').innerText = activeUser;
+
+        const grid = document.getElementById('ic-heatmap-grid'); grid.innerHTML = ''; 
+        for (let i = 0; i < 48; i++) {
+            let sec = blockSeconds[i] || 0; let p = Math.min(1, sec / 1800); 
+            let rgbaColor = `rgba(${theme.r}, ${theme.g}, ${theme.b}, ${0.15 + p * 0.85})`;
+            grid.innerHTML += `<div style="width: 72px; height: 72px; border-radius: 14px; background-color: ${rgbaColor}; border: 2px solid rgba(255,255,255,0.4); box-shadow: 0 4px 8px rgba(0,0,0,0.06); flex-shrink: 0;"></div>`;
+        }
+
+        try {
+            await document.fonts.ready;
+            setTimeout(async () => {
+                try {
+                    const canvas = await html2canvas(card, { scale: 2, useCORS: true, logging: false, backgroundColor: null, width: 1080, height: 1500, windowWidth: 1080, windowHeight: 1500 });
+                    document.getElementById('capture-result-img').src = canvas.toDataURL("image/jpeg", 1.0);
+                    showLoading(false); document.body.style.overflow = 'auto'; document.getElementById('capture-modal').style.display = 'flex'; document.body.style.overflow='hidden';
+                } catch(err) { showLoading(false); document.body.style.overflow = ''; showToast("이미지 렌더링에 실패했습니다."); }
+            }, 300);
+        } catch (e) { showLoading(false); document.body.style.overflow = ''; showToast("이미지 생성에 실패했습니다."); }
+    }
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(reg => console.log('SW Ready!')).catch(err => console.log('SW Fail:', err)); });
+    }
+</script>
+</body>
+</html>
+
+        document.body.style.overflow = 'hidden'; showLoading(true, "📸 고해상도 렌더링 중...");
+        const card = document.getElementById('insta-card'); const theme = THEMES[themeKey];
+        card.style.background = theme.bg; card.style.color = theme.color;
+        document.getElementById('ic-title').innerText = theme.title; document.getElementById('ic-total').style.color = theme.totalColor;
+        document.getElementById('ic-date').innerText = dStr.replace(/-/g, '.'); document.getElementById('ic-total').innerText = rec.totalTime; document.getElementById('ic-user').innerText = activeUser;
+
+        const grid = document.getElementById('ic-heatmap-grid'); grid.innerHTML = ''; 
+        for (let i = 0; i < 48; i++) {
+            let sec = blockSeconds[i] || 0; let p = Math.min(1, sec / 1800); 
+            let rgbaColor = `rgba(${theme.r}, ${theme.g}, ${theme.b}, ${0.15 + p * 0.85})`;
+            grid.innerHTML += `<div style="width: 72px; height: 72px; border-radius: 14px; background-color: ${rgbaColor}; border: 2px solid rgba(255,255,255,0.4); box-shadow: 0 4px 8px rgba(0,0,0,0.06); flex-shrink: 0;"></div>`;
+        }
+
+        try {
+            await document.fonts.ready;
+            setTimeout(async () => {
+                try {
+                    const canvas = await html2canvas(card, { scale: 2, useCORS: true, logging: false, backgroundColor: null, width: 1080, height: 1500, windowWidth: 1080, windowHeight: 1500 });
+                    document.getElementById('capture-result-img').src = canvas.toDataURL("image/jpeg", 1.0);
+                    showLoading(false); document.body.style.overflow = 'auto'; document.getElementById('capture-modal').style.display = 'flex'; document.body.style.overflow='hidden';
+                } catch(err) { showLoading(false); document.body.style.overflow = ''; showToast("이미지 렌더링에 실패했습니다."); }
+            }, 300);
+        } catch (e) { showLoading(false); document.body.style.overflow = ''; showToast("이미지 생성에 실패했습니다."); }
+    }
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(reg => console.log('SW Ready!')).catch(err => console.log('SW Fail:', err)); });
+    }
+</script>
+</body>
+</html>
                 res = await fetchServer("board_edit", { id: currentEditId, title: title, content: content });
             } else {
                 res = await fetchServer("board_write", { title: title, content: content, author: activeUser, date: timeStr });
