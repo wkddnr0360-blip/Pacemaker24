@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="js/legal-monster-system.js"></script>
 
 <style>
     :root { 
@@ -2825,7 +2826,12 @@
     window.onload = async function() {
         try {
             document.querySelectorAll('.app-version-display').forEach(el => el.innerText = APP_VERSION);
-            await DBEngine.init();
+            try {
+                await DBEngine.init();
+            } catch(dbErr) {
+                console.error("IndexedDB 초기화 실패:", dbErr);
+                // IndexedDB 실패해도 계속 진행
+            }
 
             if (activeUser && activePw) {
                 if (activePw.length !== 64) {
