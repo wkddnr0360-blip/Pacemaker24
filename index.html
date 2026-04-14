@@ -194,7 +194,7 @@
     .overlay-base { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(2px); z-index: 2000; cursor: pointer; }
     .modal-box { background: var(--surface); width: 100%; max-width: 450px; border-radius: 20px; max-height: 85vh; display:flex; flex-direction:column; box-shadow: 0 10px 40px rgba(0,0,0,0.2); box-sizing: border-box; cursor: default; overflow: hidden; border: 1px solid var(--border-color); }
     .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--surface); z-index: 20; flex-shrink: 0; }
-    .modal-content-scroll { flex-grow: 1; overflow-y: auto; padding: 20px; background: var(--bg); position: relative; }
+    .modal-content-scroll { flex-grow: 1; overflow-y: auto; padding: 20px; background: var(--bg); position: relative; -webkit-overflow-scrolling: touch; }
     .modal-footer { padding: 16px 20px; background: var(--surface); border-top: 1px solid var(--border-color); z-index: 20; flex-shrink: 0; }
 
     #loading-overlay { background: rgba(0,0,0,0.7); flex-direction: column; gap: 10px; color: white; font-weight: bold; z-index: 9999; font-size: 16px; cursor: default; backdrop-filter: none; }
@@ -228,6 +228,7 @@
         max-height: 280px; overflow-y: auto; font-size: 15px; color: var(--text-main); 
         line-height: 1.8; letter-spacing: -0.3px; word-break: break-word; padding: 10px;
         background: var(--bg-sec); border-radius: 12px; border: 1px solid var(--border-color);
+        -webkit-overflow-scrolling: touch;
     }
 
     #insta-card-container { position: fixed; top: -9999px; left: -9999px; width: 1080px; height: 1500px; opacity: 0; pointer-events: none; z-index: -9999; }
@@ -430,9 +431,9 @@
 
 <div id="stopwatch-popup">
     <div style="width: 100%;">
-        <div style="display: flex; align-items: center; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
             <button id="toggle-timer-btn" class="timer-btn" onclick="toggleTimer()">▶</button>
-            <div style="display: flex; flex-direction: column;">
+            <div style="display: flex; flex-direction: column; flex-grow:1;">
                 <div style="font-size:11px; color:var(--text-muted); font-weight:800; margin-bottom:2px; display:flex; align-items:center;">
                     <span id="popup-dday" style="background:var(--primary); color:white; padding:2px 6px; border-radius:10px; margin-right:6px; font-size:10px; display:none;"></span>
                     🎯 목표 <span id="popup-target-time" style="margin-left:4px; color:var(--insta-purple);">00h 00m</span>
@@ -442,6 +443,20 @@
                     <span id="sync-indicator" style="font-size:11px; color:var(--text-muted); font-weight:bold; margin-left:8px;"></span>
                 </div>
                 <span id="total-study-display" style="font-size:28px; color:var(--primary); font-variant-numeric:tabular-nums; font-weight:900; line-height:1; margin-top:2px;">00:00:00</span>
+            </div>
+            <!-- 몬스터 미니 대시보드 (스톱워치용) -->
+            <div id="sw-monster-ui" style="display:flex; flex-direction:column; align-items:center; justify-content:center; width:46px; flex-shrink:0; cursor:pointer;" onclick="SFX.play('pop'); switchView('dashboard'); setTimeout(()=>openMonsterBag(),300);">
+                <div style="position:relative; width:38px; height:38px;">
+                    <svg width="38" height="38" viewBox="0 0 38 38" style="transform:rotate(-90deg);">
+                        <circle cx="19" cy="19" r="16" fill="none" stroke="var(--border-color)" stroke-width="3"></circle>
+                        <circle id="sw-monster-progress-circle" cx="19" cy="19" r="16" fill="none" stroke="var(--target)" stroke-width="3" stroke-dasharray="100.53" stroke-dashoffset="100.53" stroke-linecap="round" style="transition: stroke-dashoffset 1s ease-out;"></circle>
+                    </svg>
+                    <div id="sw-monster-img-container" style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+                        <img id="sw-monster-img" src="" style="width:24px; height:24px; object-fit:contain; filter:drop-shadow(0 1px 2px rgba(0,0,0,0.2));" onerror="this.style.display='none'">
+                        <div id="sw-monster-egg" style="display:none; font-size:18px;">🥚</div>
+                    </div>
+                </div>
+                <div id="sw-monster-time-left" style="font-size:9px; font-weight:800; color:var(--text-muted); margin-top:3px; white-space:nowrap; text-align:center; letter-spacing:-0.5px;">--h 남음</div>
             </div>
         </div>
         <div class="progress-container">
@@ -744,7 +759,7 @@
             <h3 id="board-header-title" style="margin:0; font-size:16px; font-weight:800; color:var(--text-main);">📢 스터디 라운지</h3>
             <button class="modal-close-btn" onclick="SFX.play('tap'); closeBoardModal()">✕</button>
         </div>
-        <div id="board-content-area" style="flex-grow:1; display:flex; flex-direction:column; overflow:hidden;"></div>
+        <div id="board-content-area" style="flex-grow:1; display:flex; flex-direction:column; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling: touch;"></div>
     </div>
 </div>
 
@@ -1647,6 +1662,43 @@
         if (descEl) {
             descEl.innerText = descText;
         }
+
+        // 스톱워치 미니 몬스터 UI 갱신
+        let swMonsterImg = document.getElementById('sw-monster-img');
+        let swMonsterEgg = document.getElementById('sw-monster-egg');
+        let swProgressCircle = document.getElementById('sw-monster-progress-circle');
+        let swTimeLeft = document.getElementById('sw-monster-time-left');
+
+        if (swMonsterImg && swProgressCircle && swTimeLeft) {
+            if (displayMonster.status === "egg") {
+                swMonsterImg.style.display = 'none';
+                swMonsterEgg.style.display = 'block';
+                swProgressCircle.style.strokeDashoffset = 100.53;
+                swTimeLeft.innerText = "부화 대기";
+            } else if (displayMonster.status === "retired" || isMax) {
+                swMonsterEgg.style.display = 'none';
+                swMonsterImg.style.display = 'block';
+                swMonsterImg.src = imageUrl;
+                swProgressCircle.style.strokeDashoffset = 0;
+                swTimeLeft.innerText = isMax ? "MAX" : "도감 완료";
+            } else {
+                swMonsterEgg.style.display = 'none';
+                swMonsterImg.style.display = 'block';
+                swMonsterImg.src = imageUrl;
+                
+                let prevSecs = evoHours[maxStageIdx] * 3600;
+                let nextSecs = (evoHours[maxStageIdx + 1] || maxHours) * 3600;
+                let secsInStage = totalSeconds - prevSecs;
+                let requiredSecs = nextSecs - prevSecs;
+                let stageProgress = requiredSecs > 0 ? Math.min(1, Math.max(0, secsInStage / requiredSecs)) : 1;
+                
+                let offset = 100.53 - (stageProgress * 100.53);
+                swProgressCircle.style.strokeDashoffset = offset;
+                
+                let hoursLeft = Math.max(0, (nextSecs/3600) - totalHours);
+                swTimeLeft.innerText = `${hoursLeft}h 남음`;
+            }
+        }
     }
 
     function filterAndRenderBag(preserveScroll = false) {
@@ -1814,23 +1866,23 @@
             
             let info = ""; let btn = "";
             if (m.status === "egg") {
-                info = `<span style="font-size:12px; color:var(--text-muted);">🥚 부화 대기</span>`;
-                btn = `<button class="setting-btn" style="background:var(--success);" onclick="SFX.play('success'); selectMonsterTypeForHatch('${m.id}')">속성 선택</button>`;
+                info = `<span style="font-size:12px; color:var(--text-muted); word-break:keep-all;">🥚 부화 대기</span>`;
+                btn = `<button class="setting-btn" style="background:var(--success); padding:6px 12px; font-size:11px; white-space:nowrap; flex-shrink:0;" onclick="SFX.play('success'); selectMonsterTypeForHatch('${m.id}')">속성 선택</button>`;
             } else if (m.status === "active") {
                 let nextHours = totalHours >= maxHours ? null : (evoHours[maxStageIdx + 1] || maxHours);
                 let hoursLeft = nextHours ? Math.max(0, nextHours - totalHours) : 0;
                 let timeInfoText = maxStageIdx >= 3 ? `• 졸업까지 ${hoursLeft}h` : `• 진화까지 ${hoursLeft}h`;
-                info = `<span style="font-size:12px; color:var(--text-muted);">⏳ 진행도: ${totalHours} / ${maxHours} 시간 ${nextHours ? timeInfoText : ''}</span>`;
-                if(!isDisplay) btn = `<button class="setting-btn" style="${layout==='grid'?'padding:4px 6px; font-size:10px; border-radius:6px;':''}" onclick="SFX.play('tap'); setDisplayMonster('${m.id}')">전시하기</button>`;
-                else btn = `<span style="font-size:12px; color:var(--primary); font-weight:bold;">⭐ 전시 중</span>`;
+                info = `<span style="font-size:11px; color:var(--text-muted); word-break:keep-all; display:block; line-height:1.4;">⏳ 진행도: ${totalHours}/${maxHours}h<br><span style="opacity:0.8;">(${timeInfoText})</span></span>`;
+                if(!isDisplay) btn = `<button class="setting-btn" style="padding:6px 12px; font-size:11px; white-space:nowrap; flex-shrink:0; ${layout==='grid'?'border-radius:6px;':''}" onclick="SFX.play('tap'); setDisplayMonster('${m.id}')">전시하기</button>`;
+                else btn = `<span style="font-size:12px; color:var(--primary); font-weight:bold; white-space:nowrap; padding:6px 0; display:block; text-align:center;">⭐ 전시 중</span>`;
             } else {
-                info = `<span style="font-size:11px; color:var(--text-muted);">📖 도감 (${m.startDate.slice(2).replace(/-/g,'.')} ~ ${m.endDate?.slice(2).replace(/-/g,'.') || '완료'})</span>`;
-                if(!isDisplay) btn = `<button class="setting-btn" style="${layout==='grid'?'padding:4px 6px; font-size:10px; border-radius:6px;':''}" onclick="SFX.play('tap'); setDisplayMonster('${m.id}')">전시하기</button>`;
-                else btn = `<span style="font-size:12px; color:var(--primary); font-weight:bold;">⭐ 전시 중</span>`;
+                info = `<span style="font-size:11px; color:var(--text-muted); word-break:keep-all; display:block; line-height:1.4;">📖 도감 등록 완료<br><span style="opacity:0.8;">(${m.startDate.slice(2).replace(/-/g,'.')} ~ ${m.endDate?.slice(2).replace(/-/g,'.') || '완료'})</span></span>`;
+                if(!isDisplay) btn = `<button class="setting-btn" style="padding:6px 12px; font-size:11px; white-space:nowrap; flex-shrink:0; ${layout==='grid'?'border-radius:6px;':''}" onclick="SFX.play('tap'); setDisplayMonster('${m.id}')">전시하기</button>`;
+                else btn = `<span style="font-size:12px; color:var(--primary); font-weight:bold; white-space:nowrap; padding:6px 0; display:block; text-align:center;">⭐ 전시 중</span>`;
             }
             
             let formBtn = maxStageIdx > 0 && m.status !== "egg" ? 
-                `<button class="setting-btn" style="${layout==='grid'?'padding:4px 6px; font-size:10px; border-radius:6px;':'margin-top:6px; padding:4px 8px; font-size:11px;'} background:var(--surface); color:var(--text-main); border:1px solid var(--border-color);" onclick="SFX.play('tap'); event.stopPropagation(); cycleMonsterForm('${m.id}')">🔄 폼</button>` : '';
+                `<button class="setting-btn" style="padding:5px 12px; font-size:11px; white-space:nowrap; background:var(--surface); color:var(--text-main); border:1px solid var(--border-color); flex-shrink:0; ${layout==='grid'?'border-radius:6px; margin-top:4px;':'margin-top:6px;'}" onclick="SFX.play('tap'); event.stopPropagation(); cycleMonsterForm('${m.id}')">🔄 폼</button>` : '';
     
             let bgStyle = m.status === "retired" ? 
                 `background: linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(255,215,0,0.1) 100%);` : '';
@@ -1857,21 +1909,21 @@
             if (layout === 'grid') {
                 return `<div class="bag-item-grid ${isDisplay ? 'active' : ''}" style="${bgStyle}">
                     ${imagePart}
-                    <div style="font-size: 13px; font-weight: 800; color: var(--text-main); margin-bottom: 3px; z-index: 5;">${displayName}</div>
-                    <div style="font-size: 10.5px; font-weight: 700; color: var(--text-muted); background: var(--bg); border: 1px solid var(--border-color); padding: 3px 8px; border-radius: 8px; z-index: 5;">${stageName}</div>
-                    <div style="display: flex; gap: 4px; margin-top: 8px; z-index: 10; width: 100%; justify-content: center;">
-                        ${btn.replace('border-radius:6px;', 'border-radius:6px; flex:1;')}
-                        ${formBtn.replace('border-radius:6px;', 'border-radius:6px; flex:1;')}
+                    <div style="font-size: 12px; font-weight: 800; color: var(--text-main); margin-bottom: 3px; z-index: 5; text-align:center; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${displayName}</div>
+                    <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); background: var(--bg); border: 1px solid var(--border-color); padding: 3px 6px; border-radius: 8px; z-index: 5; margin-bottom:6px; text-align:center; white-space:nowrap;">${stageName}</div>
+                    <div style="display: flex; gap: 4px; margin-top: auto; z-index: 10; width: 100%; justify-content: center; flex-direction:column;">
+                        ${btn.replace('border-radius:6px;', 'border-radius:6px; width:100%; padding-left:0; padding-right:0;')}
+                        ${formBtn.replace('border-radius:6px;', 'border-radius:6px; width:100%; padding-left:0; padding-right:0;')}
                     </div>
                 </div>`;
             } else {
                 return `<div class="bag-item ${isDisplay ? 'active' : ''}" style="${bgStyle}">
                 ${imagePart}
-                <div style="flex-grow:1; display:flex; flex-direction:column;">
-                    <span style="font-size:13px; font-weight:800; color:var(--text-main); margin-bottom:2px;">${displayName} - ${stageName}</span>
+                <div style="flex-grow:1; display:flex; flex-direction:column; min-width:0; padding-right:10px;">
+                    <span style="font-size:13px; font-weight:800; color:var(--text-main); margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${displayName} - <span style="font-weight:700; font-size:11px;">${stageName}</span></span>
                     ${info}
                 </div>
-                <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                <div style="display:flex; flex-direction:column; align-items:stretch; flex-shrink:0; min-width:70px;">
                     ${btn}
                     ${formBtn}
                 </div>
@@ -1922,6 +1974,10 @@
         m.selectedStage = nextStage;
         setL('monsterData', JSON.stringify(monsterData));
         updateMonsterUI();
+        
+        let newPokeId = monsterSpec.pokeIds[nextStage];
+        let pureName = m.nickname ? m.nickname : monsterSpec.name;
+        playPokemonCry(newPokeId, null, nextStage >= 3, pureName);
         
         // 스크롤 점프 방지를 위해 가방 내용만 부드럽게 업데이트
         let content = document.getElementById('monster-bag-content');
