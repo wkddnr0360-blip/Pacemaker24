@@ -806,43 +806,56 @@
     // 🐉 몬스터 메이트 가방 시스템 코어 (안전 마이그레이션 포함)
     // ==========================================
     function initMonster() {
-        let savedData = getL('monsterData');
-        if (savedData) {
-            try { monsterData = JSON.parse(savedData); } catch(e) {}
-        } else {
-            // 과거 시스템 데이터 안전 마이그레이션
-            let oldState = getL('monsterState');
-            let id = "m_" + Date.now();
-            let month = Utils.getLogicalDateString().substring(0, 7);
-            
-            if (oldState) {
-                let parsed = JSON.parse(oldState);
-                monsterData = { lastEggMonth: parsed.month || month, activeId: id, displayId: id,
-                    inventory: [{ id: id, type: parsed.type || "fire", status: "active", startDate: Utils.getLogicalDateString(), totalSeconds: 0 }]
-                };
+        try {
+            let savedData = getL('monsterData');
+            if (savedData) {
+                try { monsterData = JSON.parse(savedData); } catch(e) {}
             } else {
+                // 과거 시스템 데이터 안전 마이그레이션
+                let oldState = getL('monsterState');
+                let id = "m_" + Date.now();
+                let month = Utils.getLogicalDateString().substring(0, 7);
+                
+                if (oldState) {
+                    let parsed = JSON.parse(oldState);
+                    monsterData = { lastEggMonth: parsed.month || month, activeId: id, displayId: id,
+                        inventory: [{ id: id, type: parsed.type || "fire", status: "active", startDate: Utils.getLogicalDateString(), totalSeconds: 0 }]
+                    };
+                } else {
+                    const types = Object.keys(MONSTER_DATA);
+                    const randomType = types[Math.floor(Math.random() * types.length)];
+                    monsterData = { lastEggMonth: month, activeId: null, displayId: id,
+                        inventory: [{ id: id, type: randomType, status: "egg", startDate: "", totalSeconds: 0 }]
+                    };
+                }
+            }
+            
+            // 매월 1알 지급
+            let currentMonth = Utils.getLogicalDateString().substring(0, 7);
+            if (monsterData.lastEggMonth !== currentMonth) {
                 const types = Object.keys(MONSTER_DATA);
                 const randomType = types[Math.floor(Math.random() * types.length)];
-                monsterData = { lastEggMonth: month, activeId: null, displayId: id,
-                    inventory: [{ id: id, type: randomType, status: "egg", startDate: "", totalSeconds: 0 }]
-                };
+                let newId = "m_" + Date.now();
+                monsterData.inventory.push({ id: newId, type: randomType, status: "egg", startDate: "", totalSeconds: 0 });
+                monsterData.lastEggMonth = currentMonth;
+                showToast("🥚 새로운 달! 가방에 새 알이 배달되었습니다.");
             }
+            
+            checkMonsterLifespan();
+            updateMonsterUI();
+            setL('monsterData', JSON.stringify(monsterData));
+        } catch(err) {
+            console.error("✗ 몬스터 초기화 오류:", err);
+            // Fallback: 기본 몬스터로 초기화
+            let id = "m_" + Date.now();
+            monsterData = { 
+                lastEggMonth: Utils.getLogicalDateString().substring(0, 7), 
+                activeId: null, 
+                displayId: id,
+                inventory: [{ id: id, type: "fire", status: "egg", startDate: "", totalSeconds: 0 }]
+            };
+            setL('monsterData', JSON.stringify(monsterData));
         }
-        
-        // 매월 1알 지급
-        let currentMonth = Utils.getLogicalDateString().substring(0, 7);
-        if (monsterData.lastEggMonth !== currentMonth) {
-            const types = Object.keys(MONSTER_DATA);
-            const randomType = types[Math.floor(Math.random() * types.length)];
-            let newId = "m_" + Date.now();
-            monsterData.inventory.push({ id: newId, type: randomType, status: "egg", startDate: "", totalSeconds: 0 });
-            monsterData.lastEggMonth = currentMonth;
-            showToast("🥚 새로운 달! 가방에 새 알이 배달되었습니다.");
-        }
-        
-        checkMonsterLifespan();
-        updateMonsterUI();
-        setL('monsterData', JSON.stringify(monsterData));
     }
 
     // 육성 기간 체크 (28일) 및 동결
@@ -1201,7 +1214,7 @@
         backup['lastUpdateTime'] = getL('lastUpdateTime') || Date.now().toString(); 
         backup['ddayConfig'] = getL('ddayConfig') || "";
         ['blockSeconds', 'targetBlocks', 'backupSeconds', 'dailyRecords', 'alarmedBlocks', 'settings', 'lastLogicalDate', 'customAlarms', 'monsterData'].forEach(k => { backup[k] = getL(k) || ""; });
-        for (let i=0; i<48; i++) { let n = getL(`note_${i}`); backup[`note_${i}`] = (!n || n === "null" || n trim() === "") ? "" : n; }
+        for (let i=0; i<48; i++) { let n = getL(`note_${i}`); backup[`note_${i}`] = (!n || n === "null" || n.trim() === "") ? "" : n; }
         return backup;
     }
 
@@ -1270,55 +1283,61 @@
     }
 
     function applyCloudData(parsedData, silent, skipSync = false) {
-        if (!parsedData || typeof parsedData !== 'object' || Object.keys(parsedData).length === 0 || !parsedData.lastUpdateTime) {
-            if(!silent) showToast("❌ 서버 통신 오류. 안전을 위해 오프라인 기록을 유지합니다.");
-            return;
-        }
-
-        let cloudToken = parsedData.deviceToken;
-        if (cloudToken && cloudToken !== myDeviceToken) {
-            if (isRunning) {
-                stopStopwatch();
-                if (!silent) showToast("🚨 다른 기기에서 접속이 감지되어 현재 기기의 타이머를 정지합니다.", true);
-            } else if (!silent) {
-                showToast("🔄 다른 기기에서 기록된 데이터를 불러왔습니다.");
+        try {
+            if (!parsedData || typeof parsedData !== 'object' || Object.keys(parsedData).length === 0 || !parsedData.lastUpdateTime) {
+                if(!silent) showToast("❌ 서버 통신 오류. 안전을 위해 오프라인 기록을 유지합니다.");
+                return;
             }
-        }
 
-        const currentLogicalDate = Utils.getLogicalDateString();
-        const cloudLogicalDate = parsedData.lastLogicalDate || currentLogicalDate;
-
-        saveUserLocalData(parsedData); 
-        initLocalState(); 
-
-        let batonTaken = false;
-        if (parsedData.runningState) {
-            const rState = JSON.parse(parsedData.runningState);
-            if (rState.isRunning && rState.startTime > 0 && (!cloudToken || cloudToken === myDeviceToken)) {
-                if (!isRunning) { 
-                    const passedSecs = Math.floor((Date.now() - rState.startTime) / 1000);
-                    if (passedSecs > 0 && passedSecs < 57600) { distributeTime(rState.startTime, passedSecs); batonTaken = true; startStopwatch(); }
-                    else { stopStopwatch(); }
+            let cloudToken = parsedData.deviceToken;
+            if (cloudToken && cloudToken !== myDeviceToken) {
+                if (isRunning) {
+                    stopStopwatch();
+                    if (!silent) showToast("🚨 다른 기기에서 접속이 감지되어 현재 기기의 타이머를 정지합니다.", true);
+                } else if (!silent) {
+                    showToast("🔄 다른 기기에서 기록된 데이터를 불러왔습니다.");
                 }
-            } else if (!rState.isRunning || (cloudToken && cloudToken !== myDeviceToken)) { 
-                if (isRunning) stopStopwatch(); 
             }
+
+            const currentLogicalDate = Utils.getLogicalDateString();
+            const cloudLogicalDate = parsedData.lastLogicalDate || currentLogicalDate;
+
+            saveUserLocalData(parsedData); 
+            initLocalState(); 
+
+            let batonTaken = false;
+            if (parsedData.runningState) {
+                const rState = JSON.parse(parsedData.runningState);
+                if (rState.isRunning && rState.startTime > 0 && (!cloudToken || cloudToken === myDeviceToken)) {
+                    if (!isRunning) { 
+                        const passedSecs = Math.floor((Date.now() - rState.startTime) / 1000);
+                        if (passedSecs > 0 && passedSecs < 57600) { distributeTime(rState.startTime, passedSecs); batonTaken = true; startStopwatch(); }
+                        else { stopStopwatch(); }
+                    }
+                } else if (!rState.isRunning || (cloudToken && cloudToken !== myDeviceToken)) { 
+                    if (isRunning) stopStopwatch(); 
+                }
+            }
+
+            if (cloudLogicalDate !== currentLogicalDate) {
+                syncTodayRecord(cloudLogicalDate); 
+                blockSeconds = Array(48).fill(0); targetBlocks = Array(48).fill(false); backupSeconds = Array(48).fill(0); alarmedBlocks = Array(48).fill(false); 
+                for(let i=0; i<48; i++) { removeL(`note_${i}`); if(domCache.notes[i]) domCache.notes[i].value = ""; }
+                setL('targetBlocks', JSON.stringify(targetBlocks)); setL('backupSeconds', JSON.stringify(backupSeconds)); setL('alarmedBlocks', JSON.stringify(alarmedBlocks));
+                setL('blockSeconds', JSON.stringify(blockSeconds)); setL('lastLogicalDate', currentLogicalDate); 
+                if (isRunning) stopStopwatch();
+            } else { setL('lastLogicalDate', currentLogicalDate); }
+
+            initMonster(); // 몬스터 데이터 갱신
+            updateUI(true); syncTodayRecord(); renderCalendar(); updateHighlight(); updateDashboardTodoAlert(); updateDdayUI();
+            
+            if (batonTaken && !skipSync) { triggerAutoSync(); if(!silent) showToast("🔥 타임워프! 바통을 이어받았습니다."); } 
+            else if(!silent && !skipSync) { SFX.play('success'); showToast("✅ 동기화 완료!"); }
+        } catch(err) {
+            console.error("✗ 데이터 동기화 오류:", err);
+            if(!silent) showToast("⚠️ 데이터 동기화 중 일부 오류가 발생했습니다.");
+            try { initLocalState(); } catch(e) { console.error("✗ 로컬 초기화 실패:", e); }
         }
-
-        if (cloudLogicalDate !== currentLogicalDate) {
-            syncTodayRecord(cloudLogicalDate); 
-            blockSeconds = Array(48).fill(0); targetBlocks = Array(48).fill(false); backupSeconds = Array(48).fill(0); alarmedBlocks = Array(48).fill(false); 
-            for(let i=0; i<48; i++) { removeL(`note_${i}`); if(domCache.notes[i]) domCache.notes[i].value = ""; }
-            setL('targetBlocks', JSON.stringify(targetBlocks)); setL('backupSeconds', JSON.stringify(backupSeconds)); setL('alarmedBlocks', JSON.stringify(alarmedBlocks));
-            setL('blockSeconds', JSON.stringify(blockSeconds)); setL('lastLogicalDate', currentLogicalDate); 
-            if (isRunning) stopStopwatch();
-        } else { setL('lastLogicalDate', currentLogicalDate); }
-
-        initMonster(); // 몬스터 데이터 갱신
-        updateUI(true); syncTodayRecord(); renderCalendar(); updateHighlight(); updateDashboardTodoAlert(); updateDdayUI();
-        
-        if (batonTaken && !skipSync) { triggerAutoSync(); if(!silent) showToast("🔥 타임워프! 바통을 이어받았습니다."); } 
-        else if(!silent && !skipSync) { SFX.play('success'); showToast("✅ 동기화 완료!"); }
     }
 
     async function loadFromCloud(silent = false) {
@@ -1447,37 +1466,45 @@
     });
 
     window.onload = async function() {
-        document.querySelectorAll('.app-version-display').forEach(el => el.innerText = APP_VERSION);
-        await DBEngine.init();
+        try {
+            document.querySelectorAll('.app-version-display').forEach(el => el.innerText = APP_VERSION);
+            await DBEngine.init();
 
-        if (activeUser && activePw) {
-            if (activePw.length !== 64) {
-                showLoading(true, "보안 시스템 업그레이드 중... 🛡️");
-                activePw = await hashSHA256(activePw); localStorage.setItem('activePw', activePw); showLoading(false);
-            }
-            let dbData = await DBEngine.getAll(activeUser + '_');
-            dbData.forEach(item => memCache[item.id] = item.value);
+            if (activeUser && activePw) {
+                if (activePw.length !== 64) {
+                    showLoading(true, "보안 시스템 업그레이드 중... 🛡️");
+                    activePw = await hashSHA256(activePw); localStorage.setItem('activePw', activePw); showLoading(false);
+                }
+                let dbData = await DBEngine.getAll(activeUser + '_');
+                dbData.forEach(item => memCache[item.id] = item.value);
 
-            document.getElementById('login-view').style.display = 'none'; showLoading(true, "데이터 불러오는 중... 🛰️");
-            try {
-                const res = await loadAllDataFromServer();
-                showLoading(false);
-                const finalData = safeDataParse(res.data);
+                document.getElementById('login-view').style.display = 'none'; showLoading(true, "데이터 불러오는 중... 🛰️");
+                try {
+                    const res = await loadAllDataFromServer();
+                    showLoading(false);
+                    const finalData = safeDataParse(res.data);
 
-                if(res.success && finalData && Object.keys(finalData).length > 0) {
-                    applyCloudData(finalData, true); startDashboard();
-                } else if (!res.success && dbData.length > 0) {
-                    showToast("🌐 서버 지연. 로컬 데이터로 접속합니다.");
-                    initLocalState(); startDashboard();
-                } else if (!res.success && dbData.length === 0) {
-                    document.getElementById('login-view').style.display = 'flex';
-                    document.getElementById('login-status').innerText = "통신 실패. 네트워크 연결 후 로그인해주세요.";
-                    activeUser = null; activePw = null;
-                } else { initLocalState(); startDashboard(); }
-            } catch(err) {
-                showLoading(false); initLocalState(); startDashboard();
-            }
-        } else { document.getElementById('loading-overlay').style.display = 'none'; document.getElementById('login-view').style.display = 'flex'; }
+                    if(res.success && finalData && Object.keys(finalData).length > 0) {
+                        applyCloudData(finalData, true); startDashboard();
+                    } else if (!res.success && dbData.length > 0) {
+                        showToast("🌐 서버 지연. 로컬 데이터로 접속합니다.");
+                        initLocalState(); startDashboard();
+                    } else if (!res.success && dbData.length === 0) {
+                        document.getElementById('login-view').style.display = 'flex';
+                        document.getElementById('login-status').innerText = "통신 실패. 네트워크 연결 후 로그인해주세요.";
+                        activeUser = null; activePw = null;
+                    } else { initLocalState(); startDashboard(); }
+                } catch(err) {
+                    console.error("✗ 초기화 오류:", err);
+                    showLoading(false); initLocalState(); startDashboard();
+                }
+            } else { document.getElementById('loading-overlay').style.display = 'none'; document.getElementById('login-view').style.display = 'flex'; }
+        } catch(err) {
+            console.error("✗ 시스템 오류:", err);
+            showLoading(false);
+            document.getElementById('login-view').style.display = 'flex';
+            document.getElementById('login-status').innerText = "❌ 시스템 오류가 발생했습니다.";
+        }
     }
 
     window.addEventListener('online', () => { if (activeUser) { showToast("🌐 네트워크가 복구되었습니다."); triggerAutoSync(true); } });
