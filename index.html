@@ -20,7 +20,7 @@
 
 <style>
     :root { 
-        --primary: #0095f6; /* 인스타 블루 */
+        --primary: #0095f6; /* [패치 노트] 인스타 블루 (달린 시간 컨셉) */
         --primary-dark: #1877f2; 
         --bg: #fafafa; 
         --surface: #ffffff; 
@@ -31,6 +31,7 @@
         --target: #8b5cf6; 
         --border-color: #dbdbdb; 
         --bg-sec: #f9fafb;
+        --insta-purple: #c13584; /* [패치 노트] 인스타 보라 (목표 시간 컨셉) */
     }
 
     /* 🌙 다크모드 완벽 지원 */
@@ -43,6 +44,7 @@
             --text-muted: #a3a3a3;
             --border-color: #262626;
             --bg-sec: #1a1a1a;
+            --insta-purple: #d946ef; 
         }
         body { background-color: var(--bg); color: var(--text-main); }
         .input-field, .dash-today-summary, .guide-box, .tl-content, .cb-icon-box { background: var(--bg-sec) !important; color: var(--text-main) !important; border-color: var(--border-color) !important; }
@@ -87,7 +89,7 @@
     
     .dash-card { background: var(--surface); padding: 40px 30px; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); width: 100%; max-width: 380px; text-align: center; position: relative; border: 1px solid var(--border-color); }
     .dash-today-summary { background: var(--bg-sec); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; margin-bottom: 30px; display: flex; flex-direction: column; gap: 10px; }
-    .dash-today-summary strong { font-size: 34px; color: var(--text-main); font-variant-numeric: tabular-nums; font-weight: 900; letter-spacing: -1px; }
+    .dash-today-summary strong { font-size: 34px; font-variant-numeric: tabular-nums; font-weight: 900; letter-spacing: -1px; }
     
     .dash-btn { width: 100%; padding: 18px; border-radius: 16px; font-size: 15px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; transition: transform 0.2s; touch-action: manipulation;}
     .dash-btn:active { transform: scale(0.96); }
@@ -97,7 +99,7 @@
     #todo-alert-banner { display:none; width: 100%; background: var(--bg-sec); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 25px; text-align: left; cursor: pointer; box-sizing: border-box; transition: transform 0.2s; touch-action: manipulation;}
     #todo-alert-banner:active { transform: scale(0.98); }
 
-    .dday-badge { background: var(--text-main); color: var(--surface); padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 800; cursor: pointer; transition: transform 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+    .dday-badge { color: var(--text-main); padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 800; cursor: pointer; transition: transform 0.2s; display: inline-flex; align-items: center; gap: 6px; position: relative; z-index: 1; border: 2px solid transparent; background-image: linear-gradient(var(--surface), var(--surface)), linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); background-origin: border-box; background-clip: padding-box, border-box; }
     .dday-badge:active { transform: scale(0.95); opacity: 0.8; }
 
     .fixed-header { position: fixed; top: 0; left: 50%; transform: translateX(-50%); z-index: 150; background: var(--surface); color: var(--text-main); padding: 15px; text-align: center; border-bottom: 1px solid var(--border-color); width: 100%; max-width: 600px; box-sizing: border-box; }
@@ -210,7 +212,6 @@
     .modal-close-btn { background: transparent; color: var(--text-main); border: none; width: 32px; height: 32px; border-radius: 50%; font-weight: bold; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     .modal-close-btn:hover { background: var(--bg-sec); }
 
-    /* 리딩 전용 텍스트 (다이어리 등) 뷰 개선 */
     .reading-content {
         max-height: 280px; 
         overflow-y: auto; 
@@ -274,21 +275,20 @@
         <div class="dash-today-summary">
             <div style="display:flex; flex-direction:column; gap:4px;">
                 <span style="font-size:13px; color:var(--text-muted); font-weight:800;">🎯 오늘의 목표 시간</span>
-                <strong id="dash-today-target" style="font-size:24px; color:var(--text-muted);">00h 00m</strong>
+                <strong id="dash-today-target" style="font-size:24px; color:var(--insta-purple);">00h 00m</strong>
             </div>
             <div style="display:flex; flex-direction:column; gap:4px; margin-top:10px; padding-top:15px; border-top:1px solid var(--border-color);">
                 <span style="font-size:13px; color:var(--text-main); font-weight:800;">🔥 오늘 달린 시간</span>
-                <strong id="dash-today-time">00h 00m</strong>
+                <strong id="dash-today-time" style="color:var(--primary);">00h 00m</strong>
             </div>
         </div>
 
         <div style="width: 100%; display: flex; flex-direction: column; gap: 10px;">
-            <button class="dash-btn" style="background:var(--primary); color:white; font-size: 16px; box-shadow: 0 4px 15px rgba(0, 149, 246, 0.25);" onclick="SFX.play('tap'); switchView('study')">🔥 오늘의 달리기 시작</button>
+            <button class="dash-btn" style="background:var(--primary); color:white; font-size: 16px; box-shadow: 0 4px 15px rgba(0, 149, 246, 0.25);" onclick="SFX.play('pop'); switchView('study')">🔥 오늘의 달리기 시작</button>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <button class="dash-btn-outline" onclick="SFX.play('tap'); switchView('calendar')">📅 전체 기록</button>
+                <button class="dash-btn-outline" onclick="SFX.play('pop'); switchView('calendar')">📅 전체 기록</button>
                 <button class="dash-btn-outline" onclick="SFX.play('pop'); openBoardModal();">📢 스터디 라운지</button>
             </div>
-            <button class="dash-btn-outline" style="border:none; color: var(--text-muted); font-size:13px; margin-top: 5px; background: transparent !important;" onclick="SFX.play('pop'); document.getElementById('guide-modal').style.display='flex'; document.body.style.overflow='hidden';">📖 앱 사용 가이드</button>
         </div>
 
         <div style="margin-top: 25px; font-size: 11px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px;">Pacemaker Planner ver <span class="app-version-display"></span></div>
@@ -323,13 +323,13 @@
             <div style="display: flex; flex-direction: column;">
                 <div style="font-size:11px; color:var(--text-muted); font-weight:800; margin-bottom:2px; display:flex; align-items:center;">
                     <span id="popup-dday" style="background:var(--primary); color:white; padding:2px 6px; border-radius:10px; margin-right:6px; font-size:10px; display:none;"></span>
-                    🎯 목표 <span id="popup-target-time" style="margin-left:4px;">00h 00m</span>
+                    🎯 목표 <span id="popup-target-time" style="margin-left:4px; color:var(--insta-purple);">00h 00m</span>
                 </div>
                 <div style="display:flex; align-items:center;">
                     <span style="font-size:11px; color:var(--text-muted); font-weight:800;">TOTAL STUDY TIME</span>
                     <span id="sync-indicator" style="font-size:11px; color:var(--text-muted); font-weight:bold; margin-left:8px;"></span>
                 </div>
-                <span id="total-study-display" style="font-size:28px; color:var(--text-main); font-variant-numeric:tabular-nums; font-weight:900; line-height:1; margin-top:2px;">00:00:00</span>
+                <span id="total-study-display" style="font-size:28px; color:var(--primary); font-variant-numeric:tabular-nums; font-weight:900; line-height:1; margin-top:2px;">00:00:00</span>
             </div>
         </div>
         <div class="progress-container">
@@ -412,6 +412,11 @@
             </div>
             <div id="custom-alarm-list" style="width:100%; display:flex; flex-wrap:wrap; gap:8px; margin-top:5px;"></div>
         </div>
+        
+        <div class="setting-item" style="cursor:pointer;" onclick="SFX.play('pop'); document.getElementById('settings-modal').style.display='none'; document.getElementById('guide-modal').style.display='flex'; document.body.style.overflow='hidden';">
+            <span>📖 앱 사용 가이드 보기</span>
+            <span style="color:var(--text-muted); font-size:12px;">▶</span>
+        </div>
 
         <div class="setting-item" style="border-color: #fca5a5; background: #fef2f2;">
             <span style="color:#ef4444;">🧹 오늘의 보드 초기화</span>
@@ -431,8 +436,8 @@
         </div>
         <div style="max-height: 55vh; overflow-y: auto; padding-right: 5px;">
             <div class="guide-box">
-                <div class="guide-title">🚀 0.9.0 인스타 감성 & 최적화 패치 (NEW)</div>
-                <div class="guide-desc">• 🎨 <b>테마 & 다크모드</b>: 인스타그램 감성의 UI와 밤에도 눈이 편안한 다크모드를 전면 지원합니다.<br>• ⚡ <b>라운지 초고속화</b>: 댓글 등록/삭제 시 버벅임 없이 즉시 반영되는 Optimistic UI를 적용했습니다.<br>• 📝 <b>다이어리 가독성</b>: 글씨가 작아 읽기 힘들었던 점을 개선하여 시원시원하게 렌더링됩니다.<br>• 🗑️ <b>내 댓글 삭제 기능</b> 추가!</div>
+                <div class="guide-title">🚀 2.1 UI/속도 최적화 패치 (NEW)</div>
+                <div class="guide-desc">• 🎨 <b>디데이 뱃지</b>: 인스타 스토리 감성의 그라데이션이 적용되었습니다.<br>• ⚡ <b>라운지 초고속화</b>: 스터디 라운지 진입 시 캐싱 데이터를 활용하여 로딩이 개선되었습니다.<br>• 🛡️ <b>오류 방지</b>: 글/댓글 수정 직후 뒤로가기를 눌러도 백그라운드에서 안전하게 전송되도록 통신 예외처리를 강화했습니다.</div>
             </div>
         </div>
         <button class="btn-primary" style="margin-top:15px;" onclick="SFX.play('tap'); document.getElementById('patch-note-modal').style.display='none'; document.body.style.overflow='';">확인</button>
@@ -582,7 +587,7 @@
     // ==========================================
     // 📦 1. 시스템 설정 및 전역 변수
     // ==========================================
-    const APP_VERSION = "0.9.0 인스타UI & 속도 최적화 패치"; 
+    const APP_VERSION = "2.1.0 성능 & 감성 패치"; 
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz44IxYKNNHOxY3RlfCCCHxyVhSH4taIpN_8R1FMZ_7be6J9g8IFT3ecyvTn2-yWbYC/exec";
     
     let activeUser = localStorage.getItem('activeUser');
@@ -594,6 +599,8 @@
     }
 
     let memCache = {}; 
+    let boardCache = [];
+    let boardCacheTime = 0;
     
     let isAlarmOn = true, isSoundOn = true, isRunning = false;
     let lastTickTime = 0, syncTimer = null;
@@ -886,7 +893,7 @@
 
         for (let i = 0; i < retries; i++) {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 15000); 
+            const timeoutId = setTimeout(() => controller.abort(), 25000); 
             try {
                 const res = await fetch(noCacheUrl, { 
                     redirect: "follow", method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, 
@@ -1677,7 +1684,6 @@
         } else { html += `<div class="tl-empty-state" style="padding:15px 0;">세부 기록이 없습니다.</div>`; }
         html += `</div>`;
 
-        // 🚀 UI 개선: 다이어리/할일 가독성 상승
         let renderTodo = rec.todo ? Utils.sanitizeHTML(rec.todo) : '<span style="color:var(--text-muted); font-style:italic;">등록된 할 일이 없습니다.</span>';
         html += `<div id="tab-content-todo" style="display:none; background:var(--surface); border:1px solid var(--border-color); padding:15px; border-radius:16px; min-height: 200px; position:relative;">
                 <div style="font-size:14px; font-weight:800; color:var(--text-main); margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
@@ -1702,29 +1708,48 @@
     async function renderBoardList() {
         editingPostId = null;
         const area = document.getElementById('board-content-area');
+        
+        // 🚀 속도 개선: 캐시 데이터를 즉시 보여주고 백그라운드 최신화
+        if (boardCache.length > 0 && (Date.now() - boardCacheTime < 300000)) { 
+            renderBoardListUI(boardCache);
+            fetchServer("board_list").then(res => {
+                if (res.success && res.data) { 
+                    boardCache = res.data; boardCacheTime = Date.now(); 
+                    if(document.getElementById('board-modal').style.display === 'flex') renderBoardListUI(boardCache); 
+                }
+            });
+            return;
+        }
+
         area.innerHTML = "<div style='text-align:center; padding:40px; color:var(--text-muted); font-weight:bold;'>라운지 연결 중... ⏳</div>";
         try {
             let res = await fetchServer("board_list");
             if (res.success && res.data) {
-                let html = `<div style="padding:15px; overflow-y:auto; flex-grow:1;"><div style="display:flex; justify-content:flex-end; margin-bottom:15px;">
-                                <button class="btn-primary" style="width:auto; padding:10px 20px; font-size:14px; background:var(--primary);" onclick="SFX.play('pop'); renderBoardWrite()">✏️ 글쓰기</button>
-                            </div><div style="background:var(--surface); border-radius:16px; border:1px solid var(--border-color); overflow:hidden;">`;
-                
-                if (res.data.length > 0) {
-                    res.data.forEach(item => {
-                        html += `<div style="padding:16px; border-bottom:1px solid var(--border-color); cursor:pointer;" onclick="SFX.play('tap'); renderBoardRead('${item.id}')">
-                                    <div style="font-size:15px; font-weight:800; color:var(--text-main); margin-bottom:6px;">${Utils.escapeHTML(item.title)} <span style="color:var(--primary);font-size:13px;font-weight:700;">[${item.commentsCount||0}]</span></div>
-                                    <div style="font-size:12px; color:var(--text-muted); display:flex; justify-content:space-between;">
-                                        <span>👤 ${Utils.escapeHTML(item.author)} | 👁️ ${item.views}</span>
-                                        <span>${item.date}</span>
-                                    </div>
-                                 </div>`;
-                    });
-                } else { html += `<div style="padding:30px; text-align:center; color:var(--text-muted);">등록된 글이 없습니다. 첫 글을 남겨보세요!</div>`; }
-                html += `</div></div>`;
-                area.innerHTML = html;
+                boardCache = res.data; boardCacheTime = Date.now();
+                renderBoardListUI(boardCache);
             } else { area.innerHTML = "<div style='text-align:center; color:var(--text-muted); padding:30px;'>불러오지 못했습니다.</div>"; }
         } catch(e) { area.innerHTML = "<div style='text-align:center; color:#ef4444; padding:30px;'>통신 오류가 발생했습니다.</div>"; }
+    }
+
+    function renderBoardListUI(data) {
+        const area = document.getElementById('board-content-area');
+        let html = `<div style="padding:15px; overflow-y:auto; flex-grow:1;"><div style="display:flex; justify-content:flex-end; margin-bottom:15px;">
+                        <button class="btn-primary" style="width:auto; padding:10px 20px; font-size:14px; background:var(--primary);" onclick="SFX.play('pop'); renderBoardWrite()">✏️ 글쓰기</button>
+                    </div><div style="background:var(--surface); border-radius:16px; border:1px solid var(--border-color); overflow:hidden;">`;
+        
+        if (data.length > 0) {
+            data.forEach(item => {
+                html += `<div style="padding:16px; border-bottom:1px solid var(--border-color); cursor:pointer;" onclick="SFX.play('tap'); renderBoardRead('${item.id}')">
+                            <div style="font-size:15px; font-weight:800; color:var(--text-main); margin-bottom:6px;">${Utils.escapeHTML(item.title)} <span style="color:var(--primary);font-size:13px;font-weight:700;">[${item.commentsCount||0}]</span></div>
+                            <div style="font-size:12px; color:var(--text-muted); display:flex; justify-content:space-between;">
+                                <span>👤 ${Utils.escapeHTML(item.author)} | 👁️ ${item.views}</span>
+                                <span>${item.date}</span>
+                            </div>
+                         </div>`;
+            });
+        } else { html += `<div style="padding:30px; text-align:center; color:var(--text-muted);">등록된 글이 없습니다. 첫 글을 남겨보세요!</div>`; }
+        html += `</div></div>`;
+        area.innerHTML = html;
     }
 
     async function renderBoardRead(id) {
@@ -1739,7 +1764,6 @@
         } catch(e) { area.innerHTML = "<div style='text-align:center; color:#ef4444; padding:30px;'>오류 발생</div>"; }
     }
 
-    // 화면만 다시 그리는 함수 (초고속 반응성)
     function renderBoardReadLocal() {
         if (!currentBoardItem) return;
         const area = document.getElementById('board-content-area');
@@ -1751,7 +1775,6 @@
         
         if (item.comments && item.comments.length > 0) {
             item.comments.forEach((c, idx) => {
-                // 🚀 내 댓글 삭제 기능 추가
                 let deleteBtn = '';
                 if (c.author === activeUser) {
                     deleteBtn = `<button style="background:none; border:none; color:#ef4444; font-size:12px; font-weight:bold; cursor:pointer; padding:0; margin-left:10px;" onclick="SFX.play('tap'); deleteBoardComment('${item.id}', ${idx})">삭제</button>`;
@@ -1798,7 +1821,6 @@
         `;
     }
 
-    // 🚀 속도 개선: Optimistic UI 적용
     async function submitBoardComment(postId) {
         const input = document.getElementById('board-comment-input');
         const text = input.value.trim();
@@ -1807,56 +1829,50 @@
         input.disabled = true; document.getElementById('btn-comment-submit').disabled = true;
         const now = new Date(); const timeStr = `${now.getFullYear()}.${Utils.pad(now.getMonth()+1)}.${Utils.pad(now.getDate())} ${Utils.pad(now.getHours())}:${Utils.pad(now.getMinutes())}`;
         
-        // 화면에 임시로 먼저 그립니다 (빠른 속도감)
         if (!currentBoardItem.comments) currentBoardItem.comments = [];
         const tempId = Date.now();
         const tempComment = { author: activeUser, text: text, date: timeStr, tempId: tempId };
         currentBoardItem.comments.push(tempComment);
         renderBoardReadLocal();
+        showToast("백그라운드에서 반영 중입니다...");
 
         try {
             let res = await fetchServer("board_comment", { postId: postId, text: text, date: timeStr });
             if (res.success) { 
                 showToast("댓글이 등록되었습니다."); 
-                // 백그라운드에서 진짜 데이터 한 번 불러오기 (선택)
                 fetchServer("board_read", { id: postId }).then(r => { if(r.success) currentBoardItem = r.data; });
             } 
             else { 
-                showToast("등록 실패"); 
-                // 롤백
+                showToast("등록 실패. 다시 시도해주세요."); 
                 currentBoardItem.comments = currentBoardItem.comments.filter(c => c.tempId !== tempId);
-                renderBoardReadLocal();
+                if(document.getElementById('board-modal').style.display === 'flex') renderBoardReadLocal();
             }
         } catch(e) { 
             showToast("네트워크 오류"); 
             currentBoardItem.comments = currentBoardItem.comments.filter(c => c.tempId !== tempId);
-            renderBoardReadLocal();
+            if(document.getElementById('board-modal').style.display === 'flex') renderBoardReadLocal();
         }
     }
 
-    // 🚀 댓글 삭제 로직 (Optimistic UI)
-    // 주의: 서버 앱스스크립트(GAS)에도 'board_comment_delete' 처리가 추가되어 있어야 완벽하게 작동합니다.
     async function deleteBoardComment(postId, commentIndex) {
         if(!confirm("댓글을 삭제하시겠습니까?")) return;
 
-        // 화면에서 임시로 먼저 지웁니다.
         const removed = currentBoardItem.comments.splice(commentIndex, 1)[0];
         renderBoardReadLocal();
+        showToast("삭제를 반영 중입니다...");
 
         try {
             let res = await fetchServer("board_comment_delete", { postId: postId, commentIndex: commentIndex });
-            if(res.success) { showToast("댓글이 삭제되었습니다."); }
+            if(res.success) { showToast("댓글이 완전 삭제되었습니다."); }
             else {
-                showToast("삭제 실패: " + (res.message || "서버 업데이트 필요"));
-                // 롤백
+                showToast("삭제 실패. 최신화가 필요합니다.");
                 currentBoardItem.comments.splice(commentIndex, 0, removed);
-                renderBoardReadLocal();
+                if(document.getElementById('board-modal').style.display === 'flex') renderBoardReadLocal();
             }
         } catch(e) {
             showToast("네트워크 오류");
-            // 롤백
             currentBoardItem.comments.splice(commentIndex, 0, removed);
-            renderBoardReadLocal();
+            if(document.getElementById('board-modal').style.display === 'flex') renderBoardReadLocal();
         }
     }
 
@@ -1866,7 +1882,7 @@
         try {
             let res = await fetchServer("board_delete", { id: postId });
             showLoading(false);
-            if(res.success) { showToast("게시글이 삭제되었습니다."); renderBoardList(); }
+            if(res.success) { showToast("게시글이 삭제되었습니다."); boardCache = []; renderBoardList(); }
             else { showToast("삭제 실패: " + res.message); }
         } catch(e) { showLoading(false); showToast("네트워크 오류가 발생했습니다."); }
     }
@@ -1920,24 +1936,25 @@
         const btn = document.getElementById('board-submit-btn');
         
         const title = titleInput.value.trim(); const content = contentInput.innerHTML.trim();
+        const currentEditId = editingPostId; // 백그라운드 처리를 위한 식별자 확보
         
         if (!title) return showToast("제목을 입력해주세요.");
         if (!content || content === '<br>') return showToast("내용을 입력해주세요.");
         
-        btn.innerText = "처리 중..."; btn.disabled = true;
+        btn.innerText = "처리 중..."; btn.disabled = true; showToast("백그라운드에서 반영 중입니다...");
         const now = new Date(); const timeStr = `${now.getFullYear()}.${Utils.pad(now.getMonth()+1)}.${Utils.pad(now.getDate())} ${Utils.pad(now.getHours())}:${Utils.pad(now.getMinutes())}`;
         
         try {
             let res;
-            if (editingPostId) {
-                res = await fetchServer("board_edit", { id: editingPostId, title: title, content: content });
+            if (currentEditId) {
+                res = await fetchServer("board_edit", { id: currentEditId, title: title, content: content });
             } else {
                 res = await fetchServer("board_write", { title: title, content: content, author: activeUser, date: timeStr });
             }
 
-            if (res.success) { showToast(editingPostId ? "수정되었습니다." : "등록되었습니다."); renderBoardList(); } 
-            else { showToast("실패했습니다: " + (res.message || "다시 시도해주세요.")); btn.innerText = "완료"; btn.disabled = false; }
-        } catch(e) { showToast("네트워크 오류 발생"); btn.innerText = "완료"; btn.disabled = false; }
+            if (res.success) { showToast(currentEditId ? "수정되었습니다." : "등록되었습니다."); boardCache = []; if(document.getElementById('board-modal').style.display === 'flex') renderBoardList(); } 
+            else { showToast("실패했습니다: " + (res.message || "다시 시도해주세요.")); if(document.getElementById('board-modal').style.display === 'flex'){btn.innerText = "완료"; btn.disabled = false;} }
+        } catch(e) { showToast("네트워크 오류 발생"); if(document.getElementById('board-modal').style.display === 'flex'){btn.innerText = "완료"; btn.disabled = false;} }
     }
 
     const THEMES = {
