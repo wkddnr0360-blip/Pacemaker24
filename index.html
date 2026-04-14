@@ -580,8 +580,10 @@
 
         <div class="setting-item" style="flex-direction:column; align-items:flex-start; gap:10px; background:var(--bg-sec);">
             <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+            <div style="display:flex; justify-content:space-between; width:100%; align-items:center; flex-wrap:wrap; gap:8px;">
                 <span style="color:var(--text-main); font-weight:800;">⏰ 나만의 브라우저 알람</span>
                 <div style="display:flex; gap:6px;">
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
                     <button id="btn-request-noti" class="action-pill" style="padding:6px 10px; font-size:12px; background:var(--primary); color:white; border:none;" onclick="SFX.play('tap'); requestNotificationPermission()">🔔 권한 허용</button>
                     <button class="action-pill" style="padding:6px 10px; font-size:12px;" onclick="SFX.play('tap'); triggerBrowserAlarm(true)">즉시 테스트</button>
                 </div>
@@ -2135,6 +2137,7 @@
                     let imgUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokeId}.png`;
                     
                     html += `<div style="background: var(--surface); border: 1px solid var(--border-color); padding: 10px; border-radius: 12px; display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="SFX.play('pop'); showEvolutionChain('${type}', '${m.id}')">
+                    html += `<div style="background: var(--surface); border: 1px solid var(--border-color); padding: 10px; border-radius: 12px; display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="event.stopPropagation(); SFX.play('pop'); showEvolutionChain('${type}', '${m.id}')">
                                 <img src="${imgUrl}" style="width:55px; height:55px; object-fit:contain; transform:scale(1.1); filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1));" loading="lazy">
                                 <div style="font-size: 13px; font-weight: 700; color: var(--text-main); line-height: 1.3;">
                                     ${m.name}${megaStr}
@@ -2169,6 +2172,11 @@
         if (!tData) return;
         const m = tData.monsters.find(x => x.id === subId);
         if (!m) return;
+        try {
+            const tData = MONSTER_DATA[type];
+            if (!tData) return;
+            const m = tData.monsters.find(x => x.id === subId);
+            if (!m) return;
 
         const modal = document.getElementById('evolution-chain-modal');
         const content = document.getElementById('evo-chain-content');
@@ -2187,6 +2195,24 @@
         }
         
         for (let idx = 0; idx < displayedStages.length; idx++) {
+            const modal = document.getElementById('evolution-chain-modal');
+            const content = document.getElementById('evo-chain-content');
+            document.getElementById('evo-chain-title').innerText = `${m.name} 진화 과정`;
+            
+            modal.style.display = 'flex';
+            content.innerHTML = '<div style="padding:30px; text-align:center;">로딩 중... ⏳</div>';
+            
+            let html = '';
+            let evoHours = getEvolutionHours(m);
+            
+            let displayedStages = [];
+            for (let i = 0; i < m.pokeIds.length; i++) {
+                if (i > 0 && m.pokeIds[i] === m.pokeIds[i-1] && m.stages[i] === m.stages[i-1]) continue;
+                let reqHours = (i === m.pokeIds.length - 1) ? evoHours[evoHours.length - 1] : evoHours[i];
+                displayedStages.push({ index: i, pokeId: m.pokeIds[i], stageName: m.stages[i], reqHours: reqHours });
+            }
+            
+            for (let idx = 0; idx < displayedStages.length; idx++) {
             let stage = displayedStages[idx];
             let isMega = stage.index >= 3 && m.megaClass;
             if(stage.index >= 3 && m.stages[3] !== m.stages[2]) isMega = true;
@@ -2215,6 +2241,10 @@
         }
         if (displayedStages.length === 1) html += `<div style="margin-top:15px; font-size:12px; color:var(--text-muted); font-weight:bold; text-align:center; padding:10px; background:var(--bg-sec); border-radius:8px;">이 포켓몬은 추가 진화가 없습니다. (단일 형태)</div>`;
         content.innerHTML = html;
+        } catch(e) {
+            console.error("Evolution Modal Error:", e);
+            showToast("진화 정보를 불러오는 중 오류가 발생했습니다.");
+        }
     };
 
     function setDisplayMonster(id) {
@@ -2999,6 +3029,19 @@
                 triggerBrowserAlarm(true, "알림 설정 완료! 🔥 페이스메이커와 함께 달려요!");
             } else {
                 alert("알림이 차단되었습니다. 브라우저 주소창 왼쪽의 자물쇠 아이콘(또는 설정)을 눌러 알림을 '허용'으로 변경해주세요.");
+            try {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        showToast("✅ 브라우저 알림이 허용되었습니다!");
+                        triggerBrowserAlarm(true, "알림 설정 완료! 🔥 페이스메이커와 함께 달려요!");
+                    } else {
+                        alert("알림이 차단되었습니다. 브라우저 주소창 왼쪽의 자물쇠 아이콘(또는 설정)을 눌러 알림을 '허용'으로 변경해주세요.");
+                    }
+                    if(window.updateNotificationBtnUI) window.updateNotificationBtnUI();
+                });
+            } catch(e) {
+                console.error(e);
+                alert("알림 권한을 요청할 수 없는 환경입니다.");
             }
             if(window.updateNotificationBtnUI) window.updateNotificationBtnUI();
         });
@@ -3011,6 +3054,16 @@
                 btn.innerText = "✅ 알림 켜짐"; btn.style.background = "var(--success)"; btn.style.color = "white";
             } else {
                 btn.innerText = "🔔 권한 허용"; btn.style.background = "var(--primary)"; btn.style.color = "white";
+                try {
+                    if (!("Notification" in window)) {
+                        btn.innerText = "❌ 알림 미지원"; btn.style.background = "var(--border-color)"; btn.style.color = "var(--text-muted)"; btn.disabled = true;
+                    } else if (Notification.permission === "granted") {
+                        btn.innerText = "✅ 알림 켜짐"; btn.style.background = "var(--success)"; btn.style.color = "white";
+                    } else {
+                        btn.innerText = "🔔 권한 허용"; btn.style.background = "var(--primary)"; btn.style.color = "white";
+                    }
+                } catch(e) {
+                    btn.innerText = "❌ 환경 오류"; btn.style.background = "var(--border-color)"; btn.style.color = "var(--text-muted)";
             }
         }
     };
