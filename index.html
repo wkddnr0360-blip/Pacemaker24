@@ -149,11 +149,11 @@
     .cb-icon-box.done.active { border-color: var(--primary); }
     .cb-icon-box.done.active span { opacity: 1; filter: none; }
     
-    .time-col { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 52px; flex-shrink: 0; margin-right: 12px;}
+    .time-col { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 64px; flex-shrink: 0; margin-right: 8px;}
     .time { font-size: 14px; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; margin-bottom: 4px; }
     
     .manual-min-input {
-        width: 44px; height: 28px; text-align: center; border: 1px solid var(--border-color);
+        width: 38px; height: 28px; text-align: center; border: 1px solid var(--border-color);
         border-radius: 6px; font-size: 14px; font-weight: 800; background: var(--bg-sec); color: var(--primary);
         font-variant-numeric: tabular-nums; padding: 0; outline: none; transition: all 0.2s; font-family: inherit;
     }
@@ -3250,15 +3250,26 @@
 
     function syncTodayRecord(targetDateStr = null) {
         let dStr = targetDateStr || Utils.getLogicalDateString(); let has = false, det = [];
-        let tSecs = 0; targetBlocks.forEach(b => { if(b) tSecs += 1800; });
+        
+        // 올바른 '오늘의 목표 시간' 계산
+        let tSecs = 0;
+        if (dStr === Utils.getLogicalDateString()) {
+            targetBlocks.forEach(b => { if(b) tSecs += 1800; });
+        } else if (dailyRecords[dStr] && dailyRecords[dStr].details) {
+            dailyRecords[dStr].details.forEach(d => { if(d.isTarget) tSecs += 1800; });
+        }
         let th = Math.floor(tSecs / 3600); let tm = Math.floor((tSecs % 3600) / 60);
         let finalTargetTime = `${Utils.pad(th)}h ${Utils.pad(tm)}m`;
+
+        // 올바른 '오늘 달린 시간' 계산
+        let finalTime = "00h 00m";
 
         for (let i=0; i<48; i++) {
             let n = domCache.notes[i] ? domCache.notes[i].value.trim() : getL(`note_${i}`);
             if(!n || n === "null") n = ""; let s = blockSeconds[i];
             if (s > 0 || n !== "" || targetBlocks[i]) { has = true; det.push({ time: timeData[i].time, min: Math.floor(s/60), note: n, isTarget: targetBlocks[i] }); }
         }
+        if (dStr === Utils.getLogicalDateString()) finalTime = totalStudyString;
         
         let existingDiary = (dailyRecords[dStr] && dailyRecords[dStr].diary) ? dailyRecords[dStr].diary.trim() : "";
         let existingTodo = (dailyRecords[dStr] && dailyRecords[dStr].todo) ? dailyRecords[dStr].todo.trim() : "";
@@ -3295,8 +3306,13 @@
         } catch(e) { console.error("Monster Snapshot Error:", e); }
         // ------------------------------------------------
 
-    if (has || existingDiary !== "" || existingTodo !== "") { 
-            let finalTime = has ? totalStudyString : (dailyRecords[dStr] && dailyRecords[dStr].totalTime ? dailyRecords[dStr].totalTime : "00h 00m");
+        if (has || existingDiary !== "" || existingTodo !== "") { 
+            // 데이터가 사라지는 현상에 대한 근본적인 수정
+            if (dStr === Utils.getLogicalDateString()) {
+                finalTime = totalStudyString; // 오늘 날짜인 경우, 항상 현재 UI의 시간을 신뢰
+            } else if (dailyRecords[dStr] && dailyRecords[dStr].totalTime) {
+                finalTime = dailyRecords[dStr].totalTime; // 과거 날짜인 경우, 기존 기록을 유지
+            }
             let existingMonster = (dailyRecords[dStr] && dailyRecords[dStr].monster) ? dailyRecords[dStr].monster : null;
             dailyRecords[dStr] = { totalTime: finalTime, targetTime: finalTargetTime, details: det, diary: existingDiary, todo: existingTodo, monster: monsterSnapshot || existingMonster };
         } else { delete dailyRecords[dStr]; }
@@ -3395,8 +3411,10 @@
                 </div>
                 <div class="time-col">
                     <div class="time">${item.time}</div>
-                    <input type="number" class="manual-min-input" id="study_min_${i}" min="0" max="30" onchange="SFX.play('tap'); updateManualTime(${i}, this.value)" placeholder="0">
-                    <div style="font-size:10px; color:var(--text-muted); margin-top:2px; font-weight:700;">분</div>
+                    <div style="display:flex; align-items:center; gap: 4px;">
+                        <input type="number" class="manual-min-input" id="study_min_${i}" min="0" max="30" onchange="SFX.play('tap'); updateManualTime(${i}, this.value)" placeholder="0">
+                        <span style="font-size:13px; color:var(--text-muted); font-weight:700;">분</span>
+                    </div>
                 </div>
                 <div class="text-wrapper"><input type="text" class="note-input" maxlength="100" id="note_${i}" placeholder="메모..." onchange="saveNote(${i}, this.value)"></div>`;
             
@@ -3550,12 +3568,23 @@
                     rHtml = `<div class="cal-badge actual ${hN>=5?'high':''}" title="실제 시간">${rec.totalTime.replace('h ', ':').replace('m', '')}</div>`; 
                 }
                 if(rec.todo && rec.todo.trim() !== '') hasTodo = true;
+                if(rec.diary && rec.diary.trim() !== '') hasDiary = true;
             }
-            let todoDot = hasTodo ? `<div style="width:6px; height:6px; background:var(--primary); border-radius:50%; position:absolute; top:8px; right:8px;"></div>` : '';
+
+            let dotsHtml = '';
+            if (hasTodo && hasDiary) {
+                dotsHtml = `<div style="width:6px; height:6px; background:var(--primary); border-radius:50%; position:absolute; top:6px; right:14px;"></div>
+                            <div style="width:6px; height:6px; background:var(--insta-purple); border-radius:50%; position:absolute; top:6px; right:6px;"></div>`;
+            } else if (hasTodo) {
+                dotsHtml = `<div style="width:6px; height:6px; background:var(--primary); border-radius:50%; position:absolute; top:6px; right:6px;"></div>`;
+            } else if (hasDiary) {
+                dotsHtml = `<div style="width:6px; height:6px; background:var(--insta-purple); border-radius:50%; position:absolute; top:6px; right:6px;"></div>`;
+            }
+
             let dayClass = "date-num"; let dOfWeek = new Date(y, m, i).getDay();
             if(dOfWeek === 0) dayClass += " sun"; else if(dOfWeek === 6) dayClass += " sat";
             newHtml += `<div class="cal-day ${isToday?'today':''}" onclick="SFX.play('pop'); document.body.style.overflow='hidden'; showModal('${dStr}')">
-                <div class="${dayClass}">${i}</div>${todoDot}<div class="cal-badge-wrap">${tHtml}${rHtml}</div></div>`;
+                <div class="${dayClass}">${i}</div>${dotsHtml}<div class="cal-badge-wrap">${tHtml}${rHtml}</div></div>`;
         }
         grid.innerHTML = newHtml;
     }
@@ -3585,8 +3614,8 @@
             let mImg = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${rec.monster.pokeId}.png`;
             html += `
             <div style="background:var(--surface); border:1px solid var(--border-color); border-radius:16px; padding:15px; margin-bottom:15px; display:flex; align-items:center; gap:15px; box-shadow:0 4px 15px rgba(0,0,0,0.03); cursor:pointer;" onclick="SFX.play('tap')">
-                <div style="width:90px; height:90px; background:var(--bg-sec); border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid var(--primary); flex-shrink:0;">
-                    <img src="${mImg}" style="width:75px; height:75px; object-fit:contain; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2)); transform:scale(1.2);">
+                <div style="width:100px; height:100px; background:var(--bg-sec); border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid var(--primary); flex-shrink:0;">
+                    <img src="${mImg}" class="float" style="width:85px; height:85px; object-fit:contain; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2)); transform:scale(1.2);">
                 </div>
                 <div style="display:flex; flex-direction:column; flex-grow:1; min-width:0;">
                     <span style="font-size:11px; color:var(--primary); font-weight:800; margin-bottom:3px;">📸 이 날의 파트너 스냅샷</span>
