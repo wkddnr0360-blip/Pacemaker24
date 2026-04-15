@@ -800,7 +800,7 @@
     // 📦 1. 시스템 설정 및 전역 변수
     // ==========================================
     const APP_VERSION = "1.0.0 dev2"; 
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztZqIJaJwHi_MORJD7g5M6NVmmqp8x4CuBl9IdMRDljG1RwHiVSNwsh_HrXFvEF80K/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwAblbYTOWlgsSizTCiqgoiPYRkpDmpxIR1ghMIpndMeSmWek5w1aaEVOjH8qPRdXU/exec";
     
     let activeUser = localStorage.getItem('activeUser');
     let activePw = localStorage.getItem('activePw');
@@ -1549,13 +1549,39 @@
     }
 
     async function updateMonsterUI() {
-        try {
-        let displayMonster = monsterData.inventory.find(m => m.id === monsterData.displayId);
-        if (!displayMonster && monsterData.inventory.length > 0) displayMonster = monsterData.inventory[0];
-        if (!displayMonster) return;
+    const titleEl = document.getElementById('monster-title');
+    const emojiEl = document.getElementById('monster-emoji');
+    const descEl = document.getElementById('monster-desc');
 
-        let totalSeconds = calculateActiveMonsterExp(displayMonster);
-        let totalHours = Math.floor(totalSeconds / 3600);
+    if (!monsterData || !monsterData.inventory || monsterData.inventory.length === 0) {
+        if(titleEl) titleEl.innerText = "파트너 없음";
+        if(descEl) descEl.innerText = "가방에서 알을 부화시켜보세요!";
+        if(emojiEl) emojiEl.innerHTML = `<div class="monster-display" style="background:#eee; border-radius:15px; display:flex; align-items:center; justify-content:center; font-size:40px;">🥚</div>`;
+        return;
+    }
+
+    let displayMonster = monsterData.inventory.find(m => m.id === monsterData.displayId) || monsterData.inventory[0];
+    // ... 이후 기존 로직 동일 ...
+        try {
+            let displayMonster = null;
+            if (monsterData && monsterData.inventory && monsterData.inventory.length > 0) {
+                displayMonster = monsterData.inventory.find(m => m.id === monsterData.displayId);
+                if (!displayMonster) displayMonster = monsterData.inventory[0];
+            }
+            
+            // [수정됨] 몬스터 정보가 완전히 꼬여서 없을 경우의 안전망 (불러오는 중... 에 멈추지 않음)
+            if (!displayMonster) {
+                let titleEl = document.getElementById('monster-title');
+                let emojiEl = document.getElementById('monster-emoji');
+                let descEl = document.getElementById('monster-desc');
+                if(titleEl) titleEl.innerText = "파트너 미지정";
+                if(descEl) descEl.innerText = "가방을 열어 파트너를 확인하거나 부화시키세요.";
+                if(emojiEl) emojiEl.innerHTML = `<div class="monster-display pulse-egg" style="background: #f5f5f5; border-radius: 16px; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15);"><div style="font-size:40px; text-align:center; line-height:1;">❓</div></div>`;
+                return;
+            }
+
+            let totalSeconds = calculateActiveMonsterExp(displayMonster);
+            let totalHours = Math.floor(totalSeconds / 3600);
         
         let typeData = MONSTER_DATA[displayMonster.type];
         if (!typeData) return;
@@ -2663,7 +2689,8 @@
 
         let diaryData = { diaryRecords: JSON.stringify(diaryRecords) };
         let todoData = { todoRecords: JSON.stringify(todoRecords) };
-        let monsterData = { monsterData: allData.monsterData || "" };
+        // [수정됨] 전역 변수 monsterData와의 충돌(Shadowing) 방지를 위해 변수명 변경
+        let monsterDataObj = { monsterData: allData.monsterData || "" };
         
         delete allData.monsterData;
         
@@ -2671,7 +2698,7 @@
             saveCategoryToServer(allData, activeUser),
             saveCategoryToServer(diaryData, activeUser + "_diary"),
             saveCategoryToServer(todoData, activeUser + "_todo"),
-            saveCategoryToServer(monsterData, activeUser + "_mon")
+            saveCategoryToServer(monsterDataObj, activeUser + "_mon") // 수정된 변수 사용
         ]);
 
         if (!resMain.success) return resMain;
@@ -2683,46 +2710,52 @@
     }
 
     async function loadAllDataFromServer() {
-        let [resMain, resDiary, resTodo, resMon] = await Promise.all([
-            loadCategoryFromServer(activeUser),
-            loadCategoryFromServer(activeUser + "_diary"),
-            loadCategoryFromServer(activeUser + "_todo"),
-            loadCategoryFromServer(activeUser + "_mon")
-        ]);
+        try {
+            let [resMain, resDiary, resTodo, resMon] = await Promise.all([
+                loadCategoryFromServer(activeUser),
+                loadCategoryFromServer(activeUser + "_diary"),
+                loadCategoryFromServer(activeUser + "_todo"),
+                loadCategoryFromServer(activeUser + "_mon")
+            ]);
 
-        if (!resMain.success) return resMain;
-        
-        // 부분 데이터 로드 실패 시, 빈 데이터로 덮어씌워지는 부분 유실(Partial Data Loss) 차단
-        if (!resDiary.success || !resTodo.success || !resMon.success) {
-            return { success: false, message: "일부 데이터를 불러오는 데 실패했습니다. 기존 오프라인 기록을 보호합니다." };
+            if (!resMain.success) return resMain;
+            
+            // 부분 데이터 로드 실패 시, 빈 데이터로 덮어씌워지는 부분 유실(Partial Data Loss) 차단
+            if (!resDiary.success || !resTodo.success || !resMon.success) {
+                return { success: false, message: "일부 데이터를 불러오는 데 실패했습니다. 기존 오프라인 기록을 보호합니다." };
+            }
+
+            let mainParsed = {}; try { mainParsed = resMain.data === "{}" ? {} : JSON.parse(resMain.data); } catch(e){}
+            let diaryParsed = {}; try { diaryParsed = resDiary.data === "{}" ? {} : JSON.parse(resDiary.data); } catch(e){}
+            let todoParsed = {}; try { todoParsed = resTodo.data === "{}" ? {} : JSON.parse(resTodo.data); } catch(e){}
+            let monParsed = {}; try { monParsed = resMon.data === "{}" ? {} : JSON.parse(resMon.data); } catch(e){}
+
+            let dailyRecordsObj = {};
+            try { dailyRecordsObj = mainParsed.dailyRecords ? JSON.parse(mainParsed.dailyRecords) : {}; } catch(e){}
+
+            let diaryRecs = {}; try { diaryRecs = diaryParsed.diaryRecords ? JSON.parse(diaryParsed.diaryRecords) : {}; } catch(e){}
+            let todoRecs = {}; try { todoRecs = todoParsed.todoRecords ? JSON.parse(todoParsed.todoRecords) : {}; } catch(e){}
+
+            for (let dateStr in diaryRecs) {
+                if (!dailyRecordsObj[dateStr]) dailyRecordsObj[dateStr] = {};
+                dailyRecordsObj[dateStr].diary = diaryRecs[dateStr];
+            }
+            for (let dateStr in todoRecs) {
+                if (!dailyRecordsObj[dateStr]) dailyRecordsObj[dateStr] = {};
+                dailyRecordsObj[dateStr].todo = todoRecs[dateStr];
+            }
+            
+            mainParsed.dailyRecords = JSON.stringify(dailyRecordsObj);
+            
+            // [수정됨] 몬스터 데이터 파싱 오류 시에도 안전하게 넘어가도록 처리
+            if (monParsed && monParsed.monsterData) {
+                mainParsed.monsterData = monParsed.monsterData;
+            }
+
+            return { success: true, data: JSON.stringify(mainParsed) };
+        } catch (err) {
+            return { success: false, message: "데이터를 불러오는 중 네트워크 오류가 발생했습니다." };
         }
-
-        let mainParsed = {}; try { mainParsed = resMain.data === "{}" ? {} : JSON.parse(resMain.data); } catch(e){}
-        let diaryParsed = {}; try { diaryParsed = resDiary.data === "{}" ? {} : JSON.parse(resDiary.data); } catch(e){}
-        let todoParsed = {}; try { todoParsed = resTodo.data === "{}" ? {} : JSON.parse(resTodo.data); } catch(e){}
-        let monParsed = {}; try { monParsed = resMon.data === "{}" ? {} : JSON.parse(resMon.data); } catch(e){}
-
-        let dailyRecords = {};
-        try { dailyRecords = mainParsed.dailyRecords ? JSON.parse(mainParsed.dailyRecords) : {}; } catch(e){}
-
-        let diaryRecs = {};
-        try { diaryRecs = diaryParsed.diaryRecords ? JSON.parse(diaryParsed.diaryRecords) : {}; } catch(e){}
-        let todoRecs = {};
-        try { todoRecs = todoParsed.todoRecords ? JSON.parse(todoParsed.todoRecords) : {}; } catch(e){}
-
-        for (let dateStr in diaryRecs) {
-            if (!dailyRecords[dateStr]) dailyRecords[dateStr] = {};
-            dailyRecords[dateStr].diary = diaryRecs[dateStr];
-        }
-        for (let dateStr in todoRecs) {
-            if (!dailyRecords[dateStr]) dailyRecords[dateStr] = {};
-            dailyRecords[dateStr].todo = todoRecs[dateStr];
-        }
-        
-        mainParsed.dailyRecords = JSON.stringify(dailyRecords);
-        if (monParsed.monsterData) mainParsed.monsterData = monParsed.monsterData;
-
-        return { success: true, data: JSON.stringify(mainParsed) };
     }
 
     async function saveBackupDataToServer() {
