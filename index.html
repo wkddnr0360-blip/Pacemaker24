@@ -800,7 +800,7 @@
     // 📦 1. 시스템 설정 및 전역 변수
     // ==========================================
     const APP_VERSION = "1.0.0 dev2"; 
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzz0AHjE_751oV975_QV5KZUh8rgduFhkLzjHtT4WycwVq0YcQtMB4Sgntw2zbeGUmo/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztZqIJaJwHi_MORJD7g5M6NVmmqp8x4CuBl9IdMRDljG1RwHiVSNwsh_HrXFvEF80K/exec";
     
     let activeUser = localStorage.getItem('activeUser');
     let activePw = localStorage.getItem('activePw');
@@ -854,7 +854,7 @@
             if (data && data.cries && data.cries.latest) {
                 let audio = new Audio(data.cries.latest);
                 audio.volume = 0.4;
-                audio.play();
+                    audio.play().catch(e => { console.warn("오디오 재생 정책에 의해 차단됨:", e); });
             } else {
                 SFX.play('success'); 
             }
@@ -1242,7 +1242,20 @@
             n.setDate(n.getDate() + offsetDays);
             return `${n.getFullYear()}-${Utils.pad(n.getMonth()+1)}-${Utils.pad(n.getDate())}`;
         },
-        getLogicalDateString: () => Utils.getRelativeDateString(0)
+        getLogicalDateString: () => Utils.getRelativeDateString(0),
+        safeParseJSON: (val, fallback) => {
+            if (val === null || val === undefined || val === "null" || val === "undefined") return fallback;
+            if (typeof val === 'string') {
+                try { 
+                    let p = JSON.parse(val); 
+                    if (p === null) return fallback;
+                    if (Array.isArray(fallback) && !Array.isArray(p)) return fallback;
+                    if (typeof fallback === 'object' && !Array.isArray(fallback) && (typeof p !== 'object' || Array.isArray(p))) return fallback;
+                    return p; 
+                } catch(e) { return fallback; }
+            }
+            return val || fallback;
+        }
     };
 
     const timeData = Array.from({ length: 48 }, (_, i) => {
@@ -1366,9 +1379,12 @@
     function initMonster() {
         try {
             let savedData = getL('monsterData');
-            if (savedData) {
-                try { 
-                    let parsed = JSON.parse(savedData);
+            let parsed = null;
+            if (savedData && savedData !== "undefined" && savedData !== "null") {
+                try { parsed = typeof savedData === 'string' ? JSON.parse(savedData) : savedData; } catch(e) {}
+            }
+            
+            if (parsed && typeof parsed === 'object') {
                     if (!parsed.inventory || !Array.isArray(parsed.inventory)) parsed.inventory = [];
                     // 구 데이터 포맷 호환성 처리
                     if (parsed.inventory.length > 0) {
@@ -1377,15 +1393,14 @@
                         if (firstItem.emojis && !firstItem.monsterSubId) {
                             // 자동 마이그레이션: 구버전 데이터를 첫 번째 몬스터로 매핑
                             parsed.inventory.forEach(item => {
-                                if (item.emojis) {
+                                if (item.emojis && MONSTER_DATA[item.type]) {
                                     item.monsterSubId = MONSTER_DATA[item.type].monsters[0].id;
-                                    item.emojis = undefined;
+                                    delete item.emojis;
                                 }
                             });
                         }
                     }
                     monsterData = parsed;
-                } catch(e) {}
             } else {
                 // 신규 유저 초기화
                 let id = "m_" + Date.now();
@@ -1395,7 +1410,7 @@
                     inventory: [{ 
                         id: id, 
                         type: "fire", 
-                        monsterSubId: "fire_phoenix",
+                        monsterSubId: "fire_charizard",
                         status: "egg", 
                         startDate: "", 
                         totalSeconds: 0 
@@ -1434,13 +1449,14 @@
                 inventory: [{ 
                     id: id, 
                     type: "fire", 
-                    monsterSubId: "fire_phoenix",
+                    monsterSubId: "fire_charizard",
                     status: "egg", 
                     startDate: "", 
                     totalSeconds: 0 
                 }]
             };
             setL('monsterData', JSON.stringify(monsterData));
+            updateMonsterUI(); // UI 무한 로딩 해결
         }
     }
 
@@ -1533,6 +1549,7 @@
     }
 
     async function updateMonsterUI() {
+        try {
         let displayMonster = monsterData.inventory.find(m => m.id === monsterData.displayId);
         if (!displayMonster && monsterData.inventory.length > 0) displayMonster = monsterData.inventory[0];
         if (!displayMonster) return;
@@ -1684,6 +1701,11 @@
         let descEl = document.getElementById('monster-desc');
         if (descEl) {
             descEl.innerText = descText;
+        }
+        } catch(err) {
+            console.error("Monster UI Update Error:", err);
+            let titleEl = document.getElementById('monster-title');
+            if (titleEl) titleEl.innerText = "몬스터 정보를 표시할 수 없습니다.";
         }
 
     }
@@ -2455,19 +2477,7 @@
     function saveUserLocalData(d) {
         if (!d) return;
 
-        const safeParse = (val, fallback) => {
-            if (!val || val === "null" || val === "undefined") return fallback;
-            if (typeof val === 'string') {
-                try { 
-                    let p = JSON.parse(val); 
-                    if (p === null) return fallback;
-                    if (Array.isArray(fallback) && !Array.isArray(p)) return fallback;
-                    if (typeof fallback === 'object' && !Array.isArray(fallback) && (typeof p !== 'object' || Array.isArray(p))) return fallback;
-                    return p; 
-                } catch(e) { return fallback; }
-            }
-            return val;
-        };
+        const safeParse = Utils.safeParseJSON;
 
         if (!window.isStorageHooked) {
             window.isStorageHooked = true;
@@ -2681,6 +2691,11 @@
         ]);
 
         if (!resMain.success) return resMain;
+        
+        // 부분 데이터 로드 실패 시, 빈 데이터로 덮어씌워지는 부분 유실(Partial Data Loss) 차단
+        if (!resDiary.success || !resTodo.success || !resMon.success) {
+            return { success: false, message: "일부 데이터를 불러오는 데 실패했습니다. 기존 오프라인 기록을 보호합니다." };
+        }
 
         let mainParsed = {}; try { mainParsed = resMain.data === "{}" ? {} : JSON.parse(resMain.data); } catch(e){}
         let diaryParsed = {}; try { diaryParsed = resDiary.data === "{}" ? {} : JSON.parse(resDiary.data); } catch(e){}
@@ -3264,12 +3279,16 @@
         // 올바른 '오늘 달린 시간' 계산
         let finalTime = "00h 00m";
 
+        let tempSecs = 0;
         for (let i=0; i<48; i++) {
             let n = domCache.notes[i] ? domCache.notes[i].value.trim() : getL(`note_${i}`);
-            if(!n || n === "null") n = ""; let s = blockSeconds[i];
+            if(!n || n === "null") n = ""; let s = Number(blockSeconds[i]) || 0;
+            tempSecs += s;
             if (s > 0 || n !== "" || targetBlocks[i]) { has = true; det.push({ time: timeData[i].time, min: Math.floor(s/60), note: n, isTarget: targetBlocks[i] }); }
         }
-        if (dStr === Utils.getLogicalDateString()) finalTime = totalStudyString;
+        let hh = Math.floor(tempSecs / 3600); let mm = Math.floor((tempSecs % 3600) / 60);
+        finalTime = `${Utils.pad(hh)}h ${Utils.pad(mm)}m`;
+        if (dStr === Utils.getLogicalDateString()) totalStudyString = finalTime;
         
         let existingDiary = (dailyRecords[dStr] && dailyRecords[dStr].diary) ? dailyRecords[dStr].diary.trim() : "";
         let existingTodo = (dailyRecords[dStr] && dailyRecords[dStr].todo) ? dailyRecords[dStr].todo.trim() : "";
@@ -3729,27 +3748,34 @@
 
     function calculateTotalStats() {
         let totalStudySeconds = 0;
-        Object.values(dailyRecords).forEach(rec => {
-            if (rec.totalTime) {
-                const parts = rec.totalTime.split('h');
-                const h = parseInt(parts[0]) || 0;
-                const m = parseInt(parts[1]?.replace('m', '').trim()) || 0;
-                totalStudySeconds += (h * 3600) + (m * 60);
+        let todayDateStr = Utils.getLogicalDateString();
+        
+        Object.keys(dailyRecords).forEach(dateStr => {
+            if (dateStr !== todayDateStr) {
+                let rec = dailyRecords[dateStr];
+                if (rec && rec.totalTime) {
+                    const parts = rec.totalTime.split('h');
+                    const h = parseInt(parts[0]) || 0;
+                    const m = parseInt(parts[1]?.replace('m', '').trim()) || 0;
+                    totalStudySeconds += (h * 3600) + (m * 60);
+                }
             }
         });
 
-        const retiredCount = monsterData.inventory.filter(m => m.status === 'retired').length;
-        const shinyCount = monsterData.inventory.filter(m => m.isShiny).length;
+        let todaySecs = blockSeconds.reduce((a, b) => Number(a) + Number(b), 0);
+        totalStudySeconds += todaySecs;
+
+        const retiredCount = (monsterData && monsterData.inventory) ? monsterData.inventory.filter(m => m.status === 'retired').length : 0;
+        const shinyCount = (monsterData && monsterData.inventory) ? monsterData.inventory.filter(m => m.isShiny).length : 0;
         const diaryCount = Object.values(dailyRecords).filter(rec => rec.diary && rec.diary.trim() !== '').length;
-        const todayHours = (blockSeconds.reduce((a, b) => a + b, 0)) / 3600;
 
         return {
             totalHours: totalStudySeconds / 3600,
             retiredCount: retiredCount,
             shinyCount: shinyCount,
             diaryCount: diaryCount,
-            todayHours: todayHours,
-            firstRecord: Object.keys(dailyRecords).length > 0
+            todayHours: todaySecs / 3600,
+            firstRecord: (Object.keys(dailyRecords).length > 0 || todaySecs > 0)
         };
     }
 
