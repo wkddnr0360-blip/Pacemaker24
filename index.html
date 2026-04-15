@@ -48,14 +48,21 @@
         body { background-color: var(--bg); color: var(--text-main); }
         .input-field, .dash-today-summary, .guide-box, .tl-content, .cb-icon-box { background: var(--bg-sec) !important; color: var(--text-main) !important; border-color: var(--border-color) !important; }
         .dash-btn-outline { background: var(--surface) !important; color: var(--text-main) !important; }
-        .list-item.planned { background-color: var(--bg-sec); border-color: #6b21a8; }
-        .list-item.current { background-color: #3f3f15 !important; border-color: #fde047; }
         .modal-box { background: var(--surface); border: 1px solid var(--border-color); }
         .cal-day { background: var(--surface); border: 1px solid var(--border-color); }
         #toast-notification { background: var(--surface); border: 1px solid var(--border-color); color: var(--text-main); }
         .dash-monster-box { background: var(--bg-sec) !important; border-color: var(--border-color) !important; }
         .bag-item { background: var(--bg-sec) !important; border-color: var(--border-color) !important; }
+        .achievement-item.locked { filter: grayscale(1); opacity: 0.6; }
+        
+        .list-item.planned { background-color: rgba(139, 92, 246, 0.15) !important; border-color: #a78bfa !important; }
+        .list-item.current { background-color: rgba(245, 158, 11, 0.15) !important; border-color: #fbbf24 !important; }
+        .list-item.completed { background-color: rgba(16, 185, 129, 0.15) !important; border-color: #34d399 !important; }
     }
+    
+    .list-item.planned { background-color: rgba(139, 92, 246, 0.04); border-color: var(--target); }
+    .list-item.current { background-color: rgba(245, 158, 11, 0.05); border-color: var(--warning); }
+    .list-item.completed { background-color: rgba(16, 185, 129, 0.05); border-color: var(--success); }
 
     html, body { overscroll-behavior: none; overflow-x: hidden; width: 100%; margin: 0; padding: 0; scroll-behavior: smooth; }
     body { font-family: 'Pretendard', sans-serif; background-color: var(--bg); display: flex; flex-direction: column; align-items: center; padding-bottom: 180px; -webkit-user-select: none; }
@@ -142,11 +149,18 @@
     .cb-icon-box.done.active { border-color: var(--primary); }
     .cb-icon-box.done.active span { opacity: 1; filter: none; }
     
-    .time-col { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 52px; flex-shrink: 0; margin-right: 8px;}
-    .time { font-size: 14px; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; }
-    .recorded-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; font-weight: 800; background: var(--bg-sec); padding: 2px 6px; border-radius: 8px; width: 100%; text-align: center; box-sizing: border-box; font-variant-numeric: tabular-nums; }
-    .recorded-time.active { color: #ffffff; background: var(--primary); }
-    .recorded-time.full { background: var(--success); } 
+    .time-col { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 52px; flex-shrink: 0; margin-right: 12px;}
+    .time { font-size: 14px; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; margin-bottom: 4px; }
+    
+    .manual-min-input {
+        width: 44px; height: 28px; text-align: center; border: 1px solid var(--border-color);
+        border-radius: 6px; font-size: 14px; font-weight: 800; background: var(--bg-sec); color: var(--primary);
+        font-variant-numeric: tabular-nums; padding: 0; outline: none; transition: all 0.2s; font-family: inherit;
+    }
+    .manual-min-input:focus { border-color: var(--primary); background: var(--surface); }
+    .manual-min-input.full { background: var(--success); color: white; border-color: var(--success); }
+    .manual-min-input::-webkit-outer-spin-button, .manual-min-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .manual-min-input[type=number] { -moz-appearance: textfield; }
     
     .text-wrapper { flex-grow: 1; min-width: 0; }
     .note-input { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid transparent; border-radius: 10px; font-size: 14px; background: transparent; -webkit-user-select: auto; font-family: inherit; transition: all 0.2s; color: var(--text-main); }
@@ -155,15 +169,6 @@
 
     .btn-target { position: fixed; bottom: 160px; right: 25px; background: var(--primary); color: white; border: none; width: 54px; height: 54px; border-radius: 50%; font-size: 24px; box-shadow: 0 4px 15px rgba(0,149,246,0.3); z-index: 110; cursor: pointer; transition: transform 0.2s; display: flex; align-items: center; justify-content: center; touch-action: manipulation;}
     .btn-target:active { transform: scale(0.9); }
-
-    #stopwatch-popup { display: none; position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 400px; background: var(--surface); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: var(--text-main); padding: 16px 24px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 100; box-sizing: border-box; border: 1px solid var(--border-color); }
-    .timer-btn { background: var(--primary); color: white; border: none; width: 46px; height: 46px; border-radius: 23px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; touch-action: manipulation; padding-left:4px; }
-    .timer-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .timer-btn.running { background: #ef4444; animation: pulse 2s infinite; padding-left:0; }
-    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-    
-    .progress-container { width: 100%; height: 6px; background: var(--bg-sec); border-radius: 3px; margin-top: 14px; overflow: hidden; }
-    .progress-bar { height: 100%; background: linear-gradient(90deg, #3b82f6, #10b981); width: 0%; transition: width 0.5s ease-out; border-radius: 3px; }
 
     .cal-sub-header { background: var(--surface); padding: 12px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--border-color); }
     .action-pill { border: 1px solid var(--border-color); background: var(--surface); padding: 8px 14px; border-radius: 20px; font-weight: 700; font-size: 13px; color: var(--text-main); cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; font-family: 'Pretendard', sans-serif; touch-action: manipulation;}
@@ -201,6 +206,10 @@
     #toast-notification { position: fixed; top: -60px; left: 50%; transform: translateX(-50%); background: var(--text-main); color: var(--surface); padding: 14px 24px; border-radius: 30px; font-size: 14px; font-weight: 700; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9999; transition: top 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); pointer-events: none; }
     #toast-notification.show { top: 30px; }
     
+    .achievement-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+    .achievement-item { background: var(--surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.03); transition: all 0.2s; }
+    .achievement-item.unlocked { border-color: #facc15; background: #fffbeb; }
+
     .modal-total-time { text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-around; }
     .modal-total-time div { display: flex; flex-direction: column; align-items: center; }
     .modal-total-time span { display: block; font-size: 13px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; }
@@ -213,7 +222,7 @@
 
     #settings-modal, #patch-note-modal, #guide-modal, #dday-modal, #monster-bag-modal { z-index: 2200; }
     #pokemon-info-modal { z-index: 2300; }
-    #evolution-chain-modal { z-index: 2400; }
+    #evolution-chain-modal, #achievement-modal { z-index: 2400; }
     #hatch-modal { z-index: 2300; }
     #diary-modal, #todo-modal, #capture-modal { z-index: 2100; }
     #record-modal, #board-modal { z-index: 2000; }
@@ -226,8 +235,8 @@
     .modal-close-btn:hover { background: var(--bg-sec); }
 
     .reading-content {
-        max-height: 280px; overflow-y: auto; font-size: 15px; color: var(--text-main); 
-        line-height: 1.8; letter-spacing: -0.3px; word-break: break-word; padding: 10px;
+        max-height: 350px; overflow-y: auto; font-size: 16px; color: var(--text-main); 
+        line-height: 1.9; letter-spacing: -0.3px; word-break: break-word; padding: 15px;
         background: var(--bg-sec); border-radius: 12px; border: 1px solid var(--border-color);
         -webkit-overflow-scrolling: touch;
     }
@@ -349,6 +358,7 @@
         <div style="display:flex; justify-content:space-between; align-items:flex-start; width:100%; margin-bottom: 10px;">
              <div id="dday-badge" onclick="SFX.play('pop'); openDdayModal()" class="dday-badge">⏳ 디데이 설정 +</div>
              <div style="display:flex; gap:8px;">
+                 <button style="background:transparent; border:1px solid var(--border-color); padding:6px 10px; border-radius:10px; font-size:16px; color:var(--text-main); cursor:pointer;" onclick="SFX.play('pop'); openAchievementsModal()">🏆</button>
                  <button style="background:transparent; border:1px solid var(--border-color); padding:6px 10px; border-radius:10px; font-size:16px; color:var(--text-main); cursor:pointer;" onclick="SFX.play('pop'); document.getElementById('patch-note-modal').style.display='flex'; document.body.style.overflow='hidden';">📢</button>
                  <button style="background:transparent; border:1px solid var(--border-color); padding:6px 10px; border-radius:10px; font-size:16px; color:var(--text-main); cursor:pointer;" onclick="SFX.play('pop'); document.getElementById('settings-modal').style.display='flex'; document.body.style.overflow='hidden';">⚙️</button>
              </div>
@@ -428,42 +438,6 @@
         <div class="list-wrapper" id="schedule-list"></div>
     </div>
     <button class="btn-target" onclick="SFX.play('tap'); scrollToCurrent()">🎯</button>
-</div>
-
-<div id="stopwatch-popup">
-    <div style="width: 100%;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <button id="toggle-timer-btn" class="timer-btn" onclick="toggleTimer()">▶</button>
-            <div style="display: flex; flex-direction: column; flex-grow:1;">
-                <div style="font-size:11px; color:var(--text-muted); font-weight:800; margin-bottom:2px; display:flex; align-items:center;">
-                    <span id="popup-dday" style="background:var(--primary); color:white; padding:2px 6px; border-radius:10px; margin-right:6px; font-size:10px; display:none;"></span>
-                    🎯 목표 <span id="popup-target-time" style="margin-left:4px; color:var(--insta-purple);">00h 00m</span>
-                </div>
-                <div style="display:flex; align-items:center;">
-                    <span style="font-size:11px; color:var(--text-muted); font-weight:800;">TOTAL STUDY TIME</span>
-                    <span id="sync-indicator" style="font-size:11px; color:var(--text-muted); font-weight:bold; margin-left:8px;"></span>
-                </div>
-                <span id="total-study-display" style="font-size:28px; color:var(--primary); font-variant-numeric:tabular-nums; font-weight:900; line-height:1; margin-top:2px;">00:00:00</span>
-            </div>
-            <!-- 몬스터 미니 대시보드 (스톱워치용) -->
-            <div id="sw-monster-ui" style="display:flex; flex-direction:column; align-items:center; justify-content:center; width:64px; flex-shrink:0; cursor:pointer;" onclick="SFX.play('pop'); switchView('dashboard'); setTimeout(()=>openMonsterBag(),300);">
-                <div style="position:relative; width:54px; height:54px;">
-                    <svg width="54" height="54" viewBox="0 0 54 54" style="transform:rotate(-90deg);">
-                        <circle cx="27" cy="27" r="24" fill="none" stroke="var(--border-color)" stroke-width="4"></circle>
-                        <circle id="sw-monster-progress-circle" cx="27" cy="27" r="24" fill="none" stroke="var(--target)" stroke-width="4" stroke-dasharray="150.8" stroke-dashoffset="150.8" stroke-linecap="round" style="transition: stroke-dashoffset 1s ease-out;"></circle>
-                    </svg>
-                    <div id="sw-monster-img-container" style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
-                        <img id="sw-monster-img" src="" style="width:36px; height:36px; object-fit:contain; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.2));" onerror="this.style.display='none'">
-                        <div id="sw-monster-egg" style="display:none; font-size:24px;">⚪</div>
-                    </div>
-                </div>
-                <div id="sw-monster-time-left" style="font-size:10px; font-weight:800; color:var(--text-muted); margin-top:4px; white-space:nowrap; text-align:center; letter-spacing:-0.5px;">--h 남음</div>
-            </div>
-        </div>
-        <div class="progress-container">
-            <div class="progress-bar" id="study-progress"></div>
-        </div>
-    </div>
 </div>
 
 <div id="calendar-view" class="view-layer">
@@ -624,6 +598,18 @@
             <button class="btn-primary" style="background:#ef4444;" onclick="SFX.play('tap'); labResetMonster()">🗑️ 전체 초기화</button>
         </div>
 
+        <div class="setting-item" style="flex-direction:column; align-items:flex-start; gap:12px; background:var(--bg-sec); padding:16px; margin-top:15px;">
+            <div style="font-weight:800; color:var(--text-main); width:100%; display:flex; justify-content:space-between;">
+                <span>📦 안전 데이터 백업 & 복구</span>
+                <span id="last-backup-time" style="font-size:12px; color:var(--primary);">기록 없음</span>
+            </div>
+            <div style="font-size:12px; color:var(--text-muted); line-height:1.5;">현재 데이터를 안전한 보관소에 분리 저장하거나, 기록이 소실된 경우 과거 백업본을 불러올 수 있습니다.</div>
+            <div style="display:flex; gap:8px; width:100%; margin-top:5px;">
+                <button class="action-pill" style="flex:1; background:var(--primary); color:white; border:none; font-size:13px;" onclick="SFX.play('tap'); saveBackupDataToServer()">데이터 수동 백업</button>
+                <button class="action-pill" style="flex:1; border:1px solid #ef4444; color:#ef4444; font-size:13px;" onclick="SFX.play('tap'); loadBackupDataFromServer()">백업본 복구하기</button>
+            </div>
+        </div>
+
         <div class="setting-item" style="border-color: #fca5a5; background: #fef2f2; margin-top: 15px;">
             <span style="color:#ef4444;">🧹 오늘의 보드 초기화</span>
             <button style="background:#ef4444; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:bold; font-size:13px; cursor:pointer;" onclick="SFX.play('tap'); manualClearBoard()">초기화</button>
@@ -670,8 +656,8 @@
                 <div class="guide-desc">홈 화면에서 디데이를 설정하고, 시간표 탭에서 🎯(목표 구간)을 체크해 하루 계획을 세우세요.</div>
             </div>
             <div class="guide-box">
-                <div class="guide-title">▶️ 2. 스톱워치 켜기 & 공부하기</div>
-                <div class="guide-desc">맨 아래 <b>[▶ 재생]</b> 버튼을 누르면 시간이 기록됩니다. 포기하지 말고 열심히 달려보세요!</div>
+                <div class="guide-title">▶️ 2. 몰입 기록 남기기</div>
+                <div class="guide-desc">시간표 탭에서 완료한 30분 구간에 <b>✅ 체크</b>를 하거나, <b>수동으로 직접 분(min)을 입력</b>하여 구간별 몰입 기록을 남겨보세요!</div>
             </div>
             <div class="guide-box">
                 <div class="guide-title">🐉 3. 몬스터 진화 시스템</div>
@@ -814,7 +800,7 @@
     // 📦 1. 시스템 설정 및 전역 변수
     // ==========================================
     const APP_VERSION = "1.0.0 dev2"; 
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz44IxYKNNHOxY3RlfCCCHxyVhSH4taIpN_8R1FMZ_7be6J9g8IFT3ecyvTn2-yWbYC/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzz0AHjE_751oV975_QV5KZUh8rgduFhkLzjHtT4WycwVq0YcQtMB4Sgntw2zbeGUmo/exec";
     
     let activeUser = localStorage.getItem('activeUser');
     let activePw = localStorage.getItem('activePw');
@@ -828,21 +814,19 @@
     let boardCache = [];
     let boardCacheTime = 0;
     
-    let isAlarmOn = true, isSoundOn = true, isRunning = false;
-    let lastTickTime = 0, syncTimer = null;
+    let isAlarmOn = true, isSoundOn = true;
+    let syncTimer = null;
     let isSyncing = false, pendingSync = false;
-    let tickFrameId = null; 
     let notificationIntervalId = null; 
     
     let blockSeconds = [], targetBlocks = [], backupSeconds = [], dailyRecords = {}, alarmedBlocks = [];
     let ddayConfig = { title: "", date: "" }; 
     let customAlarms = []; 
+    let achievementsData = {};
     let triggeredAlarms = {}; 
 
-    let lastStudyTime = Date.now(); // 방치 알림용
-    let lastHungerAlarm = 0;
     
-    const domCache = { items: [], timeTexts: [], checks: [], targets: [], notes: [] };
+    const domCache = { items: [], minInputs: [], checks: [], targets: [], notes: [] };
     let totalStudyString = "00h 00m";
     let targetStudyString = "00h 00m";
     let currentRenderDate = new Date();
@@ -1702,42 +1686,6 @@
             descEl.innerText = descText;
         }
 
-        // 스톱워치 미니 몬스터 UI 갱신
-        let swMonsterImg = document.getElementById('sw-monster-img');
-        let swMonsterEgg = document.getElementById('sw-monster-egg');
-        let swProgressCircle = document.getElementById('sw-monster-progress-circle');
-        let swTimeLeft = document.getElementById('sw-monster-time-left');
-
-        if (swMonsterImg && swProgressCircle && swTimeLeft) {
-            if (displayMonster.status === "egg") {
-                swMonsterImg.style.display = 'none';
-                swMonsterEgg.style.display = 'block';
-                swProgressCircle.style.strokeDashoffset = 150.8;
-                swTimeLeft.innerText = "부화 대기";
-            } else if (displayMonster.status === "retired" || isMax) {
-                swMonsterEgg.style.display = 'none';
-                swMonsterImg.style.display = 'block';
-                swMonsterImg.src = imageUrl;
-                swProgressCircle.style.strokeDashoffset = 0;
-                swTimeLeft.innerText = isMax ? "MAX" : "도감 완료";
-            } else {
-                swMonsterEgg.style.display = 'none';
-                swMonsterImg.style.display = 'block';
-                swMonsterImg.src = imageUrl;
-                
-                let prevSecs = evoHours[maxStageIdx] * 3600;
-                let nextSecs = (evoHours[maxStageIdx + 1] || maxHours) * 3600;
-                let secsInStage = totalSeconds - prevSecs;
-                let requiredSecs = nextSecs - prevSecs;
-                let stageProgress = requiredSecs > 0 ? Math.min(1, Math.max(0, secsInStage / requiredSecs)) : 1;
-                
-                let offset = 150.8 - (stageProgress * 150.8);
-                swProgressCircle.style.strokeDashoffset = offset;
-                
-                let hoursLeft = Math.max(0, (nextSecs/3600) - totalHours);
-                swTimeLeft.innerText = `${hoursLeft}h 남음`;
-            }
-        }
     }
 
     function filterAndRenderBag(preserveScroll = false) {
@@ -2562,7 +2510,7 @@
         }
 
         // 추가된 monsterData 동기화 반영
-        ['backupSeconds', 'alarmedBlocks', 'settings', 'lastLogicalDate', 'customAlarms', 'monsterData'].forEach(k => { 
+        ['backupSeconds', 'alarmedBlocks', 'settings', 'lastLogicalDate', 'customAlarms', 'monsterData', 'achievements'].forEach(k => { 
             if (d[k] !== undefined && d[k] !== "") {
                 if (isCloudNewer || !getL(k)) setL(k, typeof d[k] === 'object' ? JSON.stringify(d[k]) : d[k]); 
             }
@@ -2601,14 +2549,19 @@
 
     function getUserLocalData() {
         const backup = { 
-            runningState: JSON.stringify({ isRunning: isRunning, startTime: isRunning ? lastTickTime : 0 }),
             deviceToken: myDeviceToken
         };
         backup['lastUpdateTime'] = getL('lastUpdateTime') || Date.now().toString(); 
         backup['ddayConfig'] = getL('ddayConfig') || "";
-        ['blockSeconds', 'targetBlocks', 'backupSeconds', 'dailyRecords', 'alarmedBlocks', 'settings', 'lastLogicalDate', 'customAlarms', 'monsterData'].forEach(k => { backup[k] = getL(k) || ""; });
+        ['blockSeconds', 'targetBlocks', 'backupSeconds', 'dailyRecords', 'alarmedBlocks', 'settings', 'lastLogicalDate', 'customAlarms', 'monsterData', 'achievements'].forEach(k => { backup[k] = getL(k) || ""; });
         for (let i=0; i<48; i++) { let n = getL(`note_${i}`); backup[`note_${i}`] = (!n || n === "null" || n.trim() === "") ? "" : n; }
         return backup;
+    }
+
+    function updateBackupTimeUI() {
+        let bt = getL('lastBackupTime');
+        let el = document.getElementById('last-backup-time');
+        if (el) el.innerText = bt ? "최근 백업: " + bt : "기록 없음";
     }
 
     async function fetchServer(action, dataObj = null, customId = null, retries = 3) {
@@ -2622,7 +2575,7 @@
             try {
                 const res = await fetch(noCacheUrl, { 
                     redirect: "follow", method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, 
-                    body: JSON.stringify(body), signal: controller.signal
+                    body: JSON.stringify(body), signal: controller.signal, keepalive: true
                 });
                 clearTimeout(timeoutId);
                 const text = await res.text();
@@ -2636,24 +2589,24 @@
         return { success: false, message: "서버 혼잡" };
     }
 
-    async function saveCategoryToServer(dataObj, baseId) {
+    async function saveCategoryToServer(dataObj, baseId, actionName = "save") {
         let fullStr = JSON.stringify(dataObj);
         const CHUNK_SIZE = 40000; 
         if (fullStr.length <= CHUNK_SIZE) {
-            return await fetchServer("save", { type: "single", content: fullStr }, baseId);
+            return await fetchServer(actionName, { type: "single", content: fullStr }, baseId);
         } else {
             let chunks = [];
             for (let i = 0; i < fullStr.length; i += CHUNK_SIZE) chunks.push(fullStr.substring(i, i + CHUNK_SIZE));
             for (let i = 0; i < chunks.length; i++) {
-                let res = await fetchServer("save", { type: "chunk", index: i, content: chunks[i] }, baseId + "_p" + i);
+                let res = await fetchServer(actionName, { type: "chunk", index: i, content: chunks[i] }, baseId + "_p" + i);
                 if (!res.success) return res;
             }
-            return await fetchServer("save", { type: "master", chunkCount: chunks.length }, baseId);
+            return await fetchServer(actionName, { type: "master", chunkCount: chunks.length }, baseId);
         }
     }
 
-    async function loadCategoryFromServer(baseId) {
-        let res = await fetchServer("login_load", null, baseId);
+    async function loadCategoryFromServer(baseId, actionName = "login_load") {
+        let res = await fetchServer(actionName, null, baseId);
         if (!res.success || !res.data) return { success: true, data: "{}" };
         
         let dataObj = typeof res.data === 'string' ? null : res.data;
@@ -2668,19 +2621,19 @@
         }
 
         if (dataObj && dataObj.type === "single") { 
-            return { success: true, data: dataObj.content }; 
+            return { success: true, data: dataObj.content, backupTime: res.backupTime }; 
         } else if (dataObj && dataObj.type === "master") {
             let count = dataObj.chunkCount; let fullStr = "";
             for (let i = 0; i < count; i++) {
-                let cRes = await fetchServer("login_load", null, baseId + "_p" + i);
+                let cRes = await fetchServer(actionName, null, baseId + "_p" + i);
                 if (cRes.success && cRes.data) { 
                     let cParsed = typeof cRes.data === 'string' ? JSON.parse(cRes.data) : cRes.data; 
                     fullStr += (cParsed.content || ""); 
                 } else return { success: false, message: "분할 데이터 로드 실패" };
             }
-            return { success: true, data: fullStr };
+            return { success: true, data: fullStr, backupTime: res.backupTime };
         } 
-        return { success: true, data: res.data };
+        return { success: true, data: res.data, backupTime: res.backupTime };
     }
 
     async function saveAllDataToServer() {
@@ -2757,6 +2710,101 @@
         return { success: true, data: JSON.stringify(mainParsed) };
     }
 
+    async function saveBackupDataToServer() {
+        if(!confirm("현재 기기의 데이터를 안전한 백업 전용 공간에 분리하여 저장합니다.\n(기존 백업 데이터는 갱신됩니다)\n계속하시겠습니까?")) return;
+        showLoading(true, "백업 데이터를 안전하게 분리 저장 중... 📦");
+        syncTodayRecord();
+        
+        let allData = getUserLocalData();
+        let dailyParsed = {}; try { dailyParsed = allData.dailyRecords ? JSON.parse(allData.dailyRecords) : {}; } catch(e) {}
+        let diaryRecords = {}; let todoRecords = {};
+        for (let dateStr in dailyParsed) {
+            if (dailyParsed[dateStr].diary) { diaryRecords[dateStr] = dailyParsed[dateStr].diary; delete dailyParsed[dateStr].diary; }
+            if (dailyParsed[dateStr].todo) { todoRecords[dateStr] = dailyParsed[dateStr].todo; delete dailyParsed[dateStr].todo; }
+        }
+        allData.dailyRecords = JSON.stringify(dailyParsed);
+
+        let diaryData = { diaryRecords: JSON.stringify(diaryRecords) };
+        let todoData = { todoRecords: JSON.stringify(todoRecords) };
+        let monsterDataObj = { monsterData: allData.monsterData || "" };
+        delete allData.monsterData;
+        
+        let [resMain, resDiary, resTodo, resMon] = await Promise.all([
+            saveCategoryToServer(allData, activeUser, "backup_save"),
+            saveCategoryToServer(diaryData, activeUser + "_diary", "backup_save"),
+            saveCategoryToServer(todoData, activeUser + "_todo", "backup_save"),
+            saveCategoryToServer(monsterDataObj, activeUser + "_mon", "backup_save")
+        ]);
+
+        showLoading(false);
+        if (resMain.success && resDiary.success && resTodo.success && resMon.success) {
+            let timeStr = new Date().toLocaleString();
+            setL('lastBackupTime', timeStr);
+            updateBackupTimeUI();
+            showToast("✅ 성공적으로 독립된 공간에 백업되었습니다.");
+        } else {
+            showToast("❌ 백업에 실패했습니다.");
+        }
+    }
+
+    async function loadBackupDataFromServer() {
+        if(!confirm("⚠️ 경고: 현재 기기의 모든 데이터가 지워지고 보관된 [백업 데이터]로 복구됩니다.\n\n정말 복구하시겠습니까?")) return;
+        showLoading(true, "백업 데이터 복원 중... 🔄");
+        
+        try {
+            let [resMain, resDiary, resTodo, resMon] = await Promise.all([
+                loadCategoryFromServer(activeUser, "backup_load"),
+                loadCategoryFromServer(activeUser + "_diary", "backup_load"),
+                loadCategoryFromServer(activeUser + "_todo", "backup_load"),
+                loadCategoryFromServer(activeUser + "_mon", "backup_load")
+            ]);
+
+            if (!resMain.success) throw new Error("Load Fail");
+
+            let mainParsed = {}; try { mainParsed = resMain.data === "{}" ? {} : JSON.parse(resMain.data); } catch(e){}
+            
+            if (Object.keys(mainParsed).length === 0 || !mainParsed.lastUpdateTime) {
+                showLoading(false);
+                return showToast("❌ 저장된 백업 데이터가 없습니다.");
+            }
+
+            let diaryParsed = {}; try { diaryParsed = resDiary.data === "{}" ? {} : JSON.parse(resDiary.data); } catch(e){}
+            let todoParsed = {}; try { todoParsed = resTodo.data === "{}" ? {} : JSON.parse(resTodo.data); } catch(e){}
+            let monParsed = {}; try { monParsed = resMon.data === "{}" ? {} : JSON.parse(resMon.data); } catch(e){}
+
+            let dailyRecords = {};
+            try { dailyRecords = mainParsed.dailyRecords ? JSON.parse(mainParsed.dailyRecords) : {}; } catch(e){}
+            let diaryRecs = {}; try { diaryRecs = diaryParsed.diaryRecords ? JSON.parse(diaryParsed.diaryRecords) : {}; } catch(e){}
+            let todoRecs = {}; try { todoRecs = todoParsed.todoRecords ? JSON.parse(todoParsed.todoRecords) : {}; } catch(e){}
+
+            for (let dateStr in diaryRecs) {
+                if (!dailyRecords[dateStr]) dailyRecords[dateStr] = {};
+                dailyRecords[dateStr].diary = diaryRecs[dateStr];
+            }
+            for (let dateStr in todoRecs) {
+                if (!dailyRecords[dateStr]) dailyRecords[dateStr] = {};
+                dailyRecords[dateStr].todo = todoRecs[dateStr];
+            }
+            mainParsed.dailyRecords = JSON.stringify(dailyRecords);
+            if (monParsed.monsterData) mainParsed.monsterData = monParsed.monsterData;
+
+            // 백업 날짜 포맷
+            let backupTimeStr = (resMain.backupTime && resMain.backupTime !== "") ? new Date(resMain.backupTime).toLocaleString() : "알 수 없음";
+            
+            applyCloudData(mainParsed, true, true);
+            showLoading(false);
+            
+            // 복구된 상태를 메인 클라우드에 즉시 연동 반영
+            saveAllDataToServer();
+            
+            showToast(`✅ 복구 완료! (백업 일시: ${backupTimeStr})`);
+            document.getElementById('settings-modal').style.display = 'none';
+        } catch (e) {
+            showLoading(false);
+            showToast("❌ 백업 복구 중 오류가 발생했습니다.");
+        }
+    }
+
     function applyCloudData(parsedData, silent, skipSync = false) {
         try {
             if (!parsedData || typeof parsedData !== 'object' || Object.keys(parsedData).length === 0 || !parsedData.lastUpdateTime) {
@@ -2765,14 +2813,6 @@
             }
 
             let cloudToken = parsedData.deviceToken;
-            if (cloudToken && cloudToken !== myDeviceToken) {
-                if (isRunning) {
-                    stopStopwatch();
-                    if (!silent) showToast("🚨 다른 기기에서 접속이 감지되어 현재 기기의 타이머를 정지합니다.", true);
-                } else if (!silent) {
-                    showToast("🔄 다른 기기에서 기록된 데이터를 불러왔습니다.");
-                }
-            }
 
             const currentLogicalDate = Utils.getLogicalDateString();
             const cloudLogicalDate = parsedData.lastLogicalDate || currentLogicalDate;
@@ -2780,34 +2820,18 @@
             saveUserLocalData(parsedData); 
             initLocalState(); 
 
-            let batonTaken = false;
-            if (parsedData.runningState) {
-                const rState = JSON.parse(parsedData.runningState);
-                if (rState.isRunning && rState.startTime > 0 && (!cloudToken || cloudToken === myDeviceToken)) {
-                    if (!isRunning) { 
-                        const passedSecs = Math.floor((Date.now() - rState.startTime) / 1000);
-                        if (passedSecs > 0 && passedSecs < 57600) { distributeTime(rState.startTime, passedSecs); batonTaken = true; startStopwatch(); }
-                        else { stopStopwatch(); }
-                    }
-                } else if (!rState.isRunning || (cloudToken && cloudToken !== myDeviceToken)) { 
-                    if (isRunning) stopStopwatch(); 
-                }
-            }
-
             if (cloudLogicalDate !== currentLogicalDate) {
                 syncTodayRecord(cloudLogicalDate); 
                 blockSeconds = Array(48).fill(0); targetBlocks = Array(48).fill(false); backupSeconds = Array(48).fill(0); alarmedBlocks = Array(48).fill(false); 
                 for(let i=0; i<48; i++) { removeL(`note_${i}`); if(domCache.notes[i]) domCache.notes[i].value = ""; }
                 setL('targetBlocks', JSON.stringify(targetBlocks)); setL('backupSeconds', JSON.stringify(backupSeconds)); setL('alarmedBlocks', JSON.stringify(alarmedBlocks));
                 setL('blockSeconds', JSON.stringify(blockSeconds)); setL('lastLogicalDate', currentLogicalDate); 
-                if (isRunning) stopStopwatch();
             } else { setL('lastLogicalDate', currentLogicalDate); }
 
             initMonster(); // 몬스터 데이터 갱신
             updateUI(true); syncTodayRecord(); renderCalendar(); updateHighlight(); updateDashboardTodoAlert(); updateDdayUI();
             
-            if (batonTaken && !skipSync) { triggerAutoSync(); if(!silent) showToast("🔥 타임워프! 바통을 이어받았습니다."); } 
-            else if(!silent && !skipSync) { SFX.play('success'); showToast("✅ 동기화 완료!"); }
+            if(!silent && !skipSync) { SFX.play('success'); showToast("✅ 동기화 완료!"); }
         } catch(err) {
             console.error("✗ 데이터 동기화 오류:", err);
             if(!silent) showToast("⚠️ 데이터 동기화 중 일부 오류가 발생했습니다.");
@@ -2859,6 +2883,40 @@
         if (immediate) performSync(); else syncTimer = setTimeout(() => performSync(), 3000); 
     }
 
+    let lastSilentBackupTime = 0;
+    async function performSilentBackup() {
+        if (!activeUser || !activePw) return;
+        let now = Date.now();
+        if (now - lastSilentBackupTime < 300000) return; // 5분 이내 중복 백업 방지
+        lastSilentBackupTime = now;
+        
+        let allData = getUserLocalData();
+        let dailyParsed = {}; try { dailyParsed = allData.dailyRecords ? JSON.parse(allData.dailyRecords) : {}; } catch(e) {}
+        let diaryRecords = {}; let todoRecords = {};
+        for (let dateStr in dailyParsed) {
+            if (dailyParsed[dateStr].diary) { diaryRecords[dateStr] = dailyParsed[dateStr].diary; delete dailyParsed[dateStr].diary; }
+            if (dailyParsed[dateStr].todo) { todoRecords[dateStr] = dailyParsed[dateStr].todo; delete dailyParsed[dateStr].todo; }
+        }
+        allData.dailyRecords = JSON.stringify(dailyParsed);
+
+        let diaryData = { diaryRecords: JSON.stringify(diaryRecords) };
+        let todoData = { todoRecords: JSON.stringify(todoRecords) };
+        let monsterDataObj = { monsterData: allData.monsterData || "" };
+        delete allData.monsterData;
+        
+        try {
+            await Promise.all([
+                saveCategoryToServer(allData, activeUser, "backup_save"),
+                saveCategoryToServer(diaryData, activeUser + "_diary", "backup_save"),
+                saveCategoryToServer(todoData, activeUser + "_todo", "backup_save"),
+                saveCategoryToServer(monsterDataObj, activeUser + "_mon", "backup_save")
+            ]);
+            let timeStr = new Date().toLocaleString();
+            setL('lastBackupTime', timeStr);
+            updateBackupTimeUI();
+        } catch(e) {}
+    }
+
     const safeDataParse = (data) => {
         if (!data || data === "{}" || data === "null") return null;
         if (typeof data === 'object') return data;
@@ -2906,9 +2964,9 @@
     }
 
     window.addEventListener('beforeunload', (e) => { 
-        if (isRunning) { e.preventDefault(); e.returnValue = ''; }
         if (activeUser && activePw) {
             syncTodayRecord();
+            performSilentBackup();
             try {
                 let payloadStr = JSON.stringify(getUserLocalData());
                 if (payloadStr.length < 60000) { // sendBeacon payload size limit protection
@@ -2928,17 +2986,10 @@
             } else if (activeEl && activeEl.id === 'diary-input') saveTextData('diary', true);
             else if (activeEl && activeEl.id === 'todo-input') saveTextData('todo', true);
             
-            if(activeUser && navigator.onLine) triggerAutoSync(true); 
+            if(activeUser && navigator.onLine) { triggerAutoSync(true); performSilentBackup(); }
         } 
         else if (document.visibilityState === "visible") {
-            if (isRunning) {
-                const now = Date.now(); const passedSecs = Math.floor((now - lastTickTime) / 1000);
-                if (passedSecs >= 1) { 
-                    distributeTime(lastTickTime, passedSecs); lastTickTime += passedSecs * 1000; 
-                    setL('runningState', JSON.stringify({ isRunning: true, startTime: lastTickTime }));
-                    saveAndRefresh(); 
-                }
-            } else if (activeUser && activePw && navigator.onLine && !isSyncing) {
+            if (activeUser && activePw && navigator.onLine && !isSyncing) {
                 loadFromCloud(true); 
             }
             checkNewDay(); updateDashboardTodoAlert(); 
@@ -2995,21 +3046,6 @@
         if (!lastLogicDate) { setL('lastLogicalDate', currentLogicDate); return; }
         
         if (currentLogicDate !== lastLogicDate) {
-            const wasRunning = isRunning;
-            if(wasRunning) {
-                const now = Date.now();
-                let cutoff = new Date(); cutoff.setHours(5,0,0,0);
-                if (now > cutoff.getTime() && lastTickTime < cutoff.getTime()) {
-                    let passedBefore5 = Math.floor((cutoff.getTime() - lastTickTime) / 1000);
-                    if (passedBefore5 > 0) distributeTime(lastTickTime, passedBefore5);
-                } else {
-                    let passedSecs = Math.floor((now - lastTickTime) / 1000);
-                    if (passedSecs > 0) distributeTime(lastTickTime, passedSecs);
-                }
-                setL('blockSeconds', JSON.stringify(blockSeconds)); stopStopwatch(); 
-                showToast("📅 새벽 5시 리셋으로 타이머가 일시 정지되었습니다.");
-            }
-
             syncTodayRecord(lastLogicDate); 
             
             blockSeconds = Array(48).fill(0); targetBlocks = Array(48).fill(false); backupSeconds = Array(48).fill(0); alarmedBlocks = Array(48).fill(false); 
@@ -3081,26 +3117,6 @@
         updateHighlight(); 
         setInterval(() => { 
             updateHighlight(); checkNewDay(); 
-            
-            // 방치 알람 체크 (4시간)
-            if(!isRunning && activeUser) {
-                let now = Date.now();
-                if(now - lastStudyTime > 4 * 3600 * 1000) {
-                    if(now - lastHungerAlarm > 4 * 3600 * 1000) {
-                        let active = monsterData.inventory.find(m => m.id === monsterData.activeId);
-                        let msg = "몬스터가 심심해해요! 🥺 다시 책상으로 돌아와주세요.";
-                        if(active && active.status !== "egg") {
-                            let spec = getMonsterSpec(active);
-                            let pokeName = active.nickname || (spec ? spec.name : "포켓몬");
-                            msg = `${pokeName}이(가) 당신을 애타게 찾고 있어요! 🥺`;
-                        } else if(active && active.status === "egg") {
-                            msg = "함께할 준비가 식어가고 있어요! 다시 공부를 시작해주세요 🥺";
-                        }
-                        triggerBrowserAlarm(false, msg);
-                        lastHungerAlarm = now;
-                    }
-                }
-            }
         }, 10000); 
         
         document.getElementById('dash-user-name').innerText = activeUser; 
@@ -3211,6 +3227,7 @@
         backupSeconds = JSON.parse(getL('backupSeconds')) || Array(48).fill(0); 
         alarmedBlocks = JSON.parse(getL('alarmedBlocks')) || Array(48).fill(false); 
         dailyRecords = JSON.parse(getL('dailyRecords')) || {}; 
+        achievementsData = JSON.parse(getL('achievements') || '{}');
         customAlarms = JSON.parse(getL('customAlarms') || '[]');
         renderCustomAlarms();
 
@@ -3219,19 +3236,8 @@
         
         try { ddayConfig = JSON.parse(getL('ddayConfig')) || {title:"", date:""}; } catch(e) { ddayConfig = {title:"", date:""}; }
         
-        let rStateLocal = localStorage.getItem(activeUser + '_runningState') || getL('runningState');
-        if (rStateLocal && !isRunning) {
-            try {
-                let r = JSON.parse(rStateLocal);
-                if (r.isRunning && r.startTime > 0) {
-                    const passedSecs = Math.floor((Date.now() - r.startTime) / 1000);
-                    if (passedSecs > 0 && passedSecs < 86400) { distributeTime(r.startTime, passedSecs); }
-                    startStopwatch();
-                }
-            } catch(e){}
-        }
-
         if(domCache.items.length === 0) initListUI(); else updateNotesFromLocal();
+        updateBackupTimeUI();
         updateHighlight(); updateUI(true); updateDdayUI(); initMonster();
     }
 
@@ -3340,50 +3346,19 @@
         }
     }
 
-    function tick() {
-        if (!isRunning) return;
-        try {
-            const now = Date.now(); const passedSecs = Math.floor((now - lastTickTime) / 1000); 
-            if (passedSecs >= 1) {
-                distributeTime(lastTickTime, passedSecs); lastTickTime += passedSecs * 1000; 
-                lastStudyTime = now; // 방치 알림 갱신
-                setL('runningState', JSON.stringify({ isRunning: true, startTime: lastTickTime })); saveAndRefresh();
-            }
-        } catch(e) {}
-        tickFrameId = requestAnimationFrame(tick);
-    }
-
-    function distributeTime(startTimeMs, passedSecs) {
-        if (passedSecs <= 0) return; let maxSecs = Math.min(passedSecs, 57600); 
-        let d = new Date(startTimeMs); let kstTimeMs = d.getTime() + (d.getTimezoneOffset() * 60000) + (9 * 3600000); let kstDate = new Date(kstTimeMs);
-        let h = kstDate.getHours(), m = kstDate.getMinutes(), sec = kstDate.getSeconds();
-
-        for (let s = 0; s < maxSecs; s++) {
-            sec++; if (sec >= 60) { sec = 0; m++; } if (m >= 60) { m = 0; h++; } if (h >= 24) { h = 0; }
-            let absMins = (h < 5 ? h + 24 : h) * 60 + m; let idx = Math.floor((absMins - 300) / 30);
-            if (idx >= 0 && idx < 48 && blockSeconds[idx] < 1800) {
-                blockSeconds[idx]++;
-                if(blockSeconds[idx] === 1800 && isAlarmOn && !alarmedBlocks[idx]) {
-                    alarmedBlocks[idx] = true; setL('alarmedBlocks', JSON.stringify(alarmedBlocks));
-                    playChime(); showToast(`🎉 ${domCache.items[idx].querySelector('.time').innerText} 구간 달성!`, true);
-                }
-            }
-        }
-    }
-
     function saveAndRefresh() { setL('blockSeconds', JSON.stringify(blockSeconds)); updateUI(false); syncTodayRecord(); }
 
     function switchView(viewName) {
         document.body.style.overflow = ''; document.querySelectorAll('.view-layer').forEach(el => el.style.display = 'none');
         if (viewName === 'dashboard') {
-            document.getElementById('stopwatch-popup').style.display = 'none'; document.getElementById('dashboard-view').style.display = 'flex';
             document.getElementById('dash-today-time').innerText = totalStudyString; document.getElementById('dash-today-target').innerText = targetStudyString;
+            document.getElementById('dashboard-view').style.display = 'flex';
             updateDashboardTodoAlert(); window.scrollTo(0, 0); updateDdayUI(); updateMonsterUI();
         } else if (viewName === 'calendar') {
-            document.getElementById('stopwatch-popup').style.display = 'none'; document.getElementById('calendar-view').style.display = 'flex';
+            document.getElementById('calendar-view').style.display = 'flex';
             syncTodayRecord(); renderCalendar(); setTimeout(updateSpacers, 50); window.scrollTo(0, 0);
         } else if (viewName === 'study') {
-            document.getElementById('stopwatch-popup').style.display = 'flex'; document.getElementById('study-view').style.display = 'flex';
+            document.getElementById('study-view').style.display = 'flex';
             setTimeout(updateSpacers, 50); setTimeout(scrollToCurrent, 150);
         }
     }
@@ -3408,7 +3383,7 @@
 
     function initListUI() {
         const scheduleList = document.getElementById('schedule-list'); scheduleList.innerHTML = '';
-        domCache.items = []; domCache.timeTexts = []; domCache.checks = []; domCache.targets = []; domCache.notes = [];
+        domCache.items = []; domCache.minInputs = []; domCache.checks = []; domCache.targets = []; domCache.notes = [];
         
         timeData.forEach((item, i) => {
             const div = document.createElement('div'); div.className = 'list-item'; div.id = `item_${i}`;
@@ -3418,32 +3393,63 @@
                     <label class="cb-icon-box target" id="target_box_${i}" title="계획 설정"><input type="checkbox" id="target_${i}" class="cb-target" onchange="SFX.play('tap'); toggleTarget(${i})"><span>🎯</span></label>
                     <label class="cb-icon-box done" id="check_box_${i}" title="실제 완료"><input type="checkbox" id="check_${i}" class="cb-actual" onchange="SFX.play('tap'); toggleCheck(${i})"><span>✅</span></label>
                 </div>
-                <div class="time-col"><div class="time">${item.time}</div><div class="recorded-time" id="study_time_${i}">00:00</div></div>
+                <div class="time-col">
+                    <div class="time">${item.time}</div>
+                    <input type="number" class="manual-min-input" id="study_min_${i}" min="0" max="30" onchange="SFX.play('tap'); updateManualTime(${i}, this.value)" placeholder="0">
+                    <div style="font-size:10px; color:var(--text-muted); margin-top:2px; font-weight:700;">분</div>
+                </div>
                 <div class="text-wrapper"><input type="text" class="note-input" maxlength="100" id="note_${i}" placeholder="메모..." onchange="saveNote(${i}, this.value)"></div>`;
             
             scheduleList.appendChild(div);
-            domCache.items[i] = div; domCache.timeTexts[i] = document.getElementById(`study_time_${i}`);
+            domCache.items[i] = div; domCache.minInputs[i] = document.getElementById(`study_min_${i}`);
             domCache.checks[i] = document.getElementById(`check_${i}`); domCache.targets[i] = document.getElementById(`target_${i}`); 
             domCache.notes[i] = document.getElementById(`note_${i}`);
             let savedNote = getL(`note_${i}`); if (savedNote && savedNote !== "null") domCache.notes[i].value = savedNote;
         });
     }
 
+    window.updateManualTime = function(i, val) {
+        let mins = parseInt(val);
+        if (isNaN(mins)) mins = 0;
+        mins = Math.max(0, Math.min(30, mins));
+        blockSeconds[i] = mins * 60;
+        domCache.minInputs[i].value = mins > 0 ? mins : "";
+        saveAndRefresh();
+        triggerAutoSync(true);
+    };
+
     function updateUI(force = false) {
         let totalSecs = 0, targetSecs = 0;
         for (let i = 0; i < 48; i++) {
-            let s = blockSeconds[i]; totalSecs += s;
-            let str = `${Utils.pad(Math.floor(s/60))}:${Utils.pad(s%60)}`;
-            if (force || domCache.timeTexts[i].innerText !== str) {
-                domCache.timeTexts[i].innerText = str; domCache.checks[i].checked = (s >= 1800);
-                domCache.timeTexts[i].className = s >= 1800 ? 'recorded-time active full' : s > 0 ? 'recorded-time active' : 'recorded-time';
+            let s = blockSeconds[i] || 0; totalSecs += s;
+            let mins = Math.floor(s / 60);
+            
+            if (force || domCache.minInputs[i].value !== (mins > 0 ? String(mins) : "")) {
+                domCache.minInputs[i].value = mins > 0 ? mins : "";
             }
+            
+            domCache.checks[i].checked = (s >= 1800);
+            if (mins >= 30) {
+                domCache.minInputs[i].classList.add('full');
+            } else {
+                domCache.minInputs[i].classList.remove('full');
+            }
+            
             let cbDone = document.getElementById(`check_box_${i}`);
             if(s >= 1800) cbDone.classList.add('active'); else cbDone.classList.remove('active');
             
             domCache.targets[i].checked = targetBlocks[i]; let cbTarget = document.getElementById(`target_box_${i}`);
-            if(targetBlocks[i]) { targetSecs += 1800; domCache.items[i].classList.add('planned'); cbTarget.classList.add('active'); } 
-            else { domCache.items[i].classList.remove('planned'); cbTarget.classList.remove('active'); }
+            
+            domCache.items[i].classList.remove('completed', 'planned');
+            if (s >= 1800) domCache.items[i].classList.add('completed');
+            
+            if(targetBlocks[i]) { 
+                targetSecs += 1800; 
+                domCache.items[i].classList.add('planned'); 
+                cbTarget.classList.add('active'); 
+            } else { 
+                cbTarget.classList.remove('active'); 
+            }
         }
         
         let th = Math.floor(targetSecs / 3600); let tm = Math.floor((targetSecs % 3600) / 60);
@@ -3452,9 +3458,10 @@
         
         let h = Math.floor(totalSecs / 3600); let m = Math.floor((totalSecs % 3600) / 60);
         totalStudyString = `${Utils.pad(h)}h ${Utils.pad(m)}m`;
-        document.getElementById('total-study-display').innerText = `${Utils.pad(h)}:${Utils.pad(m)}:${Utils.pad(totalSecs%60)}`;
         document.getElementById('dash-today-time').innerText = totalStudyString;
-        document.getElementById('study-progress').style.width = Math.min(100, (totalSecs / 54000) * 100) + '%';
+        
+        updateHighlight();
+        checkAndUnlockAchievements();
     }
 
     function toggleSetting(type) {
@@ -3471,33 +3478,13 @@
     function toggleTarget(i) { targetBlocks[i] = domCache.targets[i].checked; setL('targetBlocks', JSON.stringify(targetBlocks)); saveAndRefresh(); triggerAutoSync(true); }
     function toggleCheck(i) { 
         if(domCache.checks[i].checked) { 
-            if (blockSeconds[i] < 1800) backupSeconds[i] = blockSeconds[i];
-            blockSeconds[i] = 1800; alarmedBlocks[i] = true; 
+            blockSeconds[i] = 1800;
         } else { 
-            if (backupSeconds[i] > 0) { blockSeconds[i] = backupSeconds[i]; backupSeconds[i] = 0; } 
-            else { if (blockSeconds[i] >= 1800 && !confirm("이 구간을 0초로 초기화할까요?")) { domCache.checks[i].checked = true; return; } blockSeconds[i] = 0; }
-            alarmedBlocks[i] = false; 
+            blockSeconds[i] = 0;
         }
-        setL('backupSeconds', JSON.stringify(backupSeconds)); saveAndRefresh(); triggerAutoSync(true); 
+        saveAndRefresh(); triggerAutoSync(true); 
     }
     function saveNote(i, val) { if(!val.trim()) removeL(`note_${i}`); else setL(`note_${i}`, val.trim()); triggerAutoSync(true); }
-    
-    function startStopwatch() { 
-        isRunning = true; lastTickTime = Date.now(); 
-        setL('runningState', JSON.stringify({ isRunning: true, startTime: lastTickTime })); 
-        document.getElementById('toggle-timer-btn').innerHTML = '⏸'; document.getElementById('toggle-timer-btn').classList.add('running'); 
-        if(tickFrameId) cancelAnimationFrame(tickFrameId); tickFrameId = requestAnimationFrame(tick); 
-    }
-    function stopStopwatch() { 
-        isRunning = false; setL('runningState', JSON.stringify({ isRunning: false, startTime: 0 })); lastStudyTime = Date.now();
-        document.getElementById('toggle-timer-btn').innerHTML = '▶'; document.getElementById('toggle-timer-btn').classList.remove('running'); 
-        if(tickFrameId) { cancelAnimationFrame(tickFrameId); tickFrameId = null; }
-    }
-    function toggleTimer() { 
-        const btn = document.getElementById('toggle-timer-btn'); if (btn.disabled) return;
-        SFX.play('tap'); btn.disabled = true; setTimeout(() => { btn.disabled = false; }, 1500); 
-        if (isRunning) { stopStopwatch(); triggerAutoSync(true); } else { startStopwatch(); triggerAutoSync(true); } 
-    }
     
     function manualClearBoard() { 
         if (confirm("🚨 주의: 오늘 기록된 계획, 집중 시간, 메모가 모두 초기화됩니다.\n\n정말 비울까요?")) { 
@@ -3530,8 +3517,10 @@
     }
     
     async function handleLogout() { 
-        if(confirm("로그아웃 하시겠습니까?\n(기기에 임시 저장된 데이터가 초기화됩니다)")) { 
-            showLoading(true, "데이터 소독 중... 🧹");
+        if(confirm("로그아웃 하시겠습니까?\n(현재까지의 기록을 서버에 안전하게 동기화 후 로그아웃합니다)")) { 
+            showLoading(true, "데이터 동기화 및 소독 중... 🧹");
+            syncTodayRecord();
+            await saveAllDataToServer();
             if (activeUser) { let dbData = await DBEngine.getAll(activeUser + '_'); for (const item of dbData) { await DBEngine.remove(item.id); } }
             localStorage.clear(); memCache = {}; location.reload(); 
         } 
@@ -3551,7 +3540,7 @@
         for (let i=0; i<fDay; i++) newHtml += `<div class="cal-day empty"></div>`;
         for (let i=1; i<=dInM; i++) {
             const dStr = `${y}-${Utils.pad(m+1)}-${Utils.pad(i)}`; const isToday = dStr === logicTodayStr; const rec = dailyRecords[dStr];
-            let rHtml = ''; let tHtml = ''; let hasTodo = false;
+            let rHtml = ''; let tHtml = ''; let hasTodo = false; let hasDiary = false;
             if (rec) { 
                 let hN = parseInt((rec.totalTime || "0h").split('h')[0]); 
                 if(rec.targetTime && rec.targetTime !== "00h 00m" && rec.targetTime !== "0h 0m") { 
@@ -3689,6 +3678,109 @@
                 </div><div class="reading-content">${renderDiary}</div></div>`;
 
         document.getElementById('modal-body').innerHTML = html; document.getElementById('record-modal').style.display = 'block';
+    }
+
+    // ==========================================
+    // 🏆 업적 시스템
+    // ==========================================
+    const ACHIEVEMENTS = {
+        'first_step': { icon: '👟', title: '첫걸음', desc: '첫 공부 기록 남기기' },
+        'study_10': { icon: '🔥', title: '불타는 의지', desc: '누적 10시간 공부' },
+        'study_50': { icon: '🚀', title: '로켓 스타터', desc: '누적 50시간 공부' },
+        'study_100': { icon: '⭐', title: '별의 학자', desc: '누적 100시간 공부' },
+        'study_240': { icon: '👑', title: '정복자', desc: '누적 240시간 공부' },
+        'perfect_day_5': { icon: '🎯', title: '집중의 달인', desc: '하루 5시간 이상 공부' },
+        'perfect_day_10': { icon: '💯', title: '완벽한 하루', desc: '하루 10시간 이상 공부' },
+        'pokedex_1': { icon: '🥚', title: '첫 파트너', desc: '첫 몬스터 마스터' },
+        'pokedex_10': { icon: '🎒', title: '수집가', desc: '10마리 몬스터 마스터' },
+        'pokedex_30': { icon: '📚', title: '몬스터 박사', desc: '30마리 몬스터 마스터' },
+        'shiny_hunter': { icon: '✨', title: '샤이니 헌터', desc: '첫 이로치 몬스터 획득' },
+        'writer': { icon: '✍️', title: '기록가', desc: '일기 10일 이상 작성' },
+    };
+
+    function calculateTotalStats() {
+        let totalStudySeconds = 0;
+        Object.values(dailyRecords).forEach(rec => {
+            if (rec.totalTime) {
+                const parts = rec.totalTime.split('h');
+                const h = parseInt(parts[0]) || 0;
+                const m = parseInt(parts[1]?.replace('m', '').trim()) || 0;
+                totalStudySeconds += (h * 3600) + (m * 60);
+            }
+        });
+
+        const retiredCount = monsterData.inventory.filter(m => m.status === 'retired').length;
+        const shinyCount = monsterData.inventory.filter(m => m.isShiny).length;
+        const diaryCount = Object.values(dailyRecords).filter(rec => rec.diary && rec.diary.trim() !== '').length;
+        const todayHours = (blockSeconds.reduce((a, b) => a + b, 0)) / 3600;
+
+        return {
+            totalHours: totalStudySeconds / 3600,
+            retiredCount: retiredCount,
+            shinyCount: shinyCount,
+            diaryCount: diaryCount,
+            todayHours: todayHours,
+            firstRecord: Object.keys(dailyRecords).length > 0
+        };
+    }
+
+    function checkAndUnlockAchievements() {
+        const stats = calculateTotalStats();
+        let newUnlock = false;
+
+        const check = (id, condition) => {
+            if (!achievementsData[id] && condition) {
+                achievementsData[id] = Utils.getLogicalDateString();
+                showToast(`🏆 업적 달성! [${ACHIEVEMENTS[id].title}]`, true);
+                newUnlock = true;
+            }
+        };
+
+        check('first_step', stats.firstRecord);
+        check('study_10', stats.totalHours >= 10);
+        check('study_50', stats.totalHours >= 50);
+        check('study_100', stats.totalHours >= 100);
+        check('study_240', stats.totalHours >= 240);
+        check('perfect_day_5', stats.todayHours >= 5);
+        check('perfect_day_10', stats.todayHours >= 10);
+        check('pokedex_1', stats.retiredCount >= 1);
+        check('pokedex_10', stats.retiredCount >= 10);
+        check('pokedex_30', stats.retiredCount >= 30);
+        check('shiny_hunter', stats.shinyCount >= 1);
+        check('writer', stats.diaryCount >= 10);
+
+        if (newUnlock) {
+            setL('achievements', JSON.stringify(achievementsData));
+            triggerAutoSync(true);
+            if (document.getElementById('achievement-modal').style.display === 'flex') {
+                openAchievementsModal(); // Refresh view if open
+            }
+        }
+    }
+
+    function openAchievementsModal() {
+        const grid = document.getElementById('achievement-grid');
+        grid.innerHTML = '';
+
+        for (const id in ACHIEVEMENTS) {
+            const ach = ACHIEVEMENTS[id];
+            const unlockedDate = achievementsData[id];
+            const isUnlocked = !!unlockedDate;
+
+            grid.innerHTML += `
+                <div class="achievement-item ${isUnlocked ? 'unlocked' : 'locked'}">
+                    <div style="font-size: 36px; margin-bottom: 8px;">${ach.icon}</div>
+                    <div style="font-size: 14px; font-weight: 800; color: ${isUnlocked ? '#a16207' : 'var(--text-main)'}; margin-bottom: 4px;">${ach.title}</div>
+                    <div style="font-size: 11px; color: ${isUnlocked ? '#ca8a04' : 'var(--text-muted)'}; font-weight: 500; line-height: 1.3;">
+                        ${ach.desc}
+                        ${isUnlocked ? `<br><span style="font-weight:700; font-size:10px;">(${unlockedDate})</span>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        document.getElementById('achievement-modal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
     }
 
     // ==========================================
