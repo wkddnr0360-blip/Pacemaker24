@@ -2543,7 +2543,7 @@ async function updateMonsterUI() {
     function removeL(k) { try { delete memCache[activeUser + '_' + k]; DBEngine.remove(activeUser + '_' + k); localStorage.removeItem(activeUser + '_' + k); } catch(e) {} }
 
     function saveUserLocalData(d, forceOverwrite = false) {
-    if (!d) return;
+    if (!d || Object.keys(d).length === 0) return;
     const safeParse = Utils.safeParseJSON;
 
     if (!window.isStorageHooked) {
@@ -2598,10 +2598,6 @@ async function updateMonsterUI() {
 
     ['backupSeconds', 'alarmedBlocks', 'settings', 'lastLogicalDate', 'customAlarms', 'monsterData', 'achievements'].forEach(k => { 
         if (d[k] !== undefined && d[k] !== "") {
-            if (k === 'monsterData') {
-                let p = Utils.safeParseJSON(d[k], null);
-                if (!p || Array.isArray(p) || !Array.isArray(p.inventory)) return; 
-            }
             if (isCloudNewer || !getL(k)) setL(k, typeof d[k] === 'object' ? JSON.stringify(d[k]) : d[k]); 
         } else if (forceOverwrite) {
             removeL(k); 
@@ -2625,7 +2621,6 @@ async function updateMonsterUI() {
                     
                     if (date === currentLogicDate) {
                         mergedRec[date] = l; 
-                        // 안전장치: 클라우드에 일기/할일이 있으면 안전하게 병합 (기존 내용 증발 방지)
                         if (isCloudNewer) { 
                             if (c.diary) mergedRec[date].diary = c.diary; 
                             if (c.todo) mergedRec[date].todo = c.todo; 
@@ -2711,41 +2706,42 @@ async function updateMonsterUI() {
     }
 
     async function loadCategoryFromServer(baseId, actionName = "login_load") {
-        let res = await fetchServer(actionName, null, baseId);
-        if (!res.success) {
-            if (res.message && (res.message.includes("장애") || res.message.includes("혼잡") || res.message.includes("에러"))) return { success: false, message: res.message };
-            return { success: true, data: "{}" };
-        }
-        if (!res.data || res.data === "null" || res.data === "") return { success: true, data: "{}" };
-        
-        let dataObj = typeof res.data === 'string' ? null : res.data;
-        if (!dataObj) { 
-            try { dataObj = JSON.parse(res.data); } catch(e) { return { success: false, message: "클라우드 데이터 파싱 오류" }; } 
-        }
-
-        if (dataObj && dataObj.type === "single") { 
-            return { success: true, data: dataObj.content, backupTime: res.backupTime }; 
-        } else if (dataObj && dataObj.type === "master") {
-            let count = dataObj.chunkCount; let fullStr = "";
-            for (let i = 0; i < count; i++) {
-                let cRes = await fetchServer(actionName, null, baseId + "_p" + i);
-                if (cRes.success && cRes.data) { 
-                    let cParsed = typeof cRes.data === 'string' ? JSON.parse(cRes.data) : cRes.data; 
-                    fullStr += (cParsed.content || ""); 
-                } else return { success: false, message: "분할 데이터 로드 실패" };
-            }
-            return { success: true, data: fullStr, backupTime: res.backupTime };
-        } 
-        return { success: true, data: res.data, backupTime: res.backupTime };
+    let res = await fetchServer(actionName, null, baseId);
+    if (!res.success) {
+        return { success: false, message: res.message || "서버 응답 오류" };
     }
+    if (!res.data || res.data === "null" || res.data === "") {
+        return { success: true, data: "{}" };
+    }
+
+    let dataObj = deepUnwrap(res.data);
+
+    if (dataObj.type === "single") {
+        return { success: true, data: dataObj.content, backupTime: res.backupTime };
+    } else if (dataObj.type === "master") {
+        let count = dataObj.chunkCount;
+        let fullStr = "";
+        for (let i = 0; i < count; i++) {
+            let cRes = await fetchServer(actionName, null, baseId + "_p" + i);
+            if (cRes.success && cRes.data) {
+                let cParsed = deepUnwrap(cRes.data);
+                fullStr += (cParsed.content || "");
+            } else {
+                return { success: false, message: `분할 데이터(${i}) 로드 실패` };
+            }
+        }
+        return { success: true, data: fullStr, backupTime: res.backupTime };
+    }
+    return { success: true, data: res.data, backupTime: res.backupTime };
+}
 
     // 🌟 완전무결 데이터 파서가 포함된 통합 서버 로드 로직
     async function loadAllDataFromServer() {
     try {
-        let p1 = loadCategoryFromServer(activeUser);
-        let p2 = loadCategoryFromServer(activeUser + "_diary");
-        let p3 = loadCategoryFromServer(activeUser + "_todo");
-        let p4 = loadCategoryFromServer(activeUser + "_mon");
+        let p1 = loadCategoryFromServer(activeUser, "login_load");
+        let p2 = loadCategoryFromServer(activeUser + "_diary", "login_load");
+        let p3 = loadCategoryFromServer(activeUser + "_todo", "login_load");
+        let p4 = loadCategoryFromServer(activeUser + "_mon", "login_load");
 
         let results = await Promise.allSettled([p1, p2, p3, p4]);
 
@@ -2756,7 +2752,6 @@ async function updateMonsterUI() {
 
         if (!resMain.success) return resMain;
 
-        // 새롭게 만든 강력한 unwrap 함수로 데이터를 확실히 풉니다.
         let mainParsed = deepUnwrap(resMain.data);
         let diaryParsed = deepUnwrap(resDiary.data);
         let todoParsed = deepUnwrap(resTodo.data);
@@ -2766,21 +2761,18 @@ async function updateMonsterUI() {
         let diaryRecs = deepUnwrap(diaryParsed.diaryRecords);
         let todoRecs = deepUnwrap(todoParsed.todoRecords);
 
-        // 분리된 일기장과 할일을 메인 달력 데이터에 병합
         for (let dateStr in diaryRecs) {
             if (!dailyRecordsObj[dateStr]) dailyRecordsObj[dateStr] = {};
-            dailyRecordsObj[dateStr].diary = diaryRecs[dateStr];
+            if(diaryRecs[dateStr]) dailyRecordsObj[dateStr].diary = diaryRecs[dateStr];
         }
         for (let dateStr in todoRecs) {
             if (!dailyRecordsObj[dateStr]) dailyRecordsObj[dateStr] = {};
-            dailyRecordsObj[dateStr].todo = todoRecs[dateStr];
+            if(todoRecs[dateStr]) dailyRecordsObj[dateStr].todo = todoRecs[dateStr];
         }
         mainParsed.dailyRecords = JSON.stringify(dailyRecordsObj);
-        
-        // 포켓몬 데이터 병합
+
         let monDataFromMonSheet = deepUnwrap(monParsed.monsterData);
         let monDataFromMainSheet = deepUnwrap(mainParsed.monsterData);
-        
         let finalMonData = Object.keys(monDataFromMonSheet).length > 0 ? monDataFromMonSheet : monDataFromMainSheet;
         if (Object.keys(finalMonData).length > 0) {
             mainParsed.monsterData = JSON.stringify(finalMonData);
@@ -2876,7 +2868,7 @@ async function updateMonsterUI() {
     async function loadBackupDataFromServer() {
     if(!confirm("⚠️ 경고: 현재 기기의 모든 데이터가 지워지고 서버에 보관된 [백업 데이터]로 복구됩니다.\n\n다른 기기에서 백업한 내용을 가져오시겠습니까?")) return;
     showLoading(true, "서버에서 백업본 찾는 중... 🔍");
-    
+
     try {
         let results = await Promise.allSettled([
             loadCategoryFromServer(activeUser, "backup_load"),
@@ -2885,23 +2877,21 @@ async function updateMonsterUI() {
             loadCategoryFromServer(activeUser + "_mon", "backup_load")
         ]);
 
-        function getRes(idx) { 
-            return results[idx].status === 'fulfilled' ? results[idx].value : { success: false, message: "네트워크 연결 실패" }; 
-        }
-        
+        function getRes(idx) { return results[idx].status === 'fulfilled' ? results[idx].value : { success: false, message: "네트워크 연결 실패" }; }
+
         let resMain = getRes(0), resDiary = getRes(1), resTodo = getRes(2), resMon = getRes(3);
 
         if (!resMain.success) {
             showLoading(false);
-            return alert(`❌ 불러오기 실패: ${resMain.message || "알 수 없는 오류"}\n\n※ 다른 기기와 아이디/비밀번호가 완전히 일치하는지 확인해 주세요.`);
+            return alert(`❌ 불러오기 실패: ${resMain.message || "알 수 없는 오류"}\n\n※ 아이디/비밀번호가 일치하는지 확인해 주세요.`);
         }
 
-        if (!resMain.data || resMain.data === "{}" || resMain.data === "null") {
+        // 데이터가 텅 비었거나 없는 경우를 강력하게 차단
+        if (!resMain.data || resMain.data === "{}" || Object.keys(deepUnwrap(resMain.data)).length === 0) {
             showLoading(false);
-            return alert("❓ 해당 아이디로 저장된 백업본이 없습니다.\n\n이전 기기에서 '설정 > 수동 백업'을 먼저 완료했는지 확인해 주세요.");
+            return alert("❓ 해당 아이디로 저장된 백업본이 없거나 손상되었습니다.\n\n이전 기기에서 '설정 > 수동 백업'을 다시 완료해 주세요.");
         }
 
-        // 강력한 unwrap 함수로 백업 데이터 해독
         let mainParsed = deepUnwrap(resMain.data);
         let diaryParsed = deepUnwrap(resDiary.data);
         let todoParsed = deepUnwrap(resTodo.data);
@@ -2910,30 +2900,30 @@ async function updateMonsterUI() {
         let dailyRecs = deepUnwrap(mainParsed.dailyRecords);
         let dRecs = deepUnwrap(diaryParsed.diaryRecords);
         let tRecs = deepUnwrap(todoParsed.todoRecords);
-        
-        Object.keys(dRecs).forEach(k => { if(!dailyRecs[k]) dailyRecs[k]={}; dailyRecs[k].diary = dRecs[k]; });
-        Object.keys(tRecs).forEach(k => { if(!dailyRecs[k]) dailyRecs[k]={}; dailyRecs[k].todo = tRecs[k]; });
+
+        Object.keys(dRecs).forEach(k => { if(!dailyRecs[k]) dailyRecs[k]={}; if(dRecs[k]) dailyRecs[k].diary = dRecs[k]; });
+        Object.keys(tRecs).forEach(k => { if(!dailyRecs[k]) dailyRecs[k]={}; if(tRecs[k]) dailyRecs[k].todo = tRecs[k]; });
         mainParsed.dailyRecords = JSON.stringify(dailyRecs);
-        
+
         let monDataFromBackup = deepUnwrap(monParsed.monsterData);
         if (monDataFromBackup && Object.keys(monDataFromBackup).length > 0) {
             mainParsed.monsterData = JSON.stringify(monDataFromBackup);
         }
 
         let backupTimeStr = resMain.backupTime ? new Date(resMain.backupTime).toLocaleString() : "기록됨";
-        
-        // 현재 기기 강제 덮어쓰기
+
+        // 기존 기기 데이터를 날리고 완벽히 강제 덮어쓰기 적용
         applyCloudData(mainParsed, true, true, true);
-        await saveAllDataToServer(); 
-        
+        await saveAllDataToServer();
+
         showLoading(false);
         alert(`✅ 복구가 완료되었습니다!\n(백업 일시: ${backupTimeStr})\n\n앱을 재시작합니다.`);
         location.reload();
 
     } catch (e) {
         console.error("Backup Load Error:", e);
-        showLoading(false); 
-        alert("❌ 복구 중 예상치 못한 기술적 오류가 발생했습니다.");
+        showLoading(false);
+        alert("❌ 복구 중 기술적 오류가 발생했습니다.");
     }
 }
 
@@ -4104,13 +4094,12 @@ async function updateMonsterUI() {
         } catch (e) { showLoading(false); document.body.style.overflow = ''; showToast("글꼴 로딩에 실패했습니다."); }
     }
 
-    window.deepUnwrap = function(data) {
+ window.deepUnwrap = function(data) {
     if (data === null || data === undefined) return {};
     let current = data;
     let parsedSomething = true;
     let safetyCount = 0;
 
-    // 포장지(JSON String 또는 래퍼 객체)가 완전히 벗겨질 때까지 최대 10번 반복해서 풉니다.
     while (parsedSomething && safetyCount < 10) {
         parsedSomething = false;
         safetyCount++;
@@ -4118,9 +4107,11 @@ async function updateMonsterUI() {
         if (typeof current === 'string') {
             try {
                 let parsed = JSON.parse(current);
-                current = parsed;
-                parsedSomething = true;
-                continue;
+                if (typeof parsed === 'object' && parsed !== null) {
+                    current = parsed;
+                    parsedSomething = true;
+                    continue;
+                }
             } catch(e) { }
         }
 
@@ -4128,9 +4119,11 @@ async function updateMonsterUI() {
             if (current.type === "single" && current.content) {
                 current = current.content;
                 parsedSomething = true;
-            } else if (current.data && current.success !== undefined) {
-                current = current.data;
-                parsedSomething = true;
+            } else if (current.data !== undefined) {
+                if (typeof current.data === 'string' || (typeof current.data === 'object' && current.data !== null)) {
+                    current = current.data;
+                    parsedSomething = true;
+                }
             }
         }
     }
