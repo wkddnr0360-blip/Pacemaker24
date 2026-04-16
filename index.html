@@ -419,7 +419,7 @@
         </div>
         <div style="display:flex; flex-direction:column; align-items:center; text-align:center; margin-bottom:15px;">
             <h2 style="margin-bottom:0; margin-top:0;">반갑습니다,<br><span id="dash-user-name" style="color:var(--primary);">User</span>님!</h2>
-            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted); font-weight: 800; background: var(--surface); padding: 5px 12px; border-radius: 12px; border: 1px solid var(--border-color); display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
+            <div style="margin-top: 8px; font-size: 11px; color: var(--text-muted); font-weight: 800; background: var(--bg-sec); padding: 4px 12px; border-radius: 12px; border: 1px solid var(--border-color);">
                 총 누적 몰입: <span id="dash-total-hours-val" style="color: var(--primary);">0.0</span>h
             </div>
         </div>
@@ -842,15 +842,15 @@
         <div style="background:var(--bg-sec); border:1px solid var(--border-color); border-radius:16px; padding:15px; margin-bottom:20px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; text-align:center; flex-shrink:0;">
             <div>
                 <div style="font-size:11px; color:var(--text-muted); font-weight:800; margin-bottom:4px;">이번 주</div>
-                <div id="stat-week-hours" style="font-size:16px; font-weight:900; color:var(--text-main);">0.0h</div>
+                <div id="stat-week-hours" style="font-size:15px; font-weight:900; color:var(--text-main);">0.0h</div>
             </div>
             <div style="border-left:1px solid var(--border-color); border-right:1px solid var(--border-color);">
                 <div style="font-size:11px; color:var(--text-muted); font-weight:800; margin-bottom:4px;">이번 달</div>
-                <div id="stat-month-hours" style="font-size:16px; font-weight:900; color:var(--primary);">0.0h</div>
+                <div id="stat-month-hours" style="font-size:15px; font-weight:900; color:var(--primary);">0.0h</div>
             </div>
             <div>
                 <div style="font-size:11px; color:var(--text-muted); font-weight:800; margin-bottom:4px;">전체 누적</div>
-                <div id="stat-total-hours" style="font-size:16px; font-weight:900; color:var(--success);">0.0h</div>
+                <div id="stat-total-hours" style="font-size:15px; font-weight:900; color:var(--success);">0.0h</div>
             </div>
         </div>
 
@@ -3218,6 +3218,39 @@ async function executeSafeSync() {
     }
 
     // 🌟 캘린더 빈칸 절약을 위한 텍스트 포맷 최적화 반영
+   
+    function openAchievementsModal() {
+        const stats = calculateTotalStats(); 
+        
+        document.getElementById('stat-week-hours').innerText = stats.weekHours.toFixed(1) + 'h';
+        document.getElementById('stat-month-hours').innerText = stats.monthHours.toFixed(1) + 'h';
+        document.getElementById('stat-total-hours').innerText = stats.totalHours.toFixed(1) + 'h';
+
+        checkAchievements();
+        renderAchievements();
+        document.getElementById('achievement-modal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function switchView(viewId) {
+        document.querySelectorAll('.view-layer').forEach(el => { el.style.display = 'none'; el.style.opacity = '0'; });
+        const target = document.getElementById(`${viewId}-view`);
+        target.style.display = 'flex';
+        
+        setTimeout(() => { target.style.transition = 'opacity 0.2s'; target.style.opacity = '1'; }, 10);
+        
+        if (viewId === 'calendar') { 
+            renderCalendar(); updateDdayUI(); window.scrollTo(0, 0); 
+        }
+        else if (viewId === 'study') { 
+            updateHighlight(); updateUI(false); updateDdayUI(); 
+            setTimeout(scrollToCurrent, 300); 
+        }
+        else if (viewId === 'dashboard') { 
+            updateDashboardTodoAlert(); updateUI(false); updateDdayUI(); window.scrollTo(0, 0); 
+        }
+    }
+
     function renderCalendar() {
         const year = currentRenderDate.getFullYear(); const month = currentRenderDate.getMonth();
         document.getElementById('cal-month-year').innerText = `${year}년 ${month + 1}월`;
@@ -3251,7 +3284,7 @@ async function executeSafeSync() {
                 });
             }
 
-            // 🐛 텍스트 짤림 방지를 위해 빈칸을 제거 (10h 30m -> 10h30m)
+            // 🌟 텍스트 짤림 방지를 위해 빈칸 제거 (예: 10h 30m -> 10h30m)
             let targetText = tgtSec > 0 ? `${Math.floor(tgtSec/3600)}h${Utils.pad(Math.floor((tgtSec%3600)/60))}m` : '-';
             let totalText = tSec > 0 ? `${Math.floor(tSec/3600)}h${Utils.pad(Math.floor((tSec%3600)/60))}m` : '-';
             
@@ -3298,17 +3331,15 @@ async function executeSafeSync() {
         const todayDateStr = Utils.getLogicalDateString();
         const now = Utils.getKoreaDate();
 
-        // 🌟 이번 주 월요일 기준 (주간 통계용)
         const dayOfWeek = now.getDay();
         const diffToMonday = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
         const monday = new Date(now.getFullYear(), now.getMonth(), diffToMonday);
         monday.setHours(0,0,0,0);
 
-        // 🌟 이번 달 1일 기준 (월간 통계용)
         const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
         Object.keys(dailyRecords).forEach(dateStr => {
-            // 🐛 핵심 픽스: '오늘'의 기록은 달력 데이터에서 제외합니다! (밑에서 실시간 블록으로 한 번만 더함)
+            // 🐛 핵심 버그 픽스: '오늘'의 달력 기록은 완전히 무시합니다! (이중 덧셈 원천 차단)
             if (dateStr === todayDateStr) return;
 
             let rec = dailyRecords[dateStr];
@@ -3327,12 +3358,11 @@ async function executeSafeSync() {
             if (checkDate >= firstDayOfMonth) monthSeconds += dailySecs;
         });
 
-        // 오늘 실시간 데이터 계산
+        // 오직 실시간 시간표(체크박스) 데이터만 오늘 기록으로 1번 합산합니다.
         let safeBlockSeconds = Array.isArray(blockSeconds) ? blockSeconds : Array(48).fill(0);
         let todaySecs = safeBlockSeconds.reduce((a, b) => Number(a) + Number(b), 0);
         if(isNaN(todaySecs)) todaySecs = 0;
 
-        // 오늘 데이터를 전체/주간/월간에 딱 한 번씩만 정확하게 더해줍니다.
         totalStudySeconds += todaySecs;
         let todayObj = new Date(todayDateStr + "T00:00:00");
         if(todayObj >= monday) weekSeconds += todaySecs;
@@ -3379,7 +3409,7 @@ async function executeSafeSync() {
         }
         else if (viewId === 'study') { 
             updateHighlight(); updateUI(false); updateDdayUI(); 
-            setTimeout(scrollToCurrent, 300); 
+            setTimeout(scrollToCurrent, 300); // 스크롤 무시 버그 해결
         }
         else if (viewId === 'dashboard') { 
             updateDashboardTodoAlert(); updateUI(false); updateDdayUI(); window.scrollTo(0, 0); 
@@ -3471,7 +3501,6 @@ async function executeSafeSync() {
         updateUI(false); 
     };
 
-    // 🐛 [버그 픽스] 포켓몬 텍스트 잘림 해결 (flex-wrap 적용) 및 수정 버튼 줄바꿈 분리
     async function openRecordModal(dateStr) {
         document.getElementById('modal-title').innerText = `${dateStr} 기록 상세`;
         const rec = dailyRecords[dateStr] || {};
@@ -3499,6 +3528,7 @@ async function executeSafeSync() {
                 
                 let growthBadge = tAct !== "00h 00m" ? `<span style="background:rgba(16, 185, 129, 0.15); color:var(--success); padding:3px 8px; border-radius:6px; font-size:11px; font-weight:900; white-space:nowrap;">+${tAct} 성장 🚀</span>` : '';
 
+                // 🌟 글씨 잘림 방지를 위해 flex-wrap:wrap 적용
                 monInfoHTML = `
                     <div style="background:var(--bg-sec); border:1px solid var(--border-color); border-radius:18px; padding:18px; margin-bottom:15px; display:flex; align-items:center; gap:15px; position:relative; overflow:hidden; flex-shrink:0;">
                         <img src="${imgUrl}" class="float-anim" style="width:65px; height:65px; object-fit:contain; z-index:2; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.1)); cursor:pointer;" onclick="playPokemonCry(${pokeId}, this, ${currentStageIdx >= 3}, '${spec.name}', ${spec.pokeIds[0]})">
