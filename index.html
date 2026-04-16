@@ -3126,6 +3126,12 @@ async function updateMonsterUI() {
 
     function startDashboard() {
         document.getElementById('dash-user-name').innerText = activeUser;
+        
+        // 🌟 [버그 수정] 설정 창의 아이디 표기도 실제 로그인한 아이디로 정확히 바꿔줍니다!
+        if (document.getElementById('settings-userid')) {
+            document.getElementById('settings-userid').innerText = activeUser; 
+        }
+
         switchView('dashboard');
         
         if ('Notification' in window && Notification.permission === 'granted' && !notificationIntervalId) {
