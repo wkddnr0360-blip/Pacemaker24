@@ -180,26 +180,40 @@
     .cal-weekdays .sun { color: #ef4444; }
     .cal-weekdays .sat { color: var(--primary); }
     
-    /* 📅 캘린더 UI 프리미엄 디자인 */
-    .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; padding: 15px 10px; background: var(--bg); width: 100%; box-sizing: border-box; }
-    .cal-day { background: var(--surface); min-height: 95px; padding: 8px 4px; border-radius: 16px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; box-sizing: border-box; position: relative; transition: transform 0.15s, box-shadow 0.2s; border: 1px solid var(--border-color); overflow: hidden; }
+    /* 👇 캘린더 관련 CSS를 이것으로 덮어쓰세요 */
+    /* 📅 캘린더 UI 겹침 방지 및 반응형 개편 */
+    .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; padding: 12px 8px; background: var(--bg); width: 100%; box-sizing: border-box; }
+    .cal-day { background: var(--surface); height: 100%; min-height: 85px; padding: 6px 3px; border-radius: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; box-sizing: border-box; position: relative; transition: transform 0.15s, box-shadow 0.2s; border: 1px solid var(--border-color); overflow: hidden; }
     .cal-day:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
     .cal-day:active { transform: scale(0.95); }
     .cal-day.today { border: 2px solid var(--primary); background: rgba(0, 149, 246, 0.03); }
     .cal-day.empty { background: transparent; border: none; cursor: default; box-shadow: none; }
+    .cal-day-bg-fill { position: absolute; bottom: 0; left: 0; width: 100%; pointer-events: none; background: linear-gradient(180deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.2) 100%) !important; z-index: 1; transition: height 0.5s ease-out; border-radius: 0 0 10px 10px; }
     
-    /* 달성률에 따라 아래서부터 차오르는 배경 */
-    .cal-day-bg-fill { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(180deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.25) 100%); z-index: 1; transition: height 0.5s ease-out; border-radius: 0 0 14px 14px; }
-    
-    .date-num { font-size: 14px; font-weight: 800; color: var(--text-main); margin-bottom: 6px; z-index: 2; }
+    .date-num { font-size: 13px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; z-index: 2; }
     .date-num.sun { color: #ef4444; }
     .date-num.sat { color: var(--primary); }
     
-    .cal-badge-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%; z-index: 2; }
-    .cal-badge { font-size: 10.5px; font-weight: 800; padding: 3px 0; border-radius: 6px; width: 90%; text-align: center; letter-spacing: -0.5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .cal-badge-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 100%; z-index: 2; margin-top: 2px; }
+    .cal-badge { font-size: 9.5px; font-weight: 800; padding: 2px 1px; border-radius: 4px; width: 98%; text-align: center; letter-spacing: -0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; box-sizing: border-box; }
     .cal-badge.target { color: var(--text-muted); background: var(--bg-sec); border: 1px solid var(--border-color); font-weight: 600; }
     .cal-badge.actual { color: var(--primary); background: rgba(0, 149, 246, 0.1); border: 1px solid rgba(0, 149, 246, 0.2); }
     .cal-badge.actual.high { color: #ffffff; background: var(--success); border: 1px solid #059669; }
+
+    /* 💥 메가진화 이펙트 애니메이션 수정 (transform 꼬임 방지) */
+    @keyframes mega-attack {
+        0% { transform: scale(1.15) translate(0, 0); filter: drop-shadow(0 0 10px rgba(0,0,0,0.2)); }
+        15% { transform: scale(1.25) translate(-5px, 0); filter: drop-shadow(0 0 20px #ef4444) brightness(1.3); }
+        35% { transform: scale(1.25) translate(5px, -5px); filter: drop-shadow(0 0 30px #eab308) brightness(1.5); }
+        55% { transform: scale(1.25) translate(-5px, 5px); filter: drop-shadow(0 0 30px #3b82f6) brightness(1.4); }
+        75% { transform: scale(1.25) translate(5px, 0); filter: drop-shadow(0 0 20px #8b5cf6) brightness(1.3); }
+        100% { transform: scale(1.15) translate(0, 0); filter: drop-shadow(0 0 10px rgba(0,0,0,0.2)); }
+    }
+    .mega-attack-anim { animation: mega-attack 0.5s ease-out; }
+    
+    /* 상세 기록창 내 포켓몬 둥둥 떠다니는 애니메이션 */
+    @keyframes float-gentle { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
+    .float-anim { animation: float-gentle 3s ease-in-out infinite; }
 
     .overlay-base { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(2px); z-index: 2000; cursor: pointer; }
     .modal-box { background: var(--surface); width: 100%; max-width: 450px; border-radius: 20px; max-height: 85vh; display:flex; flex-direction:column; box-shadow: 0 10px 40px rgba(0,0,0,0.2); box-sizing: border-box; cursor: default; overflow: hidden; border: 1px solid var(--border-color); }
@@ -425,7 +439,7 @@
         </div>
 
         <div style="width: 100%; display: flex; flex-direction: column; gap: 10px;">
-            <button class="dash-btn" style="background:var(--primary); color:white; font-size: 16px; box-shadow: 0 4px 15px rgba(0, 149, 246, 0.25);" onclick="SFX.play('pop'); switchView('study')">🔥 오늘의 달리기 시작</button>
+            <button class="dash-btn" style="background:var(--primary); color:white; font-size: 16px; box-shadow: 0 4px 15px rgba(0, 149, 246, 0.25);" onclick="playPokemonCry(25); switchView('study')">🔥 오늘의 달리기 시작</button>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <button class="dash-btn-outline" onclick="SFX.play('pop'); switchView('calendar')">📅 전체 기록</button>
                 <button class="dash-btn-outline" onclick="SFX.play('pop'); openBoardModal();">📢 스터디 라운지</button>
@@ -826,8 +840,8 @@
     // ==========================================
     // 📦 1. 시스템 설정 및 전역 변수
     // ==========================================
-    const APP_VERSION = "1.0.0 dev2"; 
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJM25PYAGSCyDzMx5W8hSiLnoFr9s0ZKIZaIiQ2FSySgleSxbgs1vka8o8TLHXYnjj/exec";
+    const APP_VERSION = "1.0.0 dev3"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwk0ICF2ErSGtXUtEGDUJbA6urqDyBHR4iafAmITlUo4G96it-Y6TNbZXnKVjh5eFrU/exec";
     
     let activeUser = localStorage.getItem('activeUser');
     if (activeUser === 'null' || activeUser === 'undefined') { activeUser = null; localStorage.removeItem('activeUser'); }
@@ -863,14 +877,16 @@
     let editingPostId = null; 
     let currentBoardItem = null;
 
-    window.playPokemonCry = async function(pokeId, el, isMega, pokeName = "포켓몬") {
+    // 기존 playPokemonCry 함수 전체 교체
+    window.playPokemonCry = async function(pokeId, el, isMega, pokeName = "", basePokeId = null) {
         if (el && isMega) {
             el.classList.remove('mega-attack-anim');
-            void el.offsetWidth; // 리플로우(Reflow) 강제 발생시켜 애니메이션 재시작
+            void el.offsetWidth; // 리플로우 강제 발생
             el.classList.add('mega-attack-anim');
             setTimeout(() => el.classList.remove('mega-attack-anim'), 600);
         } else if (el) {
             let originalTrans = el.style.transform || 'scale(1.15)'; 
+            if(!originalTrans.includes('scale')) originalTrans += ' scale(1.15)';
             el.style.transition = 'transform 0.1s';
             el.style.transform = originalTrans + ' translateY(-15px)';
             setTimeout(() => { el.style.transform = originalTrans; }, 150);
@@ -878,12 +894,20 @@
         
         try {
             let data = await PokeAPI.getPokemon(pokeId);
+            let cryUrl = null;
+            if(data && data.cries) cryUrl = data.cries.latest || data.cries.legacy;
+
+            // 🐛 메가진화(ID > 10000) 포켓몬의 소리가 누락된 경우, 원본(basePokeId)의 소리로 대체!
+            if (!cryUrl && basePokeId && pokeId >= 10000) {
+                let baseData = await PokeAPI.getPokemon(basePokeId);
+                if(baseData && baseData.cries) cryUrl = baseData.cries.latest || baseData.cries.legacy;
+            }
 
             if (!isSoundOn) return;
-            if (data && data.cries && data.cries.latest) {
-                let audio = new Audio(data.cries.latest);
+            if (cryUrl) {
+                let audio = new Audio(cryUrl);
                 audio.volume = 0.4;
-                    audio.play().catch(e => { console.warn("오디오 재생 정책에 의해 차단됨:", e); });
+                audio.play().catch(e => { SFX.play('success'); });
             } else {
                 SFX.play('success'); 
             }
@@ -1578,7 +1602,7 @@
         return totalSeconds + (monster.bonusSeconds || 0);
     }
 
-    async function updateMonsterUI() {
+async function updateMonsterUI() {
         try {
             const titleEl = document.getElementById('monster-title');
             const emojiEl = document.getElementById('monster-emoji');
@@ -1593,10 +1617,7 @@
 
             let displayMonster = monsterData.inventory.find(m => m.id === monsterData.displayId);
             if (!displayMonster) displayMonster = monsterData.inventory[0];
-            
-            if (!displayMonster) {
-                return;
-            }
+            if (!displayMonster) return;
 
             let totalSeconds = calculateActiveMonsterExp(displayMonster);
             let totalHours = Math.floor(totalSeconds / 3600);
@@ -1611,12 +1632,16 @@
             let maxHours = evoHours[evoHours.length - 1];
             
             let maxStageIdx = 0;
-            // 🐛 [홈 화면 전시 버그 픽스] 도감 등록된 몬스터는 강제로 최고 레벨로 인식
-            if (displayMonster.status === "retired") {
-                maxStageIdx = evoHours.length - 1;
-            } else {
-                for (let i = evoHours.length - 1; i >= 0; i--) {
-                    if (totalHours >= evoHours[i]) { maxStageIdx = i; break; }
+            // 🐛 [버그 수정] 조기 은퇴한 포켓몬이 무조건 메가진화 폼으로 고정되는 현상 제거! (실제 시간 기반으로만 계산)
+            for (let i = evoHours.length - 1; i >= 0; i--) {
+                if (totalHours >= evoHours[i]) { maxStageIdx = i; break; }
+            }
+            
+            // 🌟 레벨업 시 폼 자동 변경 로직
+            if (displayMonster.status !== "egg") {
+                if (displayMonster.selectedStage === undefined || displayMonster.selectedStage < maxStageIdx) {
+                    displayMonster.selectedStage = maxStageIdx; // 자동으로 최신 진화 폼으로 업데이트
+                    setL('monsterData', JSON.stringify(monsterData)); // 변경된 폼 저장
                 }
             }
             
@@ -1670,7 +1695,6 @@
             let pokeId = monsterSpec.pokeIds[currentStageIdx];
             let isShiny = !!displayMonster.isShiny; 
             let shinyMark = isShiny ? `<span style="color:#fbbf24; text-shadow:0 0 5px rgba(251,191,36,0.8);">✨</span> ` : "";
-            
             let imageUrl = pokeId >= 10000 
                 ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokeId}.png`
                 : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokeId}.png`;
@@ -1680,36 +1704,23 @@
                     let pokeData = await PokeAPI.getPokemon(pokeId);
                     if (pokeData && pokeData.sprites) {
                         let other = pokeData.sprites.other || {};
-                        if (other.home && other.home.front_default) {
-                            imageUrl = (isShiny && other.home.front_shiny) ? other.home.front_shiny : other.home.front_default;
-                        } else if (other['official-artwork'] && other['official-artwork'].front_default) {
-                            imageUrl = (isShiny && other['official-artwork'].front_shiny) ? other['official-artwork'].front_shiny : other['official-artwork'].front_default;
-                        } else if (pokeData.sprites.front_default) {
-                            imageUrl = (isShiny && pokeData.sprites.front_shiny) ? pokeData.sprites.front_shiny : pokeData.sprites.front_default;
-                        }
+                        if (other.home && other.home.front_default) imageUrl = (isShiny && other.home.front_shiny) ? other.home.front_shiny : other.home.front_default;
+                        else if (other['official-artwork'] && other['official-artwork'].front_default) imageUrl = (isShiny && other['official-artwork'].front_shiny) ? other['official-artwork'].front_shiny : other['official-artwork'].front_default;
+                        else if (pokeData.sprites.front_default) imageUrl = (isShiny && pokeData.sprites.front_shiny) ? pokeData.sprites.front_shiny : pokeData.sprites.front_default;
                     }
-                } catch (err) {
-                    console.warn("API 이미지 로드 실패, 기본 이미지 사용");
-                }
+                } catch (err) { console.warn("API 이미지 로드 실패"); }
             }
 
             if (emojiEl) {
                 let pureName = displayMonster.nickname ? displayMonster.nickname : monsterSpec.name;
                 let imagePart = displayMonster.status === "egg" 
                     ? `<div style="font-size: 50px; text-align: center; line-height: 1;">⚪</div>`
-                    : `<img src="${imageUrl}" 
-                            style="width: 100px; height: 100px; max-width: 100%; max-height: 100%; object-fit: contain; transform: scale(1.2); filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3)); image-rendering: auto; cursor: pointer;" 
-                            onclick="event.stopPropagation(); playPokemonCry(${pokeId}, this, ${currentStageIdx >= 3}, '${pureName}')"
-                            onerror="this.style.display='none'; this.nextElementSibling?.style.display='block';"
-                        >
-                        <div style="display:none; font-size:50px; text-align:center;">🐾</div>`;
-                
+                    : `<img src="${imageUrl}" style="width: 100px; height: 100px; max-width: 100%; max-height: 100%; object-fit: contain; transform: scale(1.2); filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3)); cursor: pointer;" onclick="event.stopPropagation(); playPokemonCry(${pokeId}, this, ${currentStageIdx >= 3}, '${pureName}', ${monsterSpec.pokeIds[0]})" onerror="this.style.display='none'; this.nextElementSibling?.style.display='block';"><div style="display:none; font-size:50px; text-align:center;">🐾</div>`;
                 emojiEl.innerHTML = `<div class="monster-display ${pulseClass} ${megaClass}" style="background: ${bgGradient}; filter: ${effectFilter}; border-radius: 16px; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">${imagePart}</div>`;
             }
 
             if (titleEl) {
-                let displayName = displayMonster.status === "egg" ? "미확인 알" : 
-                                  (displayMonster.nickname ? `${shinyMark}${displayMonster.nickname} <span style="font-size:11px; opacity:0.7;">(${monsterSpec.name})</span>` : `${shinyMark}${monsterSpec.name}`);
+                let displayName = displayMonster.status === "egg" ? "미확인 알" : (displayMonster.nickname ? `${shinyMark}${displayMonster.nickname} <span style="font-size:11px; opacity:0.7;">(${monsterSpec.name})</span>` : `${shinyMark}${monsterSpec.name}`);
                 titleEl.innerHTML = `<span style="color:var(--primary);">${displayName}</span> <span style="opacity:0.6; font-size:12px;">|</span> ${currentStageIdx >= 3 ? '⭐ 메가진화' : stageName}`;
             }
 
@@ -1963,14 +1974,10 @@
             let evoHours = getEvolutionHours(monsterSpec);
             
             let maxStageIdx = 0;
-            // 🌟 [버그 픽스] 도감 등록(은퇴) 몬스터는 강제로 최고레벨(최종진화) 인정
-            if (m.status === "retired") {
-                maxStageIdx = evoHours.length - 1;
-            } else {
-                let totalHours = Math.floor(calculateActiveMonsterExp(m) / 3600);
-                for (let i = evoHours.length - 1; i >= 0; i--) {
-                    if (totalHours >= evoHours[i]) { maxStageIdx = i; break; }
-                }
+            // 🐛 [버그 수정] 조기 은퇴 뻥튀기 고정 삭제 (오직 시간 기반으로 최대 단계 계산)
+            let totalHours = Math.floor(calculateActiveMonsterExp(m) / 3600);
+            for (let i = evoHours.length - 1; i >= 0; i--) {
+                if (totalHours >= evoHours[i]) { maxStageIdx = i; break; }
             }
             
             if (maxStageIdx === 0) { window.isCyclingForm = false; return showToast("아직 진화하지 않아 모습을 변경할 수 없습니다."); }
@@ -1996,7 +2003,7 @@
             
             let newPokeId = monsterSpec.pokeIds[nextStage];
             let pureName = m.nickname ? m.nickname : monsterSpec.name;
-            playPokemonCry(newPokeId, null, nextStage >= 3, pureName);
+            playPokemonCry(newPokeId, null, nextStage >= 3, pureName, monsterSpec.pokeIds[0]);
             
             let content = document.getElementById('monster-bag-content');
             let scrollPos = content ? content.scrollTop : 0;
@@ -2512,7 +2519,7 @@
     function getL(k) { return memCache[activeUser + '_' + k] || localStorage.getItem(activeUser + '_' + k) || null; }
     function removeL(k) { try { delete memCache[activeUser + '_' + k]; DBEngine.remove(activeUser + '_' + k); localStorage.removeItem(activeUser + '_' + k); } catch(e) {} }
 
-    function saveUserLocalData(d) {
+    function saveUserLocalData(d, forceOverwrite = false) {
         if (!d) return;
 
         const safeParse = Utils.safeParseJSON;
@@ -2535,17 +2542,21 @@
 
         const cloudTime = parseInt(d.lastUpdateTime || '0');
         const localTime = parseInt(getL('lastUpdateTime') || '0');
-        const isCloudNewer = cloudTime > localTime || localTime === 0;
+        
+        // 🌟 [핵심] 복구 모드일 경우 무조건 백업본이 최신인 것으로 강제 인식
+        const isCloudNewer = forceOverwrite || (cloudTime > localTime) || localTime === 0;
 
         if(d['ddayConfig']) { 
             let parsedDday = safeParse(d['ddayConfig'], {title:"", date:""});
             ddayConfig = parsedDday; setL('ddayConfig', JSON.stringify(parsedDday));
+        } else if (forceOverwrite) {
+            removeL('ddayConfig');
         }
         
         const currentLogicDate = Utils.getLogicalDateString();
         const cloudLogicDate = d.lastLogicalDate || currentLogicDate;
 
-        if (currentLogicDate === cloudLogicDate) {
+        if (currentLogicDate === cloudLogicDate || forceOverwrite) {
             let localBlocks = safeParse(getL('blockSeconds'), Array(48).fill(0));
             let cloudBlocks = safeParse(d['blockSeconds'], Array(48).fill(0));
             if (isCloudNewer) {
@@ -2572,6 +2583,8 @@
                     if (!p || Array.isArray(p) || !Array.isArray(p.inventory)) return; 
                 }
                 if (isCloudNewer || !getL(k)) setL(k, typeof d[k] === 'object' ? JSON.stringify(d[k]) : d[k]); 
+            } else if (forceOverwrite) {
+                removeL(k); // 백업본에 없는 과거 데이터는 깨끗이 삭제
             }
         });
 
@@ -2580,18 +2593,22 @@
                 let localRec = safeParse(getL('dailyRecords'), {}); 
                 let cloudRec = safeParse(d['dailyRecords'], {});
                 let mergedRec = {}; 
-                let allDates = new Set([...Object.keys(localRec), ...Object.keys(cloudRec)]);
                 
-                allDates.forEach(date => {
-                    let l = localRec[date]; let c = cloudRec[date];
-                    if (!l) { mergedRec[date] = c; return; }
-                    if (!c) { mergedRec[date] = l; return; }
-                    
-                    if (date === currentLogicDate) {
-                        mergedRec[date] = l; 
-                        if (isCloudNewer) { mergedRec[date].diary = c.diary; mergedRec[date].todo = c.todo; }
-                    } else { mergedRec[date] = isCloudNewer ? c : l; }
-                });
+                if (forceOverwrite) {
+                    mergedRec = cloudRec; // 백업본을 무조건 신뢰하고 덮어씀
+                } else {
+                    let allDates = new Set([...Object.keys(localRec), ...Object.keys(cloudRec)]);
+                    allDates.forEach(date => {
+                        let l = localRec[date]; let c = cloudRec[date];
+                        if (!l) { mergedRec[date] = c; return; }
+                        if (!c) { mergedRec[date] = l; return; }
+                        
+                        if (date === currentLogicDate) {
+                            mergedRec[date] = l; 
+                            if (isCloudNewer) { mergedRec[date].diary = c.diary; mergedRec[date].todo = c.todo; }
+                        } else { mergedRec[date] = isCloudNewer ? c : l; }
+                    });
+                }
                 dailyRecords = mergedRec; setL('dailyRecords', JSON.stringify(mergedRec));
             } catch(e) {}
         }
@@ -2774,14 +2791,25 @@
         
         let diaryRecords = {}; let todoRecords = {};
 
+        // 🌟 [핵심 수리] 메인 데이터가 터지지 않도록 텍스트(일기/할일)를 완벽히 분리
         for (let dateStr in dailyParsed) {
-            if (dailyParsed[dateStr].diary) diaryRecords[dateStr] = dailyParsed[dateStr].diary; 
-            if (dailyParsed[dateStr].todo) todoRecords[dateStr] = dailyParsed[dateStr].todo; 
+            if (dailyParsed[dateStr].diary) { 
+                diaryRecords[dateStr] = dailyParsed[dateStr].diary; 
+                delete dailyParsed[dateStr].diary; // 분리 후 메인에서 삭제!
+            }
+            if (dailyParsed[dateStr].todo) { 
+                todoRecords[dateStr] = dailyParsed[dateStr].todo; 
+                delete dailyParsed[dateStr].todo; // 분리 후 메인에서 삭제!
+            }
         }
+        allData.dailyRecords = JSON.stringify(dailyParsed);
         
         let diaryData = { diaryRecords: JSON.stringify(diaryRecords) };
         let todoData = { todoRecords: JSON.stringify(todoRecords) };
-        let monsterDataObj = { monsterData: allData.monsterData || "" };
+        
+        // 🌟 몬스터 데이터도 분리
+        let monsterDataObj = { monsterData: allData.monsterData || "{}" };
+        delete allData.monsterData; // 분리 후 메인에서 삭제!
         
         let p1 = saveCategoryToServer(allData, activeUser);
         let p2 = saveCategoryToServer(diaryData, activeUser + "_diary");
@@ -2801,7 +2829,8 @@
         syncTodayRecord();
         
         let allData = getUserLocalData();
-        let dailyParsed = {}; try { dailyParsed = allData.dailyRecords ? JSON.parse(allData.dailyRecords) : {}; } catch(e) {}
+        let dailyParsed = Utils.safeParseJSON(allData.dailyRecords, {});
+        
         let diaryRecords = {}; let todoRecords = {};
         for (let dateStr in dailyParsed) {
             if (dailyParsed[dateStr].diary) { diaryRecords[dateStr] = dailyParsed[dateStr].diary; delete dailyParsed[dateStr].diary; }
@@ -2811,22 +2840,24 @@
 
         let diaryData = { diaryRecords: JSON.stringify(diaryRecords) };
         let todoData = { todoRecords: JSON.stringify(todoRecords) };
-        let monsterDataObj = { monsterData: allData.monsterData || "" };
-        delete allData.monsterData;
+        let monsterDataObj = { monsterData: allData.monsterData || "{}" }; 
+        delete allData.monsterData; 
         
-        let resMain = await saveCategoryToServer(allData, activeUser, "backup_save");
-        let resDiary = await saveCategoryToServer(diaryData, activeUser + "_diary", "backup_save");
-        let resTodo = await saveCategoryToServer(todoData, activeUser + "_todo", "backup_save");
-        let resMon = await saveCategoryToServer(monsterDataObj, activeUser + "_mon", "backup_save");
+        let p1 = saveCategoryToServer(allData, activeUser, "backup_save");
+        let p2 = saveCategoryToServer(diaryData, activeUser + "_diary", "backup_save");
+        let p3 = saveCategoryToServer(todoData, activeUser + "_todo", "backup_save");
+        let p4 = saveCategoryToServer(monsterDataObj, activeUser + "_mon", "backup_save");
 
+        let results = await Promise.all([p1, p2, p3, p4]);
         showLoading(false);
-        if (resMain.success && resDiary.success && resTodo.success && resMon.success) {
+        
+        if (results.every(r => r.success)) {
             let timeStr = new Date().toLocaleString();
             setL('lastBackupTime', timeStr);
             updateBackupTimeUI();
             showToast("✅ 성공적으로 독립된 공간에 백업되었습니다.");
         } else {
-            showToast("❌ 백업에 실패했습니다.");
+            showToast("❌ 백업 중 일부 파일 저장에 실패했습니다. 잠시 후 재시도해주세요.");
         }
     }
 
@@ -2835,83 +2866,83 @@
         showLoading(true, "백업 데이터 복원 중... 🔄");
         
         try {
-            let resMain = await loadCategoryFromServer(activeUser, "backup_load");
-            if (!resMain.success) throw new Error("Load Fail");
-            
-            let resDiary = await loadCategoryFromServer(activeUser + "_diary", "backup_load");
-            let resTodo = await loadCategoryFromServer(activeUser + "_todo", "backup_load");
-            let resMon = await loadCategoryFromServer(activeUser + "_mon", "backup_load");
+            let results = await Promise.allSettled([
+                loadCategoryFromServer(activeUser, "backup_load"),
+                loadCategoryFromServer(activeUser + "_diary", "backup_load"),
+                loadCategoryFromServer(activeUser + "_todo", "backup_load"),
+                loadCategoryFromServer(activeUser + "_mon", "backup_load")
+            ]);
 
-            function extractRealData(rawData) {
-                if (!rawData) return {};
-                let current = rawData; let iterations = 0;
-                while (typeof current === 'string' && iterations < 5) {
-                    try { current = JSON.parse(current); } catch(e) { break; } iterations++;
-                }
-                if (current && typeof current === 'object') {
-                    if (current.type === "single" && current.content) return extractRealData(current.content);
-                    if (current.data && current.success !== undefined) return extractRealData(current.data);
-                    return current;
-                }
-                return {};
+            function getRes(idx) { return results[idx].status === 'fulfilled' ? results[idx].value : { success: false }; }
+            let resMain = getRes(0), resDiary = getRes(1), resTodo = getRes(2), resMon = getRes(3);
+
+            if (!resMain.success || !resMain.data || resMain.data === "{}") {
+                showLoading(false); return alert("❌ 서버에 저장된 백업본이 없습니다. 백업을 먼저 진행해주세요.");
             }
 
-            let mainParsed = extractRealData(resMain.data);
+            function deepUnwrap(data) {
+                let current = data;
+                for(let i=0; i<5; i++) {
+                    if (typeof current !== 'string') break;
+                    try { current = JSON.parse(current); } catch(e) { break; }
+                }
+                if (current && current.content) return deepUnwrap(current.content);
+                return current;
+            }
+
+            let mainParsed = deepUnwrap(resMain.data);
+            let diaryParsed = deepUnwrap(resDiary.data);
+            let todoParsed = deepUnwrap(resTodo.data);
+            let monParsed = deepUnwrap(resMon.data);
+
             if (Object.keys(mainParsed).length === 0 || !mainParsed.lastUpdateTime) {
-                showLoading(false); return showToast("❌ 저장된 백업 데이터가 없습니다.");
+                showLoading(false); return alert("❌ 백업 데이터가 비어있거나 손상되었습니다.");
             }
 
-            let diaryParsed = extractRealData(resDiary.data);
-            let todoParsed = extractRealData(resTodo.data);
-            let monParsed = extractRealData(resMon.data);
+            let dailyRecs = deepUnwrap(mainParsed.dailyRecords) || {};
+            let dRecs = deepUnwrap(diaryParsed.diaryRecords) || {};
+            let tRecs = deepUnwrap(todoParsed.todoRecords) || {};
 
-            let dailyRecords = extractRealData(mainParsed.dailyRecords) || {};
-            let diaryRecs = extractRealData(diaryParsed.diaryRecords) || {};
-            let todoRecs = extractRealData(todoParsed.todoRecords) || {};
-
-            for (let dateStr in diaryRecs) {
-                if (!dailyRecords[dateStr]) dailyRecords[dateStr] = {};
-                dailyRecords[dateStr].diary = diaryRecs[dateStr];
-            }
-            for (let dateStr in todoRecs) {
-                if (!dailyRecords[dateStr]) dailyRecords[dateStr] = {};
-                dailyRecords[dateStr].todo = todoRecs[dateStr];
-            }
-            mainParsed.dailyRecords = JSON.stringify(dailyRecords);
+            Object.keys(dRecs).forEach(k => { if(!dailyRecs[k]) dailyRecs[k]={}; dailyRecs[k].diary = dRecs[k]; });
+            Object.keys(tRecs).forEach(k => { if(!dailyRecs[k]) dailyRecs[k]={}; dailyRecs[k].todo = tRecs[k]; });
+            mainParsed.dailyRecords = JSON.stringify(dailyRecs);
             
-            let monDataFromMonSheet = extractRealData(monParsed.monsterData);
-            let monDataFromMainSheet = extractRealData(mainParsed.monsterData);
+            let monDataFromMonSheet = deepUnwrap(monParsed.monsterData);
+            let monDataFromMainSheet = deepUnwrap(mainParsed.monsterData);
             let finalMonData = Object.keys(monDataFromMonSheet).length > 0 ? monDataFromMonSheet : monDataFromMainSheet;
             if (Object.keys(finalMonData).length > 0) mainParsed.monsterData = JSON.stringify(finalMonData);
 
             let backupTimeStr = (resMain.backupTime && resMain.backupTime !== "") ? new Date(resMain.backupTime).toLocaleString() : "알 수 없음";
             
-            applyCloudData(mainParsed, true, true);
+            // 🌟 [핵심 해결] 4번째 파라미터 'true' (forceOverwrite)를 넘겨서 무조건 덮어쓰도록 강제!
+            applyCloudData(mainParsed, true, true, true);
+            await saveAllDataToServer(); // 덮어쓴 상태를 즉시 클라우드에 마스터 데이터로 박제
+            
             showLoading(false);
-            saveAllDataToServer();
-            showToast(`✅ 복구 완료! (백업 일시: ${backupTimeStr})`);
-            document.getElementById('settings-modal').style.display = 'none';
+            alert(`✅ 백업 데이터가 완벽하게 복구되었습니다!\n(백업 일시: ${backupTimeStr})`);
+            location.reload();
         } catch (e) {
-            showLoading(false); showToast("❌ 백업 복구 중 오류가 발생했습니다.");
+            console.error(e);
+            showLoading(false); 
+            showToast("❌ 복구 중 예기치 못한 오류가 발생했습니다.");
         }
     }
 
-    function applyCloudData(parsedData, silent, skipSync = false) {
+    function applyCloudData(parsedData, silent, skipSync = false, forceOverwrite = false) {
         try {
             if (!parsedData || typeof parsedData !== 'object') {
                 if(!silent) showToast("❌ 서버 통신 오류. 안전을 위해 오프라인 기록을 유지합니다.");
                 return;
             }
 
-            let cloudToken = parsedData.deviceToken;
-
             const currentLogicalDate = Utils.getLogicalDateString();
             const cloudLogicalDate = parsedData.lastLogicalDate || currentLogicalDate;
 
-            saveUserLocalData(parsedData); 
+            // 🌟 강제 덮어쓰기 명령 전달
+            saveUserLocalData(parsedData, forceOverwrite); 
             initLocalState(); 
 
-            if (cloudLogicalDate !== currentLogicalDate) {
+            if (cloudLogicalDate !== currentLogicalDate && !forceOverwrite) {
                 syncTodayRecord(cloudLogicalDate); 
                 blockSeconds = Array(48).fill(0); targetBlocks = Array(48).fill(false); backupSeconds = Array(48).fill(0); alarmedBlocks = Array(48).fill(false); 
                 for(let i=0; i<48; i++) { removeL(`note_${i}`); if(domCache.notes[i]) domCache.notes[i].value = ""; }
@@ -2925,8 +2956,7 @@
             if(!silent && !skipSync) { SFX.play('success'); showToast("✅ 동기화 완료!"); }
         } catch(err) {
             console.error("✗ 데이터 동기화 오류:", err);
-            if(!silent) showToast("⚠️ 데이터 동기화 중 일부 오류가 발생했습니다.");
-            try { initLocalState(); } catch(e) { console.error("✗ 로컬 초기화 실패:", e); }
+            if(!silent) showToast("⚠️ 동기화 중 일부 오류가 발생했습니다.");
         }
     }
 
@@ -3871,11 +3901,41 @@
         }
     }
 
-    function handleLogout() {
-        if(!confirm("기기에서 로그아웃 하시겠습니까?\n(오프라인 기록은 안전하게 보존됩니다)")) return;
+    // 🌟 100% 안전한 로그아웃 및 동기화
+    async function handleLogout() {
+        if(!confirm("기기에서 로그아웃 하시겠습니까?\n(가장 최신 데이터가 서버에 안전하게 동기화된 후 로그아웃됩니다)")) return;
+        showLoading(true, "서버에 완벽하게 동기화 중... ☁️");
+        syncTodayRecord();
+        await saveAllDataToServer(); // 흩어진 데이터를 긁어모아 마스터 서버에 보존
         localStorage.removeItem('activeUser'); localStorage.removeItem('activePw');
         location.reload();
     }
+
+    function saveTextData(type, silent = false) {
+        if (!activeUser) return;
+        const dateStr = document.getElementById(`${type}-date-input`).value;
+        const val = document.getElementById(`${type}-input`).innerHTML;
+        
+        if (!dailyRecords[dateStr]) dailyRecords[dateStr] = { targetTime: "00h 00m", totalTime: "00h 00m" };
+        dailyRecords[dateStr][type] = val;
+        setL('dailyRecords', JSON.stringify(dailyRecords));
+        
+        triggerAutoSync(true); // 과거 날짜를 수정해도 서버로 확실히 전송
+        
+        if(!silent) { SFX.play('success'); showToast("✅ 기기 및 서버에 저장되었습니다."); document.getElementById(`${type}-modal`).style.display = 'none'; document.body.style.overflow = ''; }
+        if (document.getElementById('calendar-view').style.display === 'flex') renderCalendar();
+    }
+    
+    window.editPastRecord = function(type, dateStr) {
+        document.getElementById('record-modal').style.display = 'none';
+        openTextModal(type, dateStr);
+    };
+    
+    // 🌟 과거 기록 수정 함수 추가
+    window.editPastRecord = function(type, dateStr) {
+        document.getElementById('record-modal').style.display = 'none';
+        openTextModal(type, dateStr);
+    };
 
     async function openRecordModal(dateStr) {
         document.getElementById('modal-title').innerText = `${dateStr} 기록 상세`;
@@ -3886,7 +3946,6 @@
         let tTgt = rec.targetTime || "00h 00m"; 
         let tAct = rec.totalTime || "00h 00m";
 
-        // 1. 그날의 포켓몬 (카드형태)
         let monInfoHTML = '';
         if (dateStr <= todayStr) {
             let monAtTime = monsterData.inventory.find(m => {
@@ -3902,7 +3961,7 @@
                 
                 monInfoHTML = `
                     <div style="background:var(--bg-sec); border:1px solid var(--border-color); border-radius:18px; padding:18px; margin-bottom:15px; display:flex; align-items:center; gap:15px; position:relative; overflow:hidden;">
-                        <img src="${imgUrl}" style="width:65px; height:65px; object-fit:contain; z-index:2; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.1));">
+                        <img src="${imgUrl}" class="float-anim" style="width:65px; height:65px; object-fit:contain; z-index:2; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.1)); cursor:pointer;" onclick="playPokemonCry(${pokeId}, this, ${currentStageIdx >= 3}, '${spec.name}', ${spec.pokeIds[0]})">
                         <div style="z-index:2;">
                             <div style="font-size:11px; color:var(--text-muted); font-weight:800; margin-bottom:2px;">그날 함께한 파트너</div>
                             <div style="font-size:16px; font-weight:900; color:var(--text-main);">${monAtTime.nickname || spec.name}</div>
@@ -3913,10 +3972,8 @@
             }
         }
 
-        // 2. 시간표 메모 정리
         let memoHTML = '';
         let historicalNotes = rec.notes || [];
-        // 만약 오늘이라면 실시간으로 가져옴
         if (dateStr === todayStr) {
             historicalNotes = [];
             for(let i=0; i<48; i++) historicalNotes.push(getL(`note_${i}`) || "");
@@ -3938,21 +3995,23 @@
                 </div>`;
         }
 
-        // 3. 할 일 및 일기
-        let todoHTML = (rec.todo && rec.todo !== "<br>") ? `
+        let todoHTML = `
             <div style="margin-bottom:18px;">
-                <div style="font-size:14px; font-weight:800; color:var(--text-main); margin-bottom:8px;">✅ 그날의 할 일</div>
-                <div class="reading-content" style="background:var(--surface); border:1px solid var(--border-color); border-radius:14px; padding:15px;">${rec.todo}</div>
-            </div>` : '';
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <div style="font-size:14px; font-weight:800; color:var(--text-main); display:flex; align-items:center; gap:5px;">✅ 그날의 할 일</div>
+                    <button class="action-pill" style="padding:4px 10px; font-size:11px; background:var(--bg);" onclick="SFX.play('tap'); editPastRecord('todo', '${dateStr}')">${rec.todo && rec.todo !== "<br>" ? "수정" : "작성"}</button>
+                </div>
+                ${rec.todo && rec.todo !== "<br>" ? `<div class="reading-content" style="background:var(--surface); border:1px solid var(--border-color); border-radius:14px; padding:15px; box-shadow:inset 0 2px 4px rgba(0,0,0,0.02);">${rec.todo}</div>` : `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:15px; background:var(--bg-sec); border-radius:14px; border:1px dashed var(--border-color);">할 일이 작성되지 않았습니다.</div>`}
+            </div>`;
 
-        let diaryHTML = (rec.diary && rec.diary !== "<br>") ? `
+        let diaryHTML = `
             <div style="margin-bottom:18px;">
-                <div style="font-size:14px; font-weight:800; color:var(--text-main); margin-bottom:8px;">📝 그날의 일기</div>
-                <div class="reading-content" style="background:var(--surface); border:1px solid var(--border-color); border-radius:14px; padding:15px;">${rec.diary}</div>
-            </div>` : '';
-
-        let noData = (!rec.diary && !rec.todo && !monInfoHTML && !memoHTML && tAct === "00h 00m") ? 
-            `<div style="text-align:center; color:var(--text-muted); padding:60px 0; font-size:14px; font-weight:bold;">🌱 기록이 발견되지 않았습니다.</div>` : '';
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <div style="font-size:14px; font-weight:800; color:var(--text-main); display:flex; align-items:center; gap:5px;">📝 그날의 일기</div>
+                    <button class="action-pill" style="padding:4px 10px; font-size:11px; background:var(--bg);" onclick="SFX.play('tap'); editPastRecord('diary', '${dateStr}')">${rec.diary && rec.diary !== "<br>" ? "수정" : "작성"}</button>
+                </div>
+                ${rec.diary && rec.diary !== "<br>" ? `<div class="reading-content" style="background:var(--surface); border:1px solid var(--border-color); border-radius:14px; padding:15px; box-shadow:inset 0 2px 4px rgba(0,0,0,0.02);">${rec.diary}</div>` : `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:15px; background:var(--bg-sec); border-radius:14px; border:1px dashed var(--border-color);">일기가 작성되지 않았습니다.</div>`}
+            </div>`;
 
         bBody.innerHTML = `
             <div style="background:var(--bg-sec); border-radius:18px; padding:18px; margin-bottom:15px; display:flex; justify-content:space-around; border:1px solid var(--border-color);">
@@ -3970,7 +4029,6 @@
             ${memoHTML}
             ${todoHTML}
             ${diaryHTML}
-            ${noData}
         `;
         
         document.getElementById('record-modal').style.display = 'flex';
