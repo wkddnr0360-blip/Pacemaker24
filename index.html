@@ -494,15 +494,15 @@
         <div id="clock-display" style="padding: 15px; text-align: center; color: var(--text-muted); font-weight: 800; font-size: 13px; background:var(--bg); border-bottom:1px solid var(--border-color);">로딩 중...</div>
         <div class="list-wrapper" id="schedule-list"></div>
     </div>
-</div>
 
-<div id="float-mon-btn" onclick="SFX.play('pop'); scrollToCurrent();" style="position:fixed; bottom:90px; right:20px; width:60px; height:60px; border-radius:50%; background:var(--surface); box-shadow:0 4px 15px rgba(0,0,0,0.15); display:none; align-items:center; justify-content:center; cursor:pointer; z-index:110; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
-    <svg width="60" height="60" style="position:absolute; top:0; left:0; transform:rotate(-90deg);">
-        <circle cx="30" cy="30" r="27" fill="none" stroke="var(--bg-sec)" stroke-width="4"></circle>
-        <circle id="float-mon-ring" cx="30" cy="30" r="27" fill="none" stroke="var(--primary)" stroke-width="4" stroke-dasharray="169.6" stroke-dashoffset="169.6" stroke-linecap="round" style="transition:stroke-dashoffset 0.8s ease;"></circle>
-    </svg>
-    <img id="float-mon-img" src="" style="width:36px; height:36px; object-fit:contain; z-index:2; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1)); display:none; transform:scale(1.4);" onerror="this.style.display='none'">
-    <div id="float-mon-egg" style="display:none; font-size:24px; z-index:2; transform:translateY(-2px);">⚪</div>
+    <div onclick="SFX.play('pop'); scrollToCurrent();" style="position:fixed; bottom:90px; right:20px; width:60px; height:60px; border-radius:50%; background:var(--surface); box-shadow:0 4px 15px rgba(0,0,0,0.15); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:9999; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
+        <svg width="60" height="60" style="position:absolute; top:0; left:0; transform:rotate(-90deg);">
+            <circle cx="30" cy="30" r="27" fill="none" stroke="var(--bg-sec)" stroke-width="4"></circle>
+            <circle id="float-mon-ring" cx="30" cy="30" r="27" fill="none" stroke="var(--primary)" stroke-width="4" stroke-dasharray="169.6" stroke-dashoffset="169.6" stroke-linecap="round" style="transition:stroke-dashoffset 0.8s ease;"></circle>
+        </svg>
+        <img id="float-mon-img" src="" style="width:36px; height:36px; object-fit:contain; z-index:2; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1)); display:none; transform:scale(1.4);" onerror="this.style.display='none'">
+        <div id="float-mon-egg" style="display:none; font-size:24px; z-index:2; transform:translateY(-2px);">⚪</div>
+    </div>
 </div>
 
 <div id="calendar-view" class="view-layer">
@@ -1637,25 +1637,50 @@
     function calculateActiveMonsterExp(monster) {
         if(monster.status === "retired") return monster.totalSeconds || 0;
         if(monster.status === "egg") return 0;
-        
+
         let totalSeconds = 0;
         let startObj = new Date(monster.startDate + "T00:00:00");
-        let todayObj = new Date(Utils.getLogicalDateString() + "T00:00:00");
+        let todayStr = Utils.getLogicalDateString();
+        let todayObj = new Date(todayStr + "T00:00:00");
 
         if (isNaN(startObj.getTime())) {
-            startObj = new Date(Utils.getLogicalDateString() + "T00:00:00");
+            startObj = new Date(todayStr + "T00:00:00");
         }
 
         for (let d = new Date(startObj); d <= todayObj; d.setDate(d.getDate() + 1)) {
             let dStr = `${d.getFullYear()}-${Utils.pad(d.getMonth()+1)}-${Utils.pad(d.getDate())}`;
-            if (dailyRecords[dStr] && dailyRecords[dStr].totalTime) {
-                let parts = dailyRecords[dStr].totalTime.split('h');
-                let h = parseInt(parts[0]) || 0;
-                let m = parseInt(parts[1].replace('m', '').trim()) || 0;
-                totalSeconds += (h * 3600) + (m * 60);
+            
+            // 🐛 [핵심 버그 픽스] '오늘' 날짜의 경험치는 달력에 기록된 옛날 시간이 아니라,
+            // 방금 사용자가 클릭한 실시간 시간표(blockSeconds)에서 즉시 가져옵니다!
+            if (dStr === todayStr) {
+                let safeBlockSeconds = Array.isArray(blockSeconds) ? blockSeconds : Array(48).fill(0);
+                let todaySecs = safeBlockSeconds.reduce((a, b) => Number(a) + Number(b), 0);
+                totalSeconds += (isNaN(todaySecs) ? 0 : todaySecs);
+            } else {
+                if (dailyRecords[dStr] && dailyRecords[dStr].totalTime) {
+                    let parts = dailyRecords[dStr].totalTime.split('h');
+                    let h = parseInt(parts[0]) || 0;
+                    // 에러가 나던 부분을 안전한 옵셔널 체이닝(?.)으로 차단
+                    let m = parseInt(parts[1]?.replace('m', '').trim()) || 0;
+                    totalSeconds += (h * 3600) + (m * 60);
+                }
             }
         }
         return totalSeconds + (monster.bonusSeconds || 0);
+    }
+
+    function updateProgressUI(idx) {
+        if(domCache.minInputs[idx]) {
+            domCache.minInputs[idx].value = blockSeconds[idx] === 0 ? '' : Math.floor(blockSeconds[idx]/60);
+            domCache.minInputs[idx].className = blockSeconds[idx] >= 1800 ? "manual-min-input full" : "manual-min-input";
+        }
+        if(domCache.checks[idx]) domCache.checks[idx].className = blockSeconds[idx] >= 1800 ? "cb-icon-box done active" : "cb-icon-box done";
+        if(domCache.checks[idx]) domCache.checks[idx].querySelector('input').checked = blockSeconds[idx] >= 1800;
+        
+        checkMonsterCompletion();
+        
+        // 🐛 [핵심 버그 픽스] 1시간이 넘지 않더라도, 30분 단위 체크만으로 진행바(게이지)가 바로바로 오르도록 항상 UI를 업데이트합니다!
+        updateMonsterUI();
     }
 
     async function updateMonsterUI() {
@@ -3275,12 +3300,6 @@ async function executeSafeSync() {
         
         setTimeout(() => { target.style.transition = 'opacity 0.2s'; target.style.opacity = '1'; }, 10);
         
-        // 🌟 분리된 플로팅 배지를 '달리기(study)' 화면에서만 확실하게 켜줌
-        let floatBtn = document.getElementById('float-mon-btn');
-        if (floatBtn) {
-            floatBtn.style.display = (viewId === 'study') ? 'flex' : 'none';
-        }
-
         if (viewId === 'calendar') { 
             renderCalendar(); updateDdayUI(); window.scrollTo(0, 0); 
         }
@@ -3828,20 +3847,6 @@ async function executeSafeSync() {
         updateProgressUI(idx);
         setL('blockSeconds', JSON.stringify(blockSeconds)); updateUI(true); triggerAutoSync();
         SFX.play('tap');
-    }
-    
-    function updateProgressUI(idx) {
-        if(domCache.minInputs[idx]) {
-            domCache.minInputs[idx].value = blockSeconds[idx] === 0 ? '' : Math.floor(blockSeconds[idx]/60);
-            domCache.minInputs[idx].className = blockSeconds[idx] >= 1800 ? "manual-min-input full" : "manual-min-input";
-        }
-        if(domCache.checks[idx]) domCache.checks[idx].className = blockSeconds[idx] >= 1800 ? "cb-icon-box done active" : "cb-icon-box done";
-        if(domCache.checks[idx]) domCache.checks[idx].querySelector('input').checked = blockSeconds[idx] >= 1800;
-        
-        let oldHours = Math.floor(calculateActiveMonsterExp(monsterData.inventory.find(m => m.id === monsterData.activeId) || {}) / 3600);
-        checkMonsterCompletion();
-        let newHours = Math.floor(calculateActiveMonsterExp(monsterData.inventory.find(m => m.id === monsterData.activeId) || {}) / 3600);
-        if(oldHours !== newHours) updateMonsterUI();
     }
     
     function syncTodayRecord(forceDateStr = null) {
