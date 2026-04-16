@@ -886,7 +886,7 @@
     // ==========================================
     // 📦 1. 시스템 설정 및 전역 변수
     // ==========================================
-    const APP_VERSION = "1.0.0 final_1"; 
+    const APP_VERSION = "1.0.0 dev4"; 
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxx1toXSR7ZFvLUPJ948GiCvppDyUiwjDZhYEHo9f8IgqRekEbGVgWsorB4nEhxFr7I/exec";
     
     let activeUser = localStorage.getItem('activeUser');
@@ -3298,14 +3298,19 @@ async function executeSafeSync() {
         const todayDateStr = Utils.getLogicalDateString();
         const now = Utils.getKoreaDate();
 
+        // 🌟 이번 주 월요일 기준 (주간 통계용)
         const dayOfWeek = now.getDay();
         const diffToMonday = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
         const monday = new Date(now.getFullYear(), now.getMonth(), diffToMonday);
         monday.setHours(0,0,0,0);
 
+        // 🌟 이번 달 1일 기준 (월간 통계용)
         const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
         Object.keys(dailyRecords).forEach(dateStr => {
+            // 🐛 핵심 픽스: '오늘'의 기록은 달력 데이터에서 제외합니다! (밑에서 실시간 블록으로 한 번만 더함)
+            if (dateStr === todayDateStr) return;
+
             let rec = dailyRecords[dateStr];
             let dailySecs = 0;
             if (rec && typeof rec.totalTime === 'string') {
@@ -3315,17 +3320,19 @@ async function executeSafeSync() {
                 dailySecs = (h * 3600) + (m * 60);
             }
 
-            if (dateStr !== todayDateStr) { totalStudySeconds += dailySecs; }
+            totalStudySeconds += dailySecs;
 
             const checkDate = new Date(dateStr + "T00:00:00");
             if (checkDate >= monday) weekSeconds += dailySecs;
             if (checkDate >= firstDayOfMonth) monthSeconds += dailySecs;
         });
 
+        // 오늘 실시간 데이터 계산
         let safeBlockSeconds = Array.isArray(blockSeconds) ? blockSeconds : Array(48).fill(0);
         let todaySecs = safeBlockSeconds.reduce((a, b) => Number(a) + Number(b), 0);
         if(isNaN(todaySecs)) todaySecs = 0;
 
+        // 오늘 데이터를 전체/주간/월간에 딱 한 번씩만 정확하게 더해줍니다.
         totalStudySeconds += todaySecs;
         let todayObj = new Date(todayDateStr + "T00:00:00");
         if(todayObj >= monday) weekSeconds += todaySecs;
