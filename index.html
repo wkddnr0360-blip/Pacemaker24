@@ -2887,6 +2887,88 @@ async function updateMonsterUI() {
         }
     }
 
+    async function loadBackupDataFromServer() {
+        if(!confirm("⚠️ 경고: 현재 기기의 모든 데이터가 지워지고 서버에 보관된 [백업 데이터]로 복구됩니다.\n\n다른 기기에서 백업한 내용을 가져오시겠습니까?")) return;
+        showLoading(true, "서버에서 백업본 찾는 중... 🔍");
+        
+        try {
+            // 🌟 4개의 카테고리 데이터를 병렬로 요청
+            let results = await Promise.allSettled([
+                loadCategoryFromServer(activeUser, "backup_load"),
+                loadCategoryFromServer(activeUser + "_diary", "backup_load"),
+                loadCategoryFromServer(activeUser + "_todo", "backup_load"),
+                loadCategoryFromServer(activeUser + "_mon", "backup_load")
+            ]);
+
+            function getRes(idx) { 
+                return results[idx].status === 'fulfilled' ? results[idx].value : { success: false, message: "네트워크 연결 실패" }; 
+            }
+            
+            let resMain = getRes(0), resDiary = getRes(1), resTodo = getRes(2), resMon = getRes(3);
+
+            // 1️⃣ 에러 원인 분석 및 안내
+            if (!resMain.success) {
+                showLoading(false);
+                return alert(`❌ 불러오기 실패: ${resMain.message || "알 수 없는 오류"}\n\n※ 다른 기기와 아이디/비밀번호가 완전히 일치하는지 확인해 주세요.`);
+            }
+
+            if (!resMain.data || resMain.data === "{}" || resMain.data === "null") {
+                showLoading(false);
+                return alert("❓ 해당 아이디로 저장된 백업본이 없습니다.\n\n이전 기기에서 '설정 > 수동 백업'을 먼저 완료했는지 확인해 주세요.");
+            }
+
+            // 2️⃣ 데이터 포장 해제 (Deep Unwrap)
+            function deepUnwrap(data) {
+                let current = data;
+                for(let i=0; i<5; i++) {
+                    if (typeof current !== 'string') break;
+                    try { current = JSON.parse(current); } catch(e) { break; }
+                }
+                if (current && current.content) return deepUnwrap(current.content);
+                return current;
+            }
+
+            let mainParsed = deepUnwrap(resMain.data);
+            let diaryParsed = deepUnwrap(resDiary.data);
+            let todoParsed = deepUnwrap(resTodo.data);
+            let monParsed = deepUnwrap(resMon.data);
+
+            // 3️⃣ 데이터 병합 로직
+            let dailyRecs = deepUnwrap(mainParsed.dailyRecords) || {};
+            
+            // 일기/할일 복원
+            let dRecs = deepUnwrap(diaryParsed.diaryRecords) || {};
+            let tRecs = deepUnwrap(todoParsed.todoRecords) || {};
+            Object.keys(dRecs).forEach(k => { if(!dailyRecs[k]) dailyRecs[k]={}; dailyRecs[k].diary = dRecs[k]; });
+            Object.keys(tRecs).forEach(k => { if(!dailyRecs[k]) dailyRecs[k]={}; dailyRecs[k].todo = tRecs[k]; });
+            mainParsed.dailyRecords = JSON.stringify(dailyRecs);
+            
+            // 포켓몬 데이터 복원
+            let monDataFromBackup = deepUnwrap(monParsed.monsterData);
+            if (monDataFromBackup && Object.keys(monDataFromBackup).length > 0) {
+                mainParsed.monsterData = JSON.stringify(monDataFromBackup);
+            }
+
+            // 4️⃣ 최종 적용
+            let backupTimeStr = resMain.backupTime ? new Date(resMain.backupTime).toLocaleString() : "기록됨";
+            
+            // forceOverwrite = true 옵션으로 현재 기기 데이터를 강제로 덮어씀
+            applyCloudData(mainParsed, true, true, true);
+            
+            // 복구된 데이터를 현재 기기의 마스터 데이터로 서버에 즉시 동기화
+            await saveAllDataToServer(); 
+            
+            showLoading(false);
+            alert(`✅ 복구가 완료되었습니다!\n(백업 일시: ${backupTimeStr})\n\n앱을 재시작합니다.`);
+            location.reload();
+
+        } catch (e) {
+            console.error("Backup Load Error:", e);
+            showLoading(false); 
+            alert("❌ 복구 중 예상치 못한 기술적 오류가 발생했습니다.");
+        }
+    }
+
     function applyCloudData(parsedData, silent, skipSync = false, forceOverwrite = false) {
         try {
             if (!parsedData || typeof parsedData !== 'object') {
