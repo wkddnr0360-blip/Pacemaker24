@@ -867,8 +867,8 @@
     // ==========================================
     // 📦 1. 시스템 설정 및 전역 변수
     // ==========================================
-    const APP_VERSION = "1.0.0 dev3"; 
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwk0ICF2ErSGtXUtEGDUJbA6urqDyBHR4iafAmITlUo4G96it-Y6TNbZXnKVjh5eFrU/exec";
+    const APP_VERSION = "1.0.0 dev4"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxx1toXSR7ZFvLUPJ948GiCvppDyUiwjDZhYEHo9f8IgqRekEbGVgWsorB4nEhxFr7I/exec";
     
     let activeUser = localStorage.getItem('activeUser');
     if (activeUser === 'null' || activeUser === 'undefined') { activeUser = null; localStorage.removeItem('activeUser'); }
@@ -885,8 +885,10 @@
     let boardCacheTime = 0;
     
     let isAlarmOn = true, isSoundOn = true;
+    // 전역 변수 영역 (기존에 있던 isSyncing 등을 덮어씁니다)
     let syncTimer = null;
-    let isSyncing = false, pendingSync = false;
+    let isSyncing = false;
+    let syncQueued = false; // 동기화 중에 발생한 추가 변경사항을 기억하는 대기열 플래그
     let notificationIntervalId = null; 
     
     let blockSeconds = [], targetBlocks = [], backupSeconds = [], dailyRecords = {}, alarmedBlocks = [];
@@ -2546,10 +2548,11 @@ async function updateMonsterUI() {
     function getL(k) { return memCache[activeUser + '_' + k] || localStorage.getItem(activeUser + '_' + k) || null; }
     function removeL(k) { try { delete memCache[activeUser + '_' + k]; DBEngine.remove(activeUser + '_' + k); localStorage.removeItem(activeUser + '_' + k); } catch(e) {} }
 
-    function saveUserLocalData(d, forceOverwrite = false) {
+    function saveUserLocalData(d, forceOverwrite = true) {
     if (!d || Object.keys(d).length === 0) return;
     const safeParse = Utils.safeParseJSON;
 
+    // 로컬 저장 공간 감지 및 보호
     if (!window.isStorageHooked) {
         window.isStorageHooked = true;
         const originalSetL = setL; const originalRemoveL = removeL;
@@ -2562,86 +2565,61 @@ async function updateMonsterUI() {
                 try { localStorage.setItem(activeUser + '_lastUpdateTime', nowStr); } catch(e){}
             }
         };
-        setL = function(k, v) { if (k !== 'lastUpdateTime' && k !== 'runningState') updateTime(); originalSetL(k, v); };
-        removeL = function(k) { if (k !== 'lastUpdateTime' && k !== 'runningState') updateTime(); originalRemoveL(k); };
+        setL = function(k, v) { if (k !== 'lastUpdateTime') updateTime(); originalSetL(k, v); };
+        removeL = function(k) { if (k !== 'lastUpdateTime') updateTime(); originalRemoveL(k); };
     }
 
-    const cloudTime = parseInt(d.lastUpdateTime || '0');
-    const localTime = parseInt(getL('lastUpdateTime') || '0');
-    const isCloudNewer = forceOverwrite || (cloudTime > localTime) || localTime === 0;
+    // ⭐ 핵심: 이제 서버에서 데이터를 가져오는 행위 자체가 "서버 1순위"이므로, 조건 없이 덮어씁니다.
+    const isServerPriority = true; 
 
     if(d['ddayConfig']) { 
         let parsedDday = safeParse(d['ddayConfig'], {title:"", date:""});
         ddayConfig = parsedDday; setL('ddayConfig', JSON.stringify(parsedDday));
-    } else if (forceOverwrite) {
-        removeL('ddayConfig');
     }
     
-    const currentLogicDate = Utils.getLogicalDateString();
-    const cloudLogicDate = d.lastLogicalDate || currentLogicDate;
+    // 블록(시간표) 및 목표 시간 무조건 서버 데이터로 덮어쓰기
+    let cloudBlocks = safeParse(d['blockSeconds'], Array(48).fill(0));
+    blockSeconds = cloudBlocks.map(x => Number(x) || 0);
+    setL('blockSeconds', JSON.stringify(blockSeconds)); 
+    
+    let cloudTargets = safeParse(d['targetBlocks'], Array(48).fill(false));
+    targetBlocks = cloudTargets.map(x => !!x);
+    setL('targetBlocks', JSON.stringify(targetBlocks)); 
 
-    if (currentLogicDate === cloudLogicDate || forceOverwrite) {
-        let localBlocks = safeParse(getL('blockSeconds'), Array(48).fill(0));
-        let cloudBlocks = safeParse(d['blockSeconds'], Array(48).fill(0));
-        if (isCloudNewer) {
-            blockSeconds = cloudBlocks.map(x => Number(x) || 0);
-        } else {
-            blockSeconds = localBlocks.map((sec, i) => Math.max(Number(sec) || 0, Number(cloudBlocks[i]) || 0));
-        }
-        setL('blockSeconds', JSON.stringify(blockSeconds)); 
-        
-        let localTargets = safeParse(getL('targetBlocks'), Array(48).fill(false));
-        let cloudTargets = safeParse(d['targetBlocks'], Array(48).fill(false));
-        if (isCloudNewer) {
-            targetBlocks = cloudTargets.map(x => !!x);
-        } else {
-            targetBlocks = localTargets.map((t, i) => t || cloudTargets[i] || false);
-        }
-        setL('targetBlocks', JSON.stringify(targetBlocks)); 
-    }
-
+    // 설정, 몬스터, 업적 등 서버 데이터로 덮어쓰기
     ['backupSeconds', 'alarmedBlocks', 'settings', 'lastLogicalDate', 'customAlarms', 'monsterData', 'achievements'].forEach(k => { 
         if (d[k] !== undefined && d[k] !== "") {
-            if (isCloudNewer || !getL(k)) setL(k, typeof d[k] === 'object' ? JSON.stringify(d[k]) : d[k]); 
-        } else if (forceOverwrite) {
-            removeL(k); 
+            if (k === 'monsterData') {
+                let p = Utils.safeParseJSON(d[k], null);
+                if (!p || Array.isArray(p) || !Array.isArray(p.inventory)) return; 
+            }
+            setL(k, typeof d[k] === 'object' ? JSON.stringify(d[k]) : d[k]); 
         }
     });
 
+    // 일별 기록(일기, 할일, 총 시간) 병합 (서버 데이터 절대 우위)
     if (d['dailyRecords']) {
         try {
             let localRec = safeParse(getL('dailyRecords'), {}); 
             let cloudRec = safeParse(d['dailyRecords'], {});
             let mergedRec = {}; 
             
-            if (forceOverwrite) {
-                mergedRec = cloudRec; 
-            } else {
-                let allDates = new Set([...Object.keys(localRec), ...Object.keys(cloudRec)]);
-                allDates.forEach(date => {
-                    let l = localRec[date]; let c = cloudRec[date];
-                    if (!l) { mergedRec[date] = c; return; }
-                    if (!c) { mergedRec[date] = l; return; }
-                    
-                    if (date === currentLogicDate) {
-                        mergedRec[date] = l; 
-                        if (isCloudNewer) { 
-                            if (c.diary) mergedRec[date].diary = c.diary; 
-                            if (c.todo) mergedRec[date].todo = c.todo; 
-                        }
-                    } else { mergedRec[date] = isCloudNewer ? c : l; }
-                });
-            }
-            dailyRecords = mergedRec; setL('dailyRecords', JSON.stringify(mergedRec));
+            let allDates = new Set([...Object.keys(localRec), ...Object.keys(cloudRec)]);
+            allDates.forEach(date => {
+                let l = localRec[date]; let c = cloudRec[date];
+                // 서버 데이터가 있으면 무조건 서버 우선, 없으면 로컬 유지
+                mergedRec[date] = c ? c : l; 
+            });
+            dailyRecords = mergedRec; 
+            setL('dailyRecords', JSON.stringify(mergedRec));
         } catch(e) {}
     }
     
+    // 시간별 메모도 서버 데이터로 덮어쓰기
     for (let i=0; i<48; i++) { 
-        if (isCloudNewer) {
-            let n = (d[`note_${i}`] || "").trim(); 
-            if (n !== "" && n !== "null") setL(`note_${i}`, n); 
-            else removeL(`note_${i}`); 
-        }
+        let n = (d[`note_${i}`] || "").trim(); 
+        if (n !== "" && n !== "null") setL(`note_${i}`, n); 
+        else removeL(`note_${i}`); 
     }
     updateUI(true); 
 }
@@ -2961,24 +2939,32 @@ async function updateMonsterUI() {
     }
 
     async function loadFromCloud(silent = false) {
-        if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); 
-        if(!navigator.onLine) return showToast("📴 인터넷 연결을 확인해주세요.");
-        if (isSyncing) return showToast("⏳ 이미 동기화가 진행 중입니다.");
-        
-        isSyncing = true; if(syncTimer) clearTimeout(syncTimer); 
-        const ind = document.getElementById('sync-indicator'); if(ind) ind.innerText = "☁️ 불러오는 중...";
-        showLoading(true, "데이터 최신화 중... ☁️");
-        try {
-            const res = await loadAllDataFromServer();
-            if (res.success && res.data && res.data !== "{}" && res.data !== "null") { 
-                let finalData = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
-                applyCloudData(finalData, silent, true); 
-            } else { 
-                if (!silent) { SFX.play('tap'); showToast(res.message || "서버 혼잡으로 인해 동기화가 지연되었습니다."); } 
-            }
-        } catch(e) { console.error("Cloud Load Error:", e); if (!silent) showToast("❌ 통신 지연. 오프라인 기록을 유지합니다."); } 
-        finally { showLoading(false); if(ind) ind.innerText = ""; isSyncing = false; }
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); 
+    if(!navigator.onLine) return showToast("📴 인터넷 연결을 확인해주세요.");
+    if (isSyncing) return showToast("⏳ 이미 동기화가 진행 중입니다. 잠시 후 시도해주세요.");
+    
+    const ind = document.getElementById('sync-indicator'); 
+    if(ind) ind.innerText = "☁️ 서버 데이터 확인 중...";
+    showLoading(true, "서버의 최신 기록으로 덮어쓰는 중... ☁️");
+    
+    try {
+        const res = await loadAllDataFromServer();
+        if (res.success && res.data && res.data !== "{}" && res.data !== "null") { 
+            let finalData = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
+            // ⭐ 4번째 파라미터(true)로 무조건 서버 데이터를 신뢰하고 로컬을 덮어씁니다.
+            applyCloudData(finalData, silent, true, true); 
+            showToast("✅ 서버의 데이터로 동기화되었습니다.");
+        } else { 
+            if (!silent) { SFX.play('tap'); showToast(res.message || "서버 데이터를 가져오지 못했습니다."); } 
+        }
+    } catch(e) { 
+        console.error("Cloud Load Error:", e); 
+        if (!silent) showToast("❌ 통신 지연. 오프라인 기록을 유지합니다."); 
+    } finally { 
+        showLoading(false); 
+        if(ind) ind.innerText = ""; 
     }
+}
 
     async function performSync() {
         if (isSyncing) { pendingSync = true; return; }
@@ -2997,17 +2983,67 @@ async function updateMonsterUI() {
         }
     }
 
-    function triggerAutoSync(immediate = false) {
-        const ind = document.getElementById('sync-indicator');
-        if (!navigator.onLine) {
-            if(ind) ind.innerText = "📴 기기 오프라인 (변경사항 로컬 저장됨)";
-            return;
-        }
-        if (syncTimer) clearTimeout(syncTimer);
-        if(ind) ind.innerText = "⏳ 동기화 대기 중...";
-        if (immediate) { performSync(); } else { syncTimer = setTimeout(performSync, 10000); }
-    }
+        // 스마트 자동 동기화 트리거
+function triggerAutoSync(immediate = false) {
+    if (!navigator.onLine) return; // 오프라인이면 무시 (로컬에만 저장됨)
+
+    const ind = document.getElementById('sync-indicator');
     
+    if (immediate) {
+        executeSafeSync();
+    } else {
+        // 기존 타이머 취소 (다다닥 누르면 타이머가 계속 초기화됨)
+        clearTimeout(syncTimer);
+        if(ind) ind.innerText = "⏳ 변경사항 서버 전송 대기 중...";
+        
+        // 사용자가 마지막 행동을 한 후 5초 동안 가만히 있으면 그때 모아서 전송
+        syncTimer = setTimeout(() => {
+            executeSafeSync();
+        }, 5000);
+    }
+}
+
+// 안전한 실제 동기화 실행 함수 (서버 락다운 방어 코드)
+async function executeSafeSync() {
+    // 1. 이미 서버와 통신 중이라면, 통신이 끝난 후 다시 실행되도록 예약(Queue)만 하고 종료
+    if (isSyncing) {
+        syncQueued = true;
+        return;
+    }
+
+    isSyncing = true;
+    syncQueued = false; // 대기열 초기화
+    
+    const ind = document.getElementById('sync-indicator');
+    if(ind) ind.innerText = "☁️ 서버에 안전하게 동기화 중...";
+
+    try {
+        syncTodayRecord(); // 보내기 전 오늘의 총합 시간 최신화
+        let res = await saveAllDataToServer();
+        
+        if (res.success) {
+            if(ind) ind.innerText = "✅ 서버 저장 완료";
+        } else {
+            if(ind) ind.innerText = "❌ 저장 실패 (재시도 예약됨)";
+            syncQueued = true; // 실패 시 다시 큐에 넣음
+        }
+    } catch(e) {
+        console.error("Sync Error:", e);
+        if(ind) ind.innerText = "❌ 통신 오류";
+        syncQueued = true;
+    } finally {
+        isSyncing = false;
+        
+        // 2. 통신 중에 누군가 또 체크박스를 눌렀다면? 3초 숨 돌리고 다시 전송!
+        if (syncQueued) {
+            setTimeout(executeSafeSync, 3000);
+        } else {
+            // 더 이상 변경사항이 없으면 2초 뒤 표시 지우기
+            setTimeout(() => { if(ind && ind.innerText.includes("완료")) ind.innerText = ""; }, 2000);
+        }
+    }
+}
+
     function manualForceSave() {
         if (!navigator.onLine) return showToast("📴 오프라인 상태입니다. 기록은 기기에 저장되어 있습니다.");
         SFX.play('tap');
@@ -3851,42 +3887,44 @@ async function updateMonsterUI() {
     // 🚪 9. 인증 및 기타 유틸
     // ==========================================
     async function handleAuth() {
-        activeUser = document.getElementById('login-id').value.trim();
-        let rawPw = document.getElementById('login-pw').value.trim();
-        const statusEl = document.getElementById('login-status');
-        if(!activeUser || !rawPw) { statusEl.innerText = "정보를 입력해주세요."; return; }
-        
-        showLoading(true, "로그인 및 데이터 동기화 중... 🔐"); 
-        activePw = await hashSHA256(rawPw); 
-        memCache = {};
+    activeUser = document.getElementById('login-id').value.trim();
+    let rawPw = document.getElementById('login-pw').value.trim();
+    const statusEl = document.getElementById('login-status');
+    if(!activeUser || !rawPw) { statusEl.innerText = "정보를 입력해주세요."; return; }
+    
+    showLoading(true, "서버의 최신 데이터를 가져오는 중... ☁️"); 
+    activePw = await hashSHA256(rawPw); 
+    memCache = {};
 
-        try {
-            const res = await loadAllDataFromServer();
-            showLoading(false);
+    try {
+        const res = await loadAllDataFromServer();
+        showLoading(false);
 
-            if(res.success) {
-                localStorage.setItem('activeUser', activeUser); 
-                localStorage.setItem('activePw', activePw); 
-                applyCloudData(Utils.safeParseJSON(res.data, {}), true); 
+        if(res.success) {
+            localStorage.setItem('activeUser', activeUser); 
+            localStorage.setItem('activePw', activePw); 
+            // ⭐ 4번째 파라미터(true)가 서버 우선(강제 덮어쓰기)을 의미합니다.
+            applyCloudData(Utils.safeParseJSON(res.data, {}), true, false, true); 
+            startDashboard();
+        } else {
+            // 오프라인이거나 진짜 서버가 터졌을 때만 기존 로컬로 진입
+            let dbData = await DBEngine.getAll(activeUser + '_');
+            if (dbData.length > 0) {
+                localStorage.setItem('activeUser', activeUser);
+                localStorage.setItem('activePw', activePw);
+                initLocalState();
                 startDashboard();
+                showToast("🌐 서버 연결 지연. 부득이하게 로컬 데이터로 시작합니다.");
             } else {
-                let dbData = await DBEngine.getAll(activeUser + '_');
-                if (dbData.length > 0) {
-                    localStorage.setItem('activeUser', activeUser);
-                    localStorage.setItem('activePw', activePw);
-                    initLocalState();
-                    startDashboard();
-                    showToast("🌐 서버 연결 지연. 로컬 데이터로 시작합니다.");
-                } else {
-                    statusEl.innerText = "로그인 실패: " + (res.message || "서버 응답 없음");
-                }
+                statusEl.innerText = "로그인 실패: " + (res.message || "서버 응답 없음");
             }
-        } catch(err) {
-            console.error(err);
-            showLoading(false);
-            statusEl.innerText = "로그인 중 오류가 발생했습니다. 새로고침 후 다시 시도해주세요.";
         }
+    } catch(err) {
+        console.error(err);
+        showLoading(false);
+        statusEl.innerText = "오류가 발생했습니다. 새로고침 후 다시 시도해주세요.";
     }
+}
 
     // 🌟 100% 안전한 로그아웃 및 동기화
     async function handleLogout() {
