@@ -1702,7 +1702,7 @@
 
             let totalSeconds = calculateActiveMonsterExp(displayMonster);
             
-            // 🐛 [핵심 수정] 진행도(%)가 부드럽게 오르도록 소수점(float)까지 정확히 계산
+            // 🐛 진행도(%)가 부드럽게 오르도록 소수점(float)까지 정확히 계산
             let totalHoursFloat = totalSeconds / 3600;
             let totalHours = Math.floor(totalHoursFloat); 
         
@@ -1720,9 +1720,25 @@
                 if (totalHours >= evoHours[i]) { maxStageIdx = i; break; }
             }
             
+            // 🐛 [핵심 버그 픽스] 체크 해제 시 퇴화(다운그레이드) 로직 추가
             if (displayMonster.status !== "egg") {
-                if (displayMonster.selectedStage === undefined || displayMonster.selectedStage < maxStageIdx) {
-                    displayMonster.selectedStage = maxStageIdx; 
+                let highest = displayMonster.highestReachedStage !== undefined ? displayMonster.highestReachedStage : (displayMonster.selectedStage || 0);
+                
+                if (displayMonster.selectedStage === undefined) {
+                    displayMonster.selectedStage = maxStageIdx;
+                    displayMonster.highestReachedStage = maxStageIdx;
+                    setL('monsterData', JSON.stringify(monsterData)); 
+                } else if (maxStageIdx > highest) {
+                    // 공부 시간이 늘어 새로운 단계로 진화한 경우 (자동 모습 변경)
+                    displayMonster.highestReachedStage = maxStageIdx;
+                    displayMonster.selectedStage = maxStageIdx;
+                    setL('monsterData', JSON.stringify(monsterData)); 
+                } else if (maxStageIdx < highest) {
+                    // 체크를 해제하여 시간이 줄어들어 진화 단계가 낮아진 경우 (강제 퇴화)
+                    displayMonster.highestReachedStage = maxStageIdx;
+                    if (displayMonster.selectedStage > maxStageIdx) {
+                        displayMonster.selectedStage = maxStageIdx;
+                    }
                     setL('monsterData', JSON.stringify(monsterData)); 
                 }
             }
@@ -1763,7 +1779,6 @@
                     stageName = "👑 마스터 (MAX)";
                 } else if (nextHours) {
                     let prevHours = evoHours[maxStageIdx];
-                    // 🐛 정수가 아닌 소수점 시간(totalHoursFloat)을 적용하여 진행바가 1분 단위로 오름
                     let hoursInStage = totalHoursFloat - prevHours;
                     let requiredHours = nextHours - prevHours;
                     progressPercent = Math.min(100, (hoursInStage / requiredHours) * 100);
