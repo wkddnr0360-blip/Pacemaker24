@@ -2543,108 +2543,109 @@ async function updateMonsterUI() {
     function removeL(k) { try { delete memCache[activeUser + '_' + k]; DBEngine.remove(activeUser + '_' + k); localStorage.removeItem(activeUser + '_' + k); } catch(e) {} }
 
     function saveUserLocalData(d, forceOverwrite = false) {
-        if (!d) return;
+    if (!d) return;
+    const safeParse = Utils.safeParseJSON;
 
-        const safeParse = Utils.safeParseJSON;
-
-        if (!window.isStorageHooked) {
-            window.isStorageHooked = true;
-            const originalSetL = setL; const originalRemoveL = removeL;
-            let lastIoTime = 0;
-            const updateTime = () => {
-                let now = Date.now();
-                if (now - lastIoTime > 2000) {
-                    lastIoTime = now; let nowStr = now.toString();
-                    memCache[activeUser + '_lastUpdateTime'] = nowStr;
-                    try { localStorage.setItem(activeUser + '_lastUpdateTime', nowStr); } catch(e){}
-                }
-            };
-            setL = function(k, v) { if (k !== 'lastUpdateTime' && k !== 'runningState') updateTime(); originalSetL(k, v); };
-            removeL = function(k) { if (k !== 'lastUpdateTime' && k !== 'runningState') updateTime(); originalRemoveL(k); };
-        }
-
-        const cloudTime = parseInt(d.lastUpdateTime || '0');
-        const localTime = parseInt(getL('lastUpdateTime') || '0');
-        
-        // 🌟 [핵심] 복구 모드일 경우 무조건 백업본이 최신인 것으로 강제 인식
-        const isCloudNewer = forceOverwrite || (cloudTime > localTime) || localTime === 0;
-
-        if(d['ddayConfig']) { 
-            let parsedDday = safeParse(d['ddayConfig'], {title:"", date:""});
-            ddayConfig = parsedDday; setL('ddayConfig', JSON.stringify(parsedDday));
-        } else if (forceOverwrite) {
-            removeL('ddayConfig');
-        }
-        
-        const currentLogicDate = Utils.getLogicalDateString();
-        const cloudLogicDate = d.lastLogicalDate || currentLogicDate;
-
-        if (currentLogicDate === cloudLogicDate || forceOverwrite) {
-            let localBlocks = safeParse(getL('blockSeconds'), Array(48).fill(0));
-            let cloudBlocks = safeParse(d['blockSeconds'], Array(48).fill(0));
-            if (isCloudNewer) {
-                blockSeconds = cloudBlocks.map(x => Number(x) || 0);
-            } else {
-                blockSeconds = localBlocks.map((sec, i) => Math.max(Number(sec) || 0, Number(cloudBlocks[i]) || 0));
+    if (!window.isStorageHooked) {
+        window.isStorageHooked = true;
+        const originalSetL = setL; const originalRemoveL = removeL;
+        let lastIoTime = 0;
+        const updateTime = () => {
+            let now = Date.now();
+            if (now - lastIoTime > 2000) {
+                lastIoTime = now; let nowStr = now.toString();
+                memCache[activeUser + '_lastUpdateTime'] = nowStr;
+                try { localStorage.setItem(activeUser + '_lastUpdateTime', nowStr); } catch(e){}
             }
-            setL('blockSeconds', JSON.stringify(blockSeconds)); 
-            
-            let localTargets = safeParse(getL('targetBlocks'), Array(48).fill(false));
-            let cloudTargets = safeParse(d['targetBlocks'], Array(48).fill(false));
-            if (isCloudNewer) {
-                targetBlocks = cloudTargets.map(x => !!x);
-            } else {
-                targetBlocks = localTargets.map((t, i) => t || cloudTargets[i] || false);
-            }
-            setL('targetBlocks', JSON.stringify(targetBlocks)); 
-        }
-
-        ['backupSeconds', 'alarmedBlocks', 'settings', 'lastLogicalDate', 'customAlarms', 'monsterData', 'achievements'].forEach(k => { 
-            if (d[k] !== undefined && d[k] !== "") {
-                if (k === 'monsterData') {
-                    let p = Utils.safeParseJSON(d[k], null);
-                    if (!p || Array.isArray(p) || !Array.isArray(p.inventory)) return; 
-                }
-                if (isCloudNewer || !getL(k)) setL(k, typeof d[k] === 'object' ? JSON.stringify(d[k]) : d[k]); 
-            } else if (forceOverwrite) {
-                removeL(k); // 백업본에 없는 과거 데이터는 깨끗이 삭제
-            }
-        });
-
-        if (d['dailyRecords']) {
-            try {
-                let localRec = safeParse(getL('dailyRecords'), {}); 
-                let cloudRec = safeParse(d['dailyRecords'], {});
-                let mergedRec = {}; 
-                
-                if (forceOverwrite) {
-                    mergedRec = cloudRec; // 백업본을 무조건 신뢰하고 덮어씀
-                } else {
-                    let allDates = new Set([...Object.keys(localRec), ...Object.keys(cloudRec)]);
-                    allDates.forEach(date => {
-                        let l = localRec[date]; let c = cloudRec[date];
-                        if (!l) { mergedRec[date] = c; return; }
-                        if (!c) { mergedRec[date] = l; return; }
-                        
-                        if (date === currentLogicDate) {
-                            mergedRec[date] = l; 
-                            if (isCloudNewer) { mergedRec[date].diary = c.diary; mergedRec[date].todo = c.todo; }
-                        } else { mergedRec[date] = isCloudNewer ? c : l; }
-                    });
-                }
-                dailyRecords = mergedRec; setL('dailyRecords', JSON.stringify(mergedRec));
-            } catch(e) {}
-        }
-        
-        for (let i=0; i<48; i++) { 
-            if (isCloudNewer) {
-                let n = (d[`note_${i}`] || "").trim(); 
-                if (n !== "" && n !== "null") setL(`note_${i}`, n); 
-                else removeL(`note_${i}`); 
-            }
-        }
-        updateUI(true); 
+        };
+        setL = function(k, v) { if (k !== 'lastUpdateTime' && k !== 'runningState') updateTime(); originalSetL(k, v); };
+        removeL = function(k) { if (k !== 'lastUpdateTime' && k !== 'runningState') updateTime(); originalRemoveL(k); };
     }
+
+    const cloudTime = parseInt(d.lastUpdateTime || '0');
+    const localTime = parseInt(getL('lastUpdateTime') || '0');
+    const isCloudNewer = forceOverwrite || (cloudTime > localTime) || localTime === 0;
+
+    if(d['ddayConfig']) { 
+        let parsedDday = safeParse(d['ddayConfig'], {title:"", date:""});
+        ddayConfig = parsedDday; setL('ddayConfig', JSON.stringify(parsedDday));
+    } else if (forceOverwrite) {
+        removeL('ddayConfig');
+    }
+    
+    const currentLogicDate = Utils.getLogicalDateString();
+    const cloudLogicDate = d.lastLogicalDate || currentLogicDate;
+
+    if (currentLogicDate === cloudLogicDate || forceOverwrite) {
+        let localBlocks = safeParse(getL('blockSeconds'), Array(48).fill(0));
+        let cloudBlocks = safeParse(d['blockSeconds'], Array(48).fill(0));
+        if (isCloudNewer) {
+            blockSeconds = cloudBlocks.map(x => Number(x) || 0);
+        } else {
+            blockSeconds = localBlocks.map((sec, i) => Math.max(Number(sec) || 0, Number(cloudBlocks[i]) || 0));
+        }
+        setL('blockSeconds', JSON.stringify(blockSeconds)); 
+        
+        let localTargets = safeParse(getL('targetBlocks'), Array(48).fill(false));
+        let cloudTargets = safeParse(d['targetBlocks'], Array(48).fill(false));
+        if (isCloudNewer) {
+            targetBlocks = cloudTargets.map(x => !!x);
+        } else {
+            targetBlocks = localTargets.map((t, i) => t || cloudTargets[i] || false);
+        }
+        setL('targetBlocks', JSON.stringify(targetBlocks)); 
+    }
+
+    ['backupSeconds', 'alarmedBlocks', 'settings', 'lastLogicalDate', 'customAlarms', 'monsterData', 'achievements'].forEach(k => { 
+        if (d[k] !== undefined && d[k] !== "") {
+            if (k === 'monsterData') {
+                let p = Utils.safeParseJSON(d[k], null);
+                if (!p || Array.isArray(p) || !Array.isArray(p.inventory)) return; 
+            }
+            if (isCloudNewer || !getL(k)) setL(k, typeof d[k] === 'object' ? JSON.stringify(d[k]) : d[k]); 
+        } else if (forceOverwrite) {
+            removeL(k); 
+        }
+    });
+
+    if (d['dailyRecords']) {
+        try {
+            let localRec = safeParse(getL('dailyRecords'), {}); 
+            let cloudRec = safeParse(d['dailyRecords'], {});
+            let mergedRec = {}; 
+            
+            if (forceOverwrite) {
+                mergedRec = cloudRec; 
+            } else {
+                let allDates = new Set([...Object.keys(localRec), ...Object.keys(cloudRec)]);
+                allDates.forEach(date => {
+                    let l = localRec[date]; let c = cloudRec[date];
+                    if (!l) { mergedRec[date] = c; return; }
+                    if (!c) { mergedRec[date] = l; return; }
+                    
+                    if (date === currentLogicDate) {
+                        mergedRec[date] = l; 
+                        // 안전장치: 클라우드에 일기/할일이 있으면 안전하게 병합 (기존 내용 증발 방지)
+                        if (isCloudNewer) { 
+                            if (c.diary) mergedRec[date].diary = c.diary; 
+                            if (c.todo) mergedRec[date].todo = c.todo; 
+                        }
+                    } else { mergedRec[date] = isCloudNewer ? c : l; }
+                });
+            }
+            dailyRecords = mergedRec; setL('dailyRecords', JSON.stringify(mergedRec));
+        } catch(e) {}
+    }
+    
+    for (let i=0; i<48; i++) { 
+        if (isCloudNewer) {
+            let n = (d[`note_${i}`] || "").trim(); 
+            if (n !== "" && n !== "null") setL(`note_${i}`, n); 
+            else removeL(`note_${i}`); 
+        }
+    }
+    updateUI(true); 
+}
 
     function getUserLocalData() {
         const backup = { 
@@ -2740,72 +2741,57 @@ async function updateMonsterUI() {
 
     // 🌟 완전무결 데이터 파서가 포함된 통합 서버 로드 로직
     async function loadAllDataFromServer() {
-        try {
-            let p1 = loadCategoryFromServer(activeUser);
-            let p2 = loadCategoryFromServer(activeUser + "_diary");
-            let p3 = loadCategoryFromServer(activeUser + "_todo");
-            let p4 = loadCategoryFromServer(activeUser + "_mon");
+    try {
+        let p1 = loadCategoryFromServer(activeUser);
+        let p2 = loadCategoryFromServer(activeUser + "_diary");
+        let p3 = loadCategoryFromServer(activeUser + "_todo");
+        let p4 = loadCategoryFromServer(activeUser + "_mon");
 
-            let results = await Promise.allSettled([p1, p2, p3, p4]);
-            
-            let resMain = results[0].status === 'fulfilled' ? results[0].value : { success: false };
-            let resDiary = results[1].status === 'fulfilled' ? results[1].value : { success: true, data: "{}" };
-            let resTodo = results[2].status === 'fulfilled' ? results[2].value : { success: true, data: "{}" };
-            let resMon = results[3].status === 'fulfilled' ? results[3].value : { success: true, data: "{}" };
+        let results = await Promise.allSettled([p1, p2, p3, p4]);
 
-            if (!resMain.success) return resMain;
+        let resMain = results[0].status === 'fulfilled' ? results[0].value : { success: false };
+        let resDiary = results[1].status === 'fulfilled' ? results[1].value : { success: true, data: "{}" };
+        let resTodo = results[2].status === 'fulfilled' ? results[2].value : { success: true, data: "{}" };
+        let resMon = results[3].status === 'fulfilled' ? results[3].value : { success: true, data: "{}" };
 
-            // 🌟 겹겹이 포장된 JSON 완벽 해독기 (마트료시카 해제)
-            function extractRealData(rawData) {
-                if (!rawData) return {};
-                let current = rawData;
-                let iterations = 0;
-                while (typeof current === 'string' && iterations < 5) {
-                    try { current = JSON.parse(current); } catch(e) { break; }
-                    iterations++;
-                }
-                if (current && typeof current === 'object') {
-                    if (current.type === "single" && current.content) return extractRealData(current.content);
-                    if (current.data && current.success !== undefined) return extractRealData(current.data);
-                    return current;
-                }
-                return {};
-            }
+        if (!resMain.success) return resMain;
 
-            let mainParsed = extractRealData(resMain.data);
-            let diaryParsed = extractRealData(resDiary.data);
-            let todoParsed = extractRealData(resTodo.data);
-            let monParsed = extractRealData(resMon.data);
+        // 새롭게 만든 강력한 unwrap 함수로 데이터를 확실히 풉니다.
+        let mainParsed = deepUnwrap(resMain.data);
+        let diaryParsed = deepUnwrap(resDiary.data);
+        let todoParsed = deepUnwrap(resTodo.data);
+        let monParsed = deepUnwrap(resMon.data);
 
-            let dailyRecordsObj = extractRealData(mainParsed.dailyRecords) || {};
-            let diaryRecs = extractRealData(diaryParsed.diaryRecords) || {};
-            let todoRecs = extractRealData(todoParsed.todoRecords) || {};
+        let dailyRecordsObj = deepUnwrap(mainParsed.dailyRecords);
+        let diaryRecs = deepUnwrap(diaryParsed.diaryRecords);
+        let todoRecs = deepUnwrap(todoParsed.todoRecords);
 
-            for (let dateStr in diaryRecs) {
-                if (!dailyRecordsObj[dateStr]) dailyRecordsObj[dateStr] = {};
-                dailyRecordsObj[dateStr].diary = diaryRecs[dateStr];
-            }
-            for (let dateStr in todoRecs) {
-                if (!dailyRecordsObj[dateStr]) dailyRecordsObj[dateStr] = {};
-                dailyRecordsObj[dateStr].todo = todoRecs[dateStr];
-            }
-            mainParsed.dailyRecords = JSON.stringify(dailyRecordsObj);
-            
-            // 포켓몬 데이터 병합 (분리된 시트 우선, 없으면 메인 시트에서 구출)
-            let monDataFromMonSheet = extractRealData(monParsed.monsterData);
-            let monDataFromMainSheet = extractRealData(mainParsed.monsterData);
-            
-            let finalMonData = Object.keys(monDataFromMonSheet).length > 0 ? monDataFromMonSheet : monDataFromMainSheet;
-            if (Object.keys(finalMonData).length > 0) {
-                mainParsed.monsterData = JSON.stringify(finalMonData);
-            }
-
-            return { success: true, data: JSON.stringify(mainParsed) };
-        } catch (err) {
-            console.error("Load Error:", err);
-            return { success: false, message: "데이터 병합 중 오류가 발생했습니다." };
+        // 분리된 일기장과 할일을 메인 달력 데이터에 병합
+        for (let dateStr in diaryRecs) {
+            if (!dailyRecordsObj[dateStr]) dailyRecordsObj[dateStr] = {};
+            dailyRecordsObj[dateStr].diary = diaryRecs[dateStr];
         }
+        for (let dateStr in todoRecs) {
+            if (!dailyRecordsObj[dateStr]) dailyRecordsObj[dateStr] = {};
+            dailyRecordsObj[dateStr].todo = todoRecs[dateStr];
+        }
+        mainParsed.dailyRecords = JSON.stringify(dailyRecordsObj);
+        
+        // 포켓몬 데이터 병합
+        let monDataFromMonSheet = deepUnwrap(monParsed.monsterData);
+        let monDataFromMainSheet = deepUnwrap(mainParsed.monsterData);
+        
+        let finalMonData = Object.keys(monDataFromMonSheet).length > 0 ? monDataFromMonSheet : monDataFromMainSheet;
+        if (Object.keys(finalMonData).length > 0) {
+            mainParsed.monsterData = JSON.stringify(finalMonData);
+        }
+
+        return { success: true, data: JSON.stringify(mainParsed) };
+    } catch (err) {
+        console.error("Load Error:", err);
+        return { success: false, message: "데이터 병합 중 오류가 발생했습니다." };
     }
+}
 
     async function saveAllDataToServer() {
         let allData = getUserLocalData();
@@ -2888,86 +2874,68 @@ async function updateMonsterUI() {
     }
 
     async function loadBackupDataFromServer() {
-        if(!confirm("⚠️ 경고: 현재 기기의 모든 데이터가 지워지고 서버에 보관된 [백업 데이터]로 복구됩니다.\n\n다른 기기에서 백업한 내용을 가져오시겠습니까?")) return;
-        showLoading(true, "서버에서 백업본 찾는 중... 🔍");
-        
-        try {
-            // 🌟 4개의 카테고리 데이터를 병렬로 요청
-            let results = await Promise.allSettled([
-                loadCategoryFromServer(activeUser, "backup_load"),
-                loadCategoryFromServer(activeUser + "_diary", "backup_load"),
-                loadCategoryFromServer(activeUser + "_todo", "backup_load"),
-                loadCategoryFromServer(activeUser + "_mon", "backup_load")
-            ]);
+    if(!confirm("⚠️ 경고: 현재 기기의 모든 데이터가 지워지고 서버에 보관된 [백업 데이터]로 복구됩니다.\n\n다른 기기에서 백업한 내용을 가져오시겠습니까?")) return;
+    showLoading(true, "서버에서 백업본 찾는 중... 🔍");
+    
+    try {
+        let results = await Promise.allSettled([
+            loadCategoryFromServer(activeUser, "backup_load"),
+            loadCategoryFromServer(activeUser + "_diary", "backup_load"),
+            loadCategoryFromServer(activeUser + "_todo", "backup_load"),
+            loadCategoryFromServer(activeUser + "_mon", "backup_load")
+        ]);
 
-            function getRes(idx) { 
-                return results[idx].status === 'fulfilled' ? results[idx].value : { success: false, message: "네트워크 연결 실패" }; 
-            }
-            
-            let resMain = getRes(0), resDiary = getRes(1), resTodo = getRes(2), resMon = getRes(3);
-
-            // 1️⃣ 에러 원인 분석 및 안내
-            if (!resMain.success) {
-                showLoading(false);
-                return alert(`❌ 불러오기 실패: ${resMain.message || "알 수 없는 오류"}\n\n※ 다른 기기와 아이디/비밀번호가 완전히 일치하는지 확인해 주세요.`);
-            }
-
-            if (!resMain.data || resMain.data === "{}" || resMain.data === "null") {
-                showLoading(false);
-                return alert("❓ 해당 아이디로 저장된 백업본이 없습니다.\n\n이전 기기에서 '설정 > 수동 백업'을 먼저 완료했는지 확인해 주세요.");
-            }
-
-            // 2️⃣ 데이터 포장 해제 (Deep Unwrap)
-            function deepUnwrap(data) {
-                let current = data;
-                for(let i=0; i<5; i++) {
-                    if (typeof current !== 'string') break;
-                    try { current = JSON.parse(current); } catch(e) { break; }
-                }
-                if (current && current.content) return deepUnwrap(current.content);
-                return current;
-            }
-
-            let mainParsed = deepUnwrap(resMain.data);
-            let diaryParsed = deepUnwrap(resDiary.data);
-            let todoParsed = deepUnwrap(resTodo.data);
-            let monParsed = deepUnwrap(resMon.data);
-
-            // 3️⃣ 데이터 병합 로직
-            let dailyRecs = deepUnwrap(mainParsed.dailyRecords) || {};
-            
-            // 일기/할일 복원
-            let dRecs = deepUnwrap(diaryParsed.diaryRecords) || {};
-            let tRecs = deepUnwrap(todoParsed.todoRecords) || {};
-            Object.keys(dRecs).forEach(k => { if(!dailyRecs[k]) dailyRecs[k]={}; dailyRecs[k].diary = dRecs[k]; });
-            Object.keys(tRecs).forEach(k => { if(!dailyRecs[k]) dailyRecs[k]={}; dailyRecs[k].todo = tRecs[k]; });
-            mainParsed.dailyRecords = JSON.stringify(dailyRecs);
-            
-            // 포켓몬 데이터 복원
-            let monDataFromBackup = deepUnwrap(monParsed.monsterData);
-            if (monDataFromBackup && Object.keys(monDataFromBackup).length > 0) {
-                mainParsed.monsterData = JSON.stringify(monDataFromBackup);
-            }
-
-            // 4️⃣ 최종 적용
-            let backupTimeStr = resMain.backupTime ? new Date(resMain.backupTime).toLocaleString() : "기록됨";
-            
-            // forceOverwrite = true 옵션으로 현재 기기 데이터를 강제로 덮어씀
-            applyCloudData(mainParsed, true, true, true);
-            
-            // 복구된 데이터를 현재 기기의 마스터 데이터로 서버에 즉시 동기화
-            await saveAllDataToServer(); 
-            
-            showLoading(false);
-            alert(`✅ 복구가 완료되었습니다!\n(백업 일시: ${backupTimeStr})\n\n앱을 재시작합니다.`);
-            location.reload();
-
-        } catch (e) {
-            console.error("Backup Load Error:", e);
-            showLoading(false); 
-            alert("❌ 복구 중 예상치 못한 기술적 오류가 발생했습니다.");
+        function getRes(idx) { 
+            return results[idx].status === 'fulfilled' ? results[idx].value : { success: false, message: "네트워크 연결 실패" }; 
         }
+        
+        let resMain = getRes(0), resDiary = getRes(1), resTodo = getRes(2), resMon = getRes(3);
+
+        if (!resMain.success) {
+            showLoading(false);
+            return alert(`❌ 불러오기 실패: ${resMain.message || "알 수 없는 오류"}\n\n※ 다른 기기와 아이디/비밀번호가 완전히 일치하는지 확인해 주세요.`);
+        }
+
+        if (!resMain.data || resMain.data === "{}" || resMain.data === "null") {
+            showLoading(false);
+            return alert("❓ 해당 아이디로 저장된 백업본이 없습니다.\n\n이전 기기에서 '설정 > 수동 백업'을 먼저 완료했는지 확인해 주세요.");
+        }
+
+        // 강력한 unwrap 함수로 백업 데이터 해독
+        let mainParsed = deepUnwrap(resMain.data);
+        let diaryParsed = deepUnwrap(resDiary.data);
+        let todoParsed = deepUnwrap(resTodo.data);
+        let monParsed = deepUnwrap(resMon.data);
+
+        let dailyRecs = deepUnwrap(mainParsed.dailyRecords);
+        let dRecs = deepUnwrap(diaryParsed.diaryRecords);
+        let tRecs = deepUnwrap(todoParsed.todoRecords);
+        
+        Object.keys(dRecs).forEach(k => { if(!dailyRecs[k]) dailyRecs[k]={}; dailyRecs[k].diary = dRecs[k]; });
+        Object.keys(tRecs).forEach(k => { if(!dailyRecs[k]) dailyRecs[k]={}; dailyRecs[k].todo = tRecs[k]; });
+        mainParsed.dailyRecords = JSON.stringify(dailyRecs);
+        
+        let monDataFromBackup = deepUnwrap(monParsed.monsterData);
+        if (monDataFromBackup && Object.keys(monDataFromBackup).length > 0) {
+            mainParsed.monsterData = JSON.stringify(monDataFromBackup);
+        }
+
+        let backupTimeStr = resMain.backupTime ? new Date(resMain.backupTime).toLocaleString() : "기록됨";
+        
+        // 현재 기기 강제 덮어쓰기
+        applyCloudData(mainParsed, true, true, true);
+        await saveAllDataToServer(); 
+        
+        showLoading(false);
+        alert(`✅ 복구가 완료되었습니다!\n(백업 일시: ${backupTimeStr})\n\n앱을 재시작합니다.`);
+        location.reload();
+
+    } catch (e) {
+        console.error("Backup Load Error:", e);
+        showLoading(false); 
+        alert("❌ 복구 중 예상치 못한 기술적 오류가 발생했습니다.");
     }
+}
 
     function applyCloudData(parsedData, silent, skipSync = false, forceOverwrite = false) {
         try {
@@ -3345,28 +3313,7 @@ async function updateMonsterUI() {
         document.body.style.overflow = 'hidden';
     }
 
-    function saveTextData(type, silent = false) {
-        if (!activeUser) return;
-        const dateStr = document.getElementById(`${type}-date-input`).value;
-        const val = document.getElementById(`${type}-input`).innerHTML;
-        
-        if (!dailyRecords[dateStr]) dailyRecords[dateStr] = { targetTime: "00h 00m", totalTime: "00h 00m" };
-        dailyRecords[dateStr][type] = val;
-        setL('dailyRecords', JSON.stringify(dailyRecords));
-        
-        if (dateStr === Utils.getLogicalDateString()) triggerAutoSync(true);
-        else {
-            saveCategoryToServer({ [type + 'Records']: JSON.stringify({ [dateStr]: val }) }, activeUser + "_" + type).then(res => {
-                if(!res.success) {
-                    showToast("❌ 개별 기록 저장 지연. 백그라운드에서 다시 시도합니다.");
-                    triggerAutoSync(true);
-                }
-            });
-        }
-        
-        if(!silent) { SFX.play('success'); showToast("✅ 기기에 저장되었습니다."); document.getElementById(`${type}-modal`).style.display = 'none'; document.body.style.overflow = ''; }
-        if (document.getElementById('calendar-view').style.display === 'flex') renderCalendar();
-    }
+
 
 
     // ==========================================
@@ -3958,20 +3905,26 @@ async function updateMonsterUI() {
         location.reload();
     }
 
-    function saveTextData(type, silent = false) {
-        if (!activeUser) return;
-        const dateStr = document.getElementById(`${type}-date-input`).value;
-        const val = document.getElementById(`${type}-input`).innerHTML;
-        
-        if (!dailyRecords[dateStr]) dailyRecords[dateStr] = { targetTime: "00h 00m", totalTime: "00h 00m" };
-        dailyRecords[dateStr][type] = val;
-        setL('dailyRecords', JSON.stringify(dailyRecords));
-        
-        triggerAutoSync(true); // 과거 날짜를 수정해도 서버로 확실히 전송
-        
-        if(!silent) { SFX.play('success'); showToast("✅ 기기 및 서버에 저장되었습니다."); document.getElementById(`${type}-modal`).style.display = 'none'; document.body.style.overflow = ''; }
-        if (document.getElementById('calendar-view').style.display === 'flex') renderCalendar();
+    window.saveTextData = function(type, silent = false) {
+    if (!activeUser) return;
+    const dateStr = document.getElementById(`${type}-date-input`).value;
+    const val = document.getElementById(`${type}-input`).innerHTML;
+    
+    if (!dailyRecords[dateStr]) dailyRecords[dateStr] = { targetTime: "00h 00m", totalTime: "00h 00m" };
+    dailyRecords[dateStr][type] = val;
+    setL('dailyRecords', JSON.stringify(dailyRecords));
+    
+    // 전체 데이터를 안전하게 서버에 동기화하도록 큐(Queue)에 넣음 (데이터 누락 완벽 방지)
+    triggerAutoSync(true); 
+    
+    if(!silent) { 
+        SFX.play('success'); 
+        showToast("✅ 기기 및 서버에 저장되었습니다."); 
+        document.getElementById(`${type}-modal`).style.display = 'none'; 
+        document.body.style.overflow = ''; 
     }
+    if (document.getElementById('calendar-view').style.display === 'flex') renderCalendar();
+    };
     
     window.editPastRecord = function(type, dateStr) {
         document.getElementById('record-modal').style.display = 'none';
@@ -4150,6 +4103,39 @@ async function updateMonsterUI() {
             }, 300);
         } catch (e) { showLoading(false); document.body.style.overflow = ''; showToast("글꼴 로딩에 실패했습니다."); }
     }
+
+    window.deepUnwrap = function(data) {
+    if (data === null || data === undefined) return {};
+    let current = data;
+    let parsedSomething = true;
+    let safetyCount = 0;
+
+    // 포장지(JSON String 또는 래퍼 객체)가 완전히 벗겨질 때까지 최대 10번 반복해서 풉니다.
+    while (parsedSomething && safetyCount < 10) {
+        parsedSomething = false;
+        safetyCount++;
+
+        if (typeof current === 'string') {
+            try {
+                let parsed = JSON.parse(current);
+                current = parsed;
+                parsedSomething = true;
+                continue;
+            } catch(e) { }
+        }
+
+        if (current && typeof current === 'object' && !Array.isArray(current)) {
+            if (current.type === "single" && current.content) {
+                current = current.content;
+                parsedSomething = true;
+            } else if (current.data && current.success !== undefined) {
+                current = current.data;
+                parsedSomething = true;
+            }
+        }
+    }
+    return current || {};
+};
 
 </script>
 </body>
