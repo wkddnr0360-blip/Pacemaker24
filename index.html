@@ -494,7 +494,17 @@
         <div id="clock-display" style="padding: 15px; text-align: center; color: var(--text-muted); font-weight: 800; font-size: 13px; background:var(--bg); border-bottom:1px solid var(--border-color);">로딩 중...</div>
         <div class="list-wrapper" id="schedule-list"></div>
     </div>
-    <button class="btn-target" onclick="SFX.play('tap'); scrollToCurrent()">🎯</button>
+    <div class="list-wrapper" id="schedule-list"></div>
+    </div>
+    
+    <div onclick="SFX.play('pop'); scrollToCurrent();" style="position:fixed; bottom:90px; right:20px; width:60px; height:60px; border-radius:50%; background:var(--surface); box-shadow:0 4px 15px rgba(0,0,0,0.15); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:99; transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
+        <svg width="60" height="60" style="position:absolute; top:0; left:0; transform:rotate(-90deg);">
+            <circle cx="30" cy="30" r="27" fill="none" stroke="var(--bg-sec)" stroke-width="4"></circle>
+            <circle id="float-mon-ring" cx="30" cy="30" r="27" fill="none" stroke="var(--primary)" stroke-width="4" stroke-dasharray="169.6" stroke-dashoffset="169.6" stroke-linecap="round" style="transition:stroke-dashoffset 0.8s ease;"></circle>
+        </svg>
+        <img id="float-mon-img" src="" style="width:36px; height:36px; object-fit:contain; z-index:2; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1)); display:none;" onerror="this.style.display='none'">
+        <div id="float-mon-egg" style="display:none; font-size:24px; z-index:2; transform:translateY(-2px);">🥚</div>
+    </div>
 </div>
 
 <div id="calendar-view" class="view-layer">
@@ -1650,7 +1660,7 @@
         return totalSeconds + (monster.bonusSeconds || 0);
     }
 
-async function updateMonsterUI() {
+    async function updateMonsterUI() {
         try {
             const titleEl = document.getElementById('monster-title');
             const emojiEl = document.getElementById('monster-emoji');
@@ -1680,16 +1690,14 @@ async function updateMonsterUI() {
             let maxHours = evoHours[evoHours.length - 1];
             
             let maxStageIdx = 0;
-            // 🐛 [버그 수정] 조기 은퇴한 포켓몬이 무조건 메가진화 폼으로 고정되는 현상 제거! (실제 시간 기반으로만 계산)
             for (let i = evoHours.length - 1; i >= 0; i--) {
                 if (totalHours >= evoHours[i]) { maxStageIdx = i; break; }
             }
             
-            // 🌟 레벨업 시 폼 자동 변경 로직
             if (displayMonster.status !== "egg") {
                 if (displayMonster.selectedStage === undefined || displayMonster.selectedStage < maxStageIdx) {
-                    displayMonster.selectedStage = maxStageIdx; // 자동으로 최신 진화 폼으로 업데이트
-                    setL('monsterData', JSON.stringify(monsterData)); // 변경된 폼 저장
+                    displayMonster.selectedStage = maxStageIdx; 
+                    setL('monsterData', JSON.stringify(monsterData)); 
                 }
             }
             
@@ -1713,11 +1721,13 @@ async function updateMonsterUI() {
                 bgGradient = "linear-gradient(135deg, #E8E8E8 0%, #F5F5F5 100%)";
                 effectFilter = "brightness(0.9)";
                 pulseClass = "pulse-egg";
+                progressPercent = 0;
             } else if (displayMonster.status === "retired") {
                 descText = `📖 도감 등록 완료 (${displayMonster.startDate.slice(2).replace(/-/g,'.')} ~ ${displayMonster.endDate?.slice(2).replace(/-/g,'.') || '완료'})`;
                 bgGradient = "linear-gradient(135deg, #D4AF37 0%, #FFD700 100%)";
                 effectFilter = "brightness(1.1) saturate(1.3)";
                 pulseClass = "pulse-retired";
+                progressPercent = 100;
             } else {
                 if (isMax) {
                     descText = `👑 육성 완료! (${maxHours}시간 돌파)`;
@@ -1759,6 +1769,7 @@ async function updateMonsterUI() {
                 } catch (err) { console.warn("API 이미지 로드 실패"); }
             }
 
+            // 🌟 대시보드 메인 몬스터 UI 업데이트
             if (emojiEl) {
                 let pureName = displayMonster.nickname ? displayMonster.nickname : monsterSpec.name;
                 let imagePart = displayMonster.status === "egg" 
@@ -1775,6 +1786,32 @@ async function updateMonsterUI() {
             let progressEl = document.getElementById('monster-progress');
             if (progressEl) progressEl.style.width = `${progressPercent}%`;
             if (descEl) descEl.innerText = descText;
+
+            // 🌟 새롭게 추가된 '현재 시간 이동' 원형 배지 업데이트 연동
+            let floatImg = document.getElementById('float-mon-img');
+            let floatRing = document.getElementById('float-mon-ring');
+            let floatEgg = document.getElementById('float-mon-egg');
+
+            if (floatImg && floatRing && floatEgg) {
+                if (displayMonster.status === "egg") {
+                    floatImg.style.display = 'none';
+                    floatEgg.style.display = 'block';
+                    floatRing.style.strokeDashoffset = 169.6; // 0% (진행도 없음)
+                    floatRing.style.stroke = "var(--border-color)";
+                } else {
+                    floatEgg.style.display = 'none';
+                    floatImg.style.display = 'block';
+                    floatImg.src = imageUrl;
+                    
+                    // 원의 둘레 길이에 맞춰 % 게이지 적용
+                    let ringCircumference = 169.6;
+                    let offset = ringCircumference - (ringCircumference * (progressPercent / 100));
+                    floatRing.style.strokeDashoffset = offset;
+                    
+                    if (isMax || displayMonster.status === "retired") floatRing.style.stroke = "var(--success)";
+                    else floatRing.style.stroke = "var(--primary)";
+                }
+            }
 
         } catch(err) {
             console.error("Monster UI Update Error:", err);
