@@ -358,8 +358,12 @@ window.saveAllDataToServer = async function() {
     let monsterDataStr = JSON.stringify({ monsterData: allData.monsterData || "{}" });
     delete allData.monsterData; 
 
-    // 병렬 처리로 속도 대폭 상승 (기존 4분할 에러 원천 차단)
-    let res = await FirebaseEngine.saveAllData(window.activeUser, JSON.stringify(allData), diaryDataStr, todoDataStr, monsterDataStr);
+    // ✨ 퀴즈 데이터 독립 분리 저장
+    let quizDataStr = allData.myQuizzes || "{}";
+    delete allData.myQuizzes;
+
+    // 병렬 처리로 속도 대폭 상승 (퀴즈 파이프라인 포함)
+    let res = await FirebaseEngine.saveAllData(window.activeUser, JSON.stringify(allData), diaryDataStr, todoDataStr, monsterDataStr, quizDataStr);
     return res;
 };
 
@@ -372,8 +376,12 @@ window.saveBackupDataToServer = async function() {
     let timeStr = new Date().toLocaleString();
     allData._backupTimestamp = timeStr;
 
-    // 간소화된 Firebase 백업 호출
-    let res = await FirebaseEngine.saveBackup(window.activeUser, JSON.stringify(allData), "{}", "{}", "{}", timeStr);
+    // ✨ 퀴즈 데이터 독립 분리 저장
+    let quizDataStr = allData.myQuizzes || "{}";
+    delete allData.myQuizzes;
+
+    // 간소화된 Firebase 백업 호출 (quizDataStr 추가)
+    let res = await FirebaseEngine.saveBackup(window.activeUser, JSON.stringify(allData), "{}", "{}", "{}", quizDataStr, timeStr);
     window.showLoading(false);
     
     if (res.success) {
