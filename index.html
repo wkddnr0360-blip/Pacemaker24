@@ -14,9 +14,7 @@
 <title>24H 전력질주 페이스메이커</title>
 <link rel="icon" href="icon-512.png">
 <link rel="apple-touch-icon" href="icon-512.png">
-
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <style>
     :root { 
@@ -212,7 +210,7 @@
     .date-num.sat { color: var(--primary); }
     
     .cal-badge-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%; z-index: 2; margin-top: 2px; }
-    .cal-badge { font-size: 11px; font-weight: 800; padding: 4px 0; border-radius: 8px; width: 90%; text-align: center; letter-spacing: -0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; box-sizing: border-box; }
+    .cal-badge { font-size: 10.5px; font-weight: 800; padding: 4px 1px; border-radius: 6px; width: 100%; text-align: center; letter-spacing: -0.8px; white-space: nowrap; overflow: hidden; text-overflow: clip; font-variant-numeric: tabular-nums; box-sizing: border-box; }
     .cal-badge.actual { color: var(--primary); background: var(--surface); box-shadow: 0 2px 8px rgba(0, 149, 246, 0.15); border: none; }
     .cal-badge.actual.high { color: #ffffff; background: var(--primary); border: none; box-shadow: 0 4px 12px rgba(0,149,246,0.3); }
 
@@ -491,11 +489,11 @@
         <div class="dash-today-summary">
             <div style="display:flex; flex-direction:column; gap:4px;">
                 <span style="font-size:14px; color:var(--text-muted); font-weight:800;">🎯 오늘의 목표 시간</span>
-                <strong id="dash-today-target" style="font-size:24px; color:var(--insta-purple);">00h 00m</strong>
+                <strong id="dash-today-target" style="font-size:24px; color:var(--insta-purple); letter-spacing:-1px;">00h 00m</strong>
             </div>
             <div style="display:flex; flex-direction:column; gap:4px; margin-top:5px; padding-top:15px; border-top:1px solid var(--border-color);">
                 <span style="font-size:14px; color:var(--text-main); font-weight:800;">🔥 오늘 달린 시간</span>
-                <strong id="dash-today-time" style="color:var(--primary);">00h 00m</strong>
+                <strong id="dash-today-time" style="color:var(--primary); letter-spacing:-1px;">00h 00m</strong>
             </div>
         </div>
 
@@ -549,7 +547,7 @@
                 <h2 id="cal-month-year" style="margin:0; font-size:18px; font-weight:900; color:var(--text-main); letter-spacing:-0.5px;">연월 표시</h2>
                 <button onclick="window.app.playSfx('tap'); window.app.changeMonth(1)" style="background:none; border:none; font-size:18px; color:var(--text-main); cursor:pointer; padding:5px; transition: 0.2s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'">▶</button>
             </div>
-            <button style="background:none; border:none; font-size: 22px; color: var(--text-main); cursor: pointer; width: 40px; height: 40px; transition: 0.2s;" onclick="window.app.playSfx('pop'); document.getElementById('theme-modal').style.display='flex'; document.body.style.overflow='hidden';" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">📸</button>
+            <div style="width: 40px;"></div>
         </div>
 
         <!-- 인스타 감성 퀵 액션 (가로 스크롤) -->
@@ -717,7 +715,7 @@
                             <div style="font-size:12px; color:var(--text-muted); opacity:0.6; font-weight:700;">🔄 터치하여 뒤집기</div>
                         </div>
                         <div id="q-play-acronym" style="font-size:30px; font-weight:900; color:var(--primary); text-align:center; word-break:keep-all; line-height:1.6; margin-bottom:16px; width:100%; flex-grow:1; overflow-y:auto;">두문자</div>
-                        <div id="q-play-exp" style="font-size:14px; line-height:1.6; text-align:center; color:var(--text-muted); word-break:keep-all; width:100%; overflow-y:auto; flex-shrink:0; padding-top:16px; border-top:1px dashed var(--border-color);">해설 내용</div>
+                        <div id="q-play-exp" style="font-size:16px; font-weight:600; line-height:1.6; text-align:center; color:var(--text-muted); word-break:keep-all; width:100%; overflow-y:auto; flex-shrink:0; padding-top:16px; border-top:1px dashed var(--border-color);">해설 내용</div>
                     </div>
                 </div>
             </div>
@@ -1039,17 +1037,6 @@
     </div>
 </div>
 
-<div id="theme-modal" class="overlay-base">
-    <div style="background:var(--surface); padding:30px; border-radius:24px; text-align:center; width:100%; max-width:320px; border:1px solid var(--border-color);">
-        <h3 style="margin:0 0 20px 0; font-size:18px; font-weight:800; color:var(--text-main);">🎨 감성 테마 캡처</h3>
-        <button class="btn-primary" style="background:linear-gradient(135deg, #fbcfe8, #f472b6); margin-bottom:10px;" onclick="window.app.playSfx('tap'); window.app.generateInstaImage('spring')">🌸 화사한 봄</button>
-        <button class="btn-primary" style="background:linear-gradient(135deg, #a7f3d0, #10b981); margin-bottom:10px;" onclick="window.app.playSfx('tap'); window.app.generateInstaImage('summer')">🌿 싱그러운 여름</button>
-        <button class="btn-primary" style="background:linear-gradient(135deg, #fed7aa, #ea580c); margin-bottom:10px;" onclick="window.app.playSfx('tap'); window.app.generateInstaImage('autumn')">🍁 따뜻한 가을</button>
-        <button class="btn-primary" style="background:linear-gradient(135deg, #e0f2fe, #38bdf8); margin-bottom:10px;" onclick="window.app.playSfx('tap'); window.app.generateInstaImage('winter')">❄️ 차분한 겨울</button>
-        <button class="btn-primary" style="background:var(--bg-sec); color:var(--text-main); margin-top:10px;" onclick="window.app.playSfx('tap'); window.app.closeModal('theme-modal')">취소</button>
-    </div>
-</div>
-
 <template id="editor-toolbar-template">
     <div class="unified-toolbar">
         <button class="ed-btn" onclick="window.app.formatText('bold')" title="굵게"><b style="font-family:serif;">B</b></button>
@@ -1102,8 +1089,9 @@
     </div>
 </div>
 
-<div id="record-modal" class="overlay-base">
-    <div class="modal-box" style="padding:0; background:var(--bg); height:85vh; max-width:450px;">
+<div id="record-modal" class="overlay-base" style="align-items: flex-end; padding: 0;">
+    <div class="modal-box" style="padding:0; background:var(--bg); width: 100%; max-width: 600px; height: 90vh; border-radius: 32px 32px 0 0; animation: sheet-slide-up 0.5s cubic-bezier(0.28, 1.1, 0.32, 1) forwards; border: none;">
+        <div class="sheet-handle"></div>
         <div class="modal-header">
             <h3 id="modal-title" style="margin:0; font-size:18px; font-weight:800; color:var(--text-main);">상세 기록</h3>
             <button class="modal-close-btn" onclick="window.app.playSfx('tap'); window.app.closeModal('record-modal')">✕</button>
@@ -1147,30 +1135,6 @@
         </div>
 
         <div id="achievement-grid" class="achievement-grid" style="overflow-y:auto; padding-right:5px; padding-bottom: 20px; flex-grow:1;"></div>
-    </div>
-</div>
-
-<div id="capture-modal" class="overlay-base" style="flex-direction:column; background:rgba(0,0,0,0.9); z-index: 2200;">
-    <img id="capture-result-img" style="width:100%; max-width:400px; border-radius:16px; margin-bottom:20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-    <div style="color:white; font-weight:bold; margin-bottom:20px; text-align:center; line-height: 1.5;">👆<br>이미지를 길게 꾹 눌러서 저장하세요!<br>(인스타 스토리에 딱 맞습니다)</div>
-    <button class="action-pill" style="padding:12px 30px; font-size:15px;" onclick="window.app.playSfx('tap'); window.app.closeModal('capture-modal')">닫기</button>
-</div>
-
-<div id="insta-card-container">
-    <div id="insta-card">
-        <div id="ic-date" style="font-size:45px; font-weight:bold; margin-bottom:15px; opacity:0.9;"></div>
-        <div id="ic-title" style="font-size:85px; font-weight:900; margin-bottom:50px; letter-spacing:-2px;">🔥 오늘의 달리기</div>
-        <div class="ic-glass-box">
-            <div style="font-size:38px; font-weight:bold; margin-bottom:10px; opacity:0.85;">TOTAL STUDY TIME</div>
-            <div id="ic-total"></div>
-        </div>
-        <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 25px;">
-            <div style="font-size: 35px; font-weight: bold; opacity: 0.9;">📊 하루 집중 몰입 패턴</div>
-            <div id="ic-heatmap-grid"></div>
-        </div>
-        <div style="margin-top:auto; text-align:center; font-size:40px; font-weight:800; border-top:3px solid rgba(255,255,255,0.3); padding-top:40px; letter-spacing:-1px;">
-            24H Pacemaker | @<span id="ic-user"></span>
-        </div>
     </div>
 </div>
 

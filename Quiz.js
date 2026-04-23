@@ -620,6 +620,8 @@ export const QuizEngine = {
             expEl.innerHTML = window.Utils.escapeHTML(q.explanation).replace(/\n/g, '<br>');
             expEl.style.display = 'block';
             expEl.style.textAlign = isBlank ? 'left' : 'center';
+            expEl.style.fontSize = isBlank ? '15px' : '16px';
+            expEl.style.fontWeight = isBlank ? '500' : '600';
         } else {
             expEl.style.display = 'none';
         }

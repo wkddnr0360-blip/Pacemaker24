@@ -103,6 +103,23 @@ window.SFX = {
     }
 };
 
+window.preloadPokemonData = async function() {
+    if (!window.monsterData || !window.monsterData.inventory || !window.PokeAPI) return;
+    
+    const allPokeIds = new Set();
+    window.monsterData.inventory.forEach(m => {
+        const spec = window.getMonsterSpec(m);
+        if (spec && spec.pokeIds) {
+            spec.pokeIds.forEach(id => allPokeIds.add(id));
+        }
+    });
+
+    // Fire and forget - let them run in parallel in the background
+    for (const id of allPokeIds) {
+        window.PokeAPI.getPokemon(id);
+    }
+}
+
 window.BGM = {
     audio: null,
     isPlaying: false,
@@ -542,6 +559,10 @@ window.initLocalState = function() {
     try { window.ddayConfig = window.Utils.safeParseJSON(window.getL('ddayConfig'), {title:"", date:""}); } catch(e){}
     try { window.achievementsData = window.Utils.safeParseJSON(window.getL('achievements'), {}); } catch(e){}
     
+    // ✨ 몬스터 데이터 로컬 캐시 초기화 누락 복구 (데이터 증발 버그의 원인)
+    try { if(window.initMonster) window.initMonster(); } catch(e){}
+    window.preloadPokemonData(); // Pre-fetch Pokémon data in the background
+    
     try { if(window.domCache.items.length === 0 && document.getElementById('schedule-list')) window.initListUI(); else window.updateNotesFromLocal(); } catch(e){}
     try { window.updateHighlight(); window.updateUI(true); window.updateDdayUI(); } catch(e){}
     try { if(window.QuizEngine) window.QuizEngine.init(); } catch(e){}
@@ -817,7 +838,8 @@ window.renderCalendar = function() {
                 monthTotalMin += totalMin;
                 fillHeight = Math.min(100, (totalMin / (12 * 60)) * 100);
                 let isHigh = hrs >= 10;
-                badgeHtml += `<div class="cal-badge actual ${isHigh ? 'high' : ''}">${hrs > 0 ? hrs + 'h ' : ''}${mins}m</div>`;
+                // 좁은 모바일 달력 칸에 맞춰 시간과 분 사이의 띄어쓰기를 제거 (예: 10h 30m -> 10h30m)
+                badgeHtml += `<div class="cal-badge actual ${isHigh ? 'high' : ''}">${hrs > 0 ? hrs + 'h' : ''}${mins}m</div>`;
             }
         }
         if (rec && (rec.diary || rec.todo || (rec.notes && rec.notes.some(n=>n.trim()!=="")))) {
@@ -875,9 +897,9 @@ window.openRecordModal = function(dateStr) {
                 <button onclick="window.editPastTime('${dateStr}')" style="background: rgba(0, 149, 246, 0.1); color: var(--primary); border: none; padding: 6px 14px; border-radius: 14px; font-size: 13px; font-weight: 800; cursor: pointer; transition: 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">✏️ 시간 수정</button>
             </div>
             <div style="display:flex; justify-content:space-around; text-align:center; background:var(--surface); padding:12px; border-radius:12px; border:1px solid var(--border-color);">
-                <div><span style="display:block; font-size:11px; color:var(--text-muted); font-weight:800; margin-bottom:4px;">목표 시간</span><strong style="font-size:20px; color:var(--text-muted); font-weight:900; letter-spacing:-0.5px;">${tTarget}</strong></div>
+                <div><span style="display:block; font-size:11px; color:var(--text-muted); font-weight:800; margin-bottom:4px;">목표 시간</span><strong style="font-size:18px; color:var(--text-muted); font-weight:900; letter-spacing:-1px;">${tTarget}</strong></div>
                 <div style="width:1px; background:var(--border-color); margin:0 10px;"></div>
-                <div><span style="display:block; font-size:11px; color:var(--text-muted); font-weight:800; margin-bottom:4px;">달성 시간</span><strong style="font-size:20px; color:var(--primary); font-weight:900; letter-spacing:-0.5px;">${tTime}</strong></div>
+                <div><span style="display:block; font-size:11px; color:var(--text-muted); font-weight:800; margin-bottom:4px;">달성 시간</span><strong style="font-size:18px; color:var(--primary); font-weight:900; letter-spacing:-1px;">${tTime}</strong></div>
         </div>
     `;
         
@@ -1273,7 +1295,6 @@ window.toggleSetting = function(type) {
         window.showToast("알림 설정이 변경되었습니다."); 
     }
 };
-window.generateInstaImage = function(theme) { window.showToast("인스타 캡처 기능이 준비되었습니다."); };
 
 // ==========================================
 // 🔗 HTML-JS 끊어진 신호 연결 패치 (app.js 마지막 줄에 추가)
@@ -1529,8 +1550,7 @@ document.querySelectorAll('.overlay-base').forEach(overlay => {
         // 클릭한 대상이 모달 내부(modal-box)가 아니라 배경(overlay-base) 자체일 경우
         if (e.target === this) {
             if(window.SFX) window.SFX.play('tap');
-            this.style.display = 'none';
-            document.body.style.overflow = '';
+            window.app.closeModal(this.id);
             
             // 일기/할일 모달이 닫힐 때는 자동 저장 트리거
             if (this.id === 'diary-modal') window.saveTextData('diary', true);
