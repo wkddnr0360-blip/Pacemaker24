@@ -82,6 +82,8 @@ window.InstSys = {
         if(score) {
             document.getElementById('mmlInput').value = score.xmlData;
             this.currentScoreTitle = score.title;
+            const titleInput = document.getElementById('scoreTitleInput');
+            if(titleInput) titleInput.value = score.title;
             this.log(`'${score.title}' 악보를 성공적으로 불러왔습니다.`, "ok");
         }
     },
@@ -91,8 +93,10 @@ window.InstSys = {
         const xmlData = document.getElementById('mmlInput').value.trim();
         if(!xmlData) return this.log("공유할 악보 데이터가 없습니다.", "warn");
         
-        const title = prompt("공유할 악보의 이름을 입력하세요:");
-        if(!title || !title.trim()) return;
+        let titleInput = document.getElementById('scoreTitleInput');
+        let title = titleInput ? titleInput.value.trim() : "";
+        if(!title) title = this.currentScoreTitle;
+        if(!title || title === "이름 없는 악보") title = "공유된 악보";
 
         this.log("악보 업로드 중...", "sys");
         const res = await window.FirebaseEngine.uploadSharedScore({
@@ -512,15 +516,32 @@ let parsedTracksData = [];
 window.addEventListener('DOMContentLoaded', () => {
     window.InstSys.initDOM();
     
-    window.InstSys.initBtn.addEventListener('click', async () => {
+
+    document.getElementById('resetSheetBtn').addEventListener('click', () => {
+        document.getElementById('mmlInput').value = '';
+        window.InstSys.currentScoreTitle = "이름 없는 악보";
+        const titleInput = document.getElementById('scoreTitleInput');
+        if(titleInput) titleInput.value = "";
+        InstrumentEngine.stop(); parsedTracksData = [];
+        document.getElementById('trackCountBadge').textContent = 'Tracks: 0';
+        if (window.InstSys.initBtn) window.InstSys.initBtn.style.display = 'none';
+        window.InstSys.playBtn.style.display = 'block'; window.InstSys.playBtn.disabled = false;
+        window.InstSys.stopBtn.style.display = 'none'; window.InstSys.pauseBtn.style.display = 'none';
+    });
+
+    window.InstSys.playBtn.addEventListener('click', async () => {
         const rawXml = document.getElementById('mmlInput').value.trim();
         if (!rawXml) return window.InstSys.log("XML 코드를 붙여넣어 주세요.", 'err');
+        
         try {
-            window.InstSys.initBtn.disabled = true; window.InstSys.initBtn.innerHTML = "안전하게 추출 중...";
+            window.InstSys.playBtn.disabled = true;
+            window.InstSys.log("악보 데이터를 분석하고 악기를 준비 중입니다...", "sys");
+            
             const tracksStr = MMLParser.extractTracks(rawXml);
             if (tracksStr.length === 0) throw new Error("MML 데이터를 찾을 수 없습니다.");
             document.getElementById('trackCountBadge').textContent = `Tracks: ${tracksStr.length}`;
             parsedTracksData = tracksStr.map(t => MMLParser.parse(t));
+            
             await InstrumentEngine.init();
             
             const mode = document.getElementById('ensembleSize').value;
@@ -530,35 +551,18 @@ window.addEventListener('DOMContentLoaded', () => {
             else if (mode === 'piano_strings') await Promise.all([InstrumentEngine.sampler.loadInstrument('acoustic_grand_piano'), InstrumentEngine.sampler.loadInstrument('string_ensemble_1')]);
             else await InstrumentEngine.sampler.loadInstrument('acoustic_grand_piano');
             
-            window.InstSys.log("모든 준비가 끝났습니다.", 'ok');
-            window.InstSys.initBtn.style.display = 'none'; window.InstSys.playBtn.style.display = 'block'; window.InstSys.stopBtn.style.display = 'block'; window.InstSys.pauseBtn.style.display = 'block';
-        } catch (e) {
-            window.InstSys.log(e.message, 'err'); window.InstSys.initBtn.disabled = false; window.InstSys.initBtn.innerHTML = "다시 시도하기";
-        }
-    });
-
-    document.getElementById('resetSheetBtn').addEventListener('click', () => {
-        document.getElementById('mmlInput').value = '';
-        window.InstSys.currentScoreTitle = "이름 없는 악보";
-        InstrumentEngine.stop(); parsedTracksData = [];
-        document.getElementById('trackCountBadge').textContent = 'Tracks: 0';
-        window.InstSys.initBtn.style.display = 'block'; window.InstSys.initBtn.innerHTML = "시스템 초기화 및 악기 로드"; window.InstSys.initBtn.disabled = false;
-        window.InstSys.playBtn.style.display = 'none'; window.InstSys.stopBtn.style.display = 'none'; window.InstSys.pauseBtn.style.display = 'none';
-    });
-
-    window.InstSys.playBtn.addEventListener('click', async () => {
-        if (parsedTracksData.length > 0) {
+            window.InstSys.log("모든 준비가 끝났습니다. 합주를 시작합니다!", 'ok');
+            if (window.InstSys.initBtn) window.InstSys.initBtn.style.display = 'none';
+            window.InstSys.playBtn.style.display = 'block'; window.InstSys.stopBtn.style.display = 'block'; window.InstSys.pauseBtn.style.display = 'block';
             
             // 광장에 원격 공유
             if (window.PlazaMusic && !window.PlazaMusic.isPlayingRemote) {
-                let mode = document.getElementById('ensembleSize').value;
                 let tempo = document.getElementById('tempoSlider').value;
                 let keyShift = document.getElementById('keyShift') ? document.getElementById('keyShift').value : 0;
-                window.PlazaMusic.start(document.getElementById('mmlInput').value, mode, tempo, keyShift, window.InstSys.currentScoreTitle);
+                window.PlazaMusic.start(rawXml, mode, tempo, keyShift, window.InstSys.currentScoreTitle);
             }
 
-            window.InstSys.playBtn.disabled = true;
-            InstrumentEngine.start(parsedTracksData, document.getElementById('ensembleSize').value).then(() => { window.InstSys.playBtn.disabled = false; });
+            InstrumentEngine.start(parsedTracksData, mode).then(() => { window.InstSys.playBtn.disabled = false; });
             
             // 🎵 광장의 다른 사람들에게 연주 상태를 채팅 풍선으로 알림
             if (window.activeUser && typeof firebase !== 'undefined') {
@@ -567,6 +571,9 @@ window.addEventListener('DOMContentLoaded', () => {
                     db.ref('players/' + window.activeUser).update({ chatMsg: "🎵 악기를 연주 중입니다~!", chatTime: Date.now() });
                 } catch(e) {}
             }
+        } catch (e) {
+            window.InstSys.log(e.message, 'err'); 
+            window.InstSys.playBtn.disabled = false;
         }
     });
 
@@ -624,6 +631,8 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById('mmlInput').value = xmlOutput;
         document.getElementById('decoderInput').value = '';
         window.InstSys.currentScoreTitle = "해독된 악보";
+        const titleInput = document.getElementById('scoreTitleInput');
+        if(titleInput) titleInput.value = "해독된 악보";
         window.InstSys.log(`🛠️ MML 해독 완료! 메인 악보로 전송되었습니다.`, 'ok');
     });
 });

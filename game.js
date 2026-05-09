@@ -30,12 +30,19 @@ $(function () {
         ctx.canvas.width = w;
         ctx.canvas.height = h;
         $(ctx.canvas).css({width: w + 'px', height: h + 'px'});
+        
+        // 창 크기에 맞춰 모바일(768px 미만)에서는 비율(zoom)을 2.5배로 축소하여 화면을 넓게 보여줍니다.
+        if (typeof game !== 'undefined') {
+            game.zoom = w < 768 ? 2.5 : 4;
+        }
     }
     resizeCanvas();
     
     $(window).resize(function(evt) {
         resizeCanvas();
-        draw(ctx, game);
+        if (typeof game !== 'undefined') {
+            draw(ctx, game);
+        }
     });
     ctx.imageSmoothingEnabled = false;
     
@@ -47,25 +54,38 @@ $(function () {
     game.checkImagesLoad(function() {
         draw(ctx, game);
     });
-    game.zoom = 4;
+    game.zoom = $(window).width() < 768 ? 2.5 : 4;
     $('#map-title').text(game.map.name);
 
     // ★ [Firebase] 최초 내 캐릭터 위치 전송 & 브라우저 닫을 시 자동 삭제
     myRef.set(game.playerList.getMainPlayer());
     myRef.onDisconnect().remove();
 
-    // ★ [원래 기능 복구] 접속자 목록 UI 업데이트
-    function updatePlayerListUI() {
+    // ★ [기능 개선] 접속자 목록 UI 업데이트 (연주자 최상단 강조)
+    window.updatePlayerListUI = function() {
         var ul = $('#players-ul');
         if (ul.length > 0) {
             ul.empty();
             var players = game.playerList.players;
-            for (var i in players) {
-                ul.append('<li style="margin-bottom:4px;"><span style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; display:inline-block;">' + players[i].name + '</span></li>');
+            
+            var currentMusician = window.PlazaMusic ? window.PlazaMusic.currentAuthor : null;
+            var sortedPlayers = players.slice().sort(function(a, b) {
+                if (a.name === currentMusician) return -1;
+                if (b.name === currentMusician) return 1;
+                return 0;
+            });
+            
+            for (var i in sortedPlayers) {
+                var p = sortedPlayers[i];
+                if (p.name === currentMusician) {
+                    ul.append('<li style="margin-bottom:6px;"><span style="background: linear-gradient(135deg, #8b5cf6, #d946ef); color: white; padding: 4px 8px; border-radius: 6px; display:inline-block; font-weight: 900; box-shadow: 0 2px 8px rgba(139,92,246,0.4); border: 1px solid rgba(255,255,255,0.4); font-size: 13px;">🎵 ' + p.name + '</span></li>');
+                } else {
+                    ul.append('<li style="margin-bottom:4px;"><span style="background: rgba(255,255,255,0.15); padding: 2px 6px; border-radius: 4px; display:inline-block;">' + p.name + '</span></li>');
+                }
             }
         }
-    }
-    updatePlayerListUI();
+    };
+    window.updatePlayerListUI();
 
     // 5. 원본 이동 알고리즘
     function dest(code) {
@@ -117,7 +137,7 @@ $(function () {
         // 완벽한 60fps 동기화를 위해 시간 계산 없이 1프레임당 1픽셀 이동
         var step = function() {
             func();
-            if (i%8==1) {
+            if (i%4==1) {
                 var player = game.playerList.getMainPlayer();
                 player.foot++;
                 if (player.foot == 4) { player.foot = 0; }
@@ -155,25 +175,25 @@ $(function () {
         var steps = 0;
         moveRepeat(function() {
             switch (code) {
-                case 37: player.x--; break;
-                case 38: player.y--; break;
-                case 39: player.x++; break;
-                case 40: player.y++; break;
+                case 37: player.x -= 2; break;
+                case 38: player.y -= 2; break;
+                case 39: player.x += 2; break;
+                case 40: player.y += 2; break;
             }
             steps++;
-            // 16프레임 중 딱 2번(중간, 끝)만 Firebase에 전송하여 화면 끊김을 완벽히 제거
-            if (steps === 8 || steps === 16) {
+            // 8프레임 이동 중 통신 최적화
+            if (steps === 4 || steps === 8) {
                 myRef.update(player);
             }
             draw(ctx, game);
-        }, 1, 16);
+        }, 1, 8); // 기존 16프레임에서 8프레임으로 단축 (이동 속도 2배 증가)
     }
 
     function idle(code) {
         var player = game.playerList.getMainPlayer();
         moveRepeat(function() {
             draw(ctx, game);
-        }, 1, 16);
+        }, 1, 8);
         // 제자리 방향 전환은 즉시 1번만 업데이트
         myRef.update(player);
     }
@@ -197,10 +217,8 @@ $(function () {
     // PC 키보드 이벤트
     $(document).keydown(function(evt) {
         if (evt.keyCode>=37 && evt.keyCode<=40) {
-            if (!activeKeys[evt.keyCode]) {
-                activeKeys[evt.keyCode] = true;
-                handleMovement(evt.keyCode);
-            }
+            activeKeys[evt.keyCode] = true;
+            if (!game.moving) handleMovement(evt.keyCode);
         } else if (evt.keyCode==13) {
             var message = $("input#message");
             if (message.length > 0) {
@@ -257,7 +275,7 @@ $(function () {
         joystickKnob.style.transform = `translate(calc(-50% + ${moveX}px), calc(-50% + ${moveY}px))`;
 
         let newDir = null;
-        if (distance > 15) { 
+        if (distance > 10) { 
             if (Math.abs(dx) > Math.abs(dy)) { newDir = dx > 0 ? 39 : 37; } 
             else { newDir = dy > 0 ? 40 : 38; }
         }
@@ -292,7 +310,7 @@ $(function () {
             game.playerList.addPlayer(player);
             game.loadCharactersImages();
             game.checkImagesLoad(function() { draw(ctx, game); });
-            updatePlayerListUI();
+            if(window.updatePlayerListUI) window.updatePlayerListUI();
         }
     });
 
@@ -309,7 +327,7 @@ $(function () {
         if (player.name !== username) {
             game.playerList.removePlayer(player.name);
             draw(ctx, game);
-            updatePlayerListUI();
+            if(window.updatePlayerListUI) window.updatePlayerListUI();
         }
     });
 
@@ -318,7 +336,9 @@ $(function () {
     window.PlazaMusic = {
         isPlayingRemote: false,
         isListening: false,
+        currentAuthor: null,
         start: function(xmlData, mode, tempo, keyShift, title) {
+            this.currentAuthor = username;
             musicRef.set({
                 author: username,
                 xmlData: xmlData,
@@ -328,14 +348,19 @@ $(function () {
                 title: title || "이름 없는 악보",
                 startTime: firebase.database.ServerValue.TIMESTAMP
             });
+            musicRef.onDisconnect().remove(); // 연주하는 본인이 나갈 때만 음악이 꺼지도록 등록
+            if(window.updatePlayerListUI) window.updatePlayerListUI();
         },
         stop: function() {
+            this.currentAuthor = null;
+            musicRef.onDisconnect().cancel(); // 연주를 수동으로 멈출 때는 자동 삭제 트리거 취소
             musicRef.once('value').then(snap => {
                 var data = snap.val();
                 if(data && data.author === username) {
                     musicRef.remove();
                 }
             });
+            if(window.updatePlayerListUI) window.updatePlayerListUI();
         },
         listen: function() {
             if (this.isListening) return;
@@ -346,6 +371,7 @@ $(function () {
             if (!this.isListening) return;
             musicRef.off('value', this.onMusicData); // ★ 서버로부터 데이터 수신 완벽 차단
             this.isListening = false;
+            this.currentAuthor = null;
             
             // 내 화면의 플레이어 연주 정지 및 UI 복구
             $('#plaza-music-banner').css('display', 'none');
@@ -364,10 +390,14 @@ $(function () {
                 if(document.getElementById('ensembleSize')) document.getElementById('ensembleSize').disabled = false;
                 if(document.getElementById('mmlInput')) document.getElementById('mmlInput').disabled = false;
             }
+            if(window.updatePlayerListUI) window.updatePlayerListUI();
         },
         onMusicData: function(snapshot) {
         var data = snapshot.val();
         if (data) {
+            window.PlazaMusic.currentAuthor = data.author;
+            if(window.updatePlayerListUI) window.updatePlayerListUI();
+            
             // ★ [신규] UI 배너 표시
             var banner = $('#plaza-music-banner');
             var info = $('#plaza-music-info');
@@ -397,6 +427,9 @@ $(function () {
                 }, 500);
             }
         } else {
+            window.PlazaMusic.currentAuthor = null;
+            if(window.updatePlayerListUI) window.updatePlayerListUI();
+            
             // ★ [신규] UI 배너 숨김
             $('#plaza-music-banner').css('display', 'none');
             
@@ -420,19 +453,32 @@ $(function () {
         }
     };
     
-    musicRef.onDisconnect().remove();
-    
     // 초기 접속 시 BGM 상태에 따라 리스너 활성화
     if (!window.BGM || !window.BGM.isMuted) {
         window.PlazaMusic.listen();
     }
+    
+    // ★ [신규 기능] 네트워크 끊김 감지 및 연주 자동 중단
+    db.ref(".info/connected").on("value", function(snap) {
+        if (snap.val() === false) {
+            if (window.InstrumentEngine && window.InstrumentEngine.isPlaying) {
+                window.InstrumentEngine.stop();
+            }
+        }
+    });
 
     // ★[Firebase] 채팅 실시간 수신
     db.ref('chats').on('child_added', function(snapshot) {
         var msg = snapshot.val();
         var chatList = $('#chat-messages');
         if (chatList.length > 0) {
-            chatList.append('<li style="padding-bottom: 5px;"><strong style="color:#0056b3;">' + msg.author + '</strong> : ' + msg.content + '</li>');
+            chatList.append('<li style="padding-bottom: 6px;"><strong style="color:#60a5fa;">' + msg.author + '</strong> : ' + msg.content + '</li>');
+            
+            // ★ 오래된 메시지 삭제 (최대 30줄 유지)
+            if (chatList.children('li').length > 30) {
+                chatList.children('li').first().remove();
+            }
+            
             // 스크롤 맨 아래로
             chatList.parent().scrollTop(chatList.prop("scrollHeight"));
         }

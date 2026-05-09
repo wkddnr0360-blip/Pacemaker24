@@ -732,6 +732,8 @@ window.executeSafeSync = async function() {
 
 window.handleLogout = async function() {
     if(!confirm("기기에서 로그아웃 하시겠습니까?\n(최신 데이터가 서버에 동기화된 후 종료됩니다)")) return;
+    if (window.InstrumentEngine) window.InstrumentEngine.stop();
+    if (window.PlazaMusic) window.PlazaMusic.stop();
     window.showLoading(true, "서버에 안전하게 동기화 중... ☁️");
     window.syncTodayRecord();
     await window.saveAllDataToServer(); 
@@ -1731,8 +1733,8 @@ window.playSkillEffect = function(targetId, moveType, movePower = 40, effect = n
             let rx = (Math.random() - 0.5) * 150;
             let ry = (Math.random() - 0.5) * 150;
             
-            if(targetId === 'battle-enemy-img') { particle.style.right = `${50 - rx}px`; particle.style.top = `${40 - ry}px`; } 
-            else { particle.style.left = `${60 - rx}px`; particle.style.bottom = `${10 - ry}px`; }
+            if(targetId === 'battle-enemy-img') { particle.style.right = `${30 - rx}px`; particle.style.top = `${20 - ry}px`; } 
+            else { particle.style.left = `${40 - rx}px`; particle.style.bottom = `${10 - ry}px`; }
             
             parent.appendChild(particle);
             
@@ -1749,10 +1751,10 @@ window.playSkillEffect = function(targetId, moveType, movePower = 40, effect = n
     let overlay = document.createElement('div');
     overlay.style.position = 'absolute';
     if(targetId === 'battle-enemy-img') {
-        overlay.style.right = '50px';
-        overlay.style.top = '40px';
+        overlay.style.right = '30px';
+        overlay.style.top = '20px';
     } else {
-        overlay.style.left = '60px';
+        overlay.style.left = '40px';
         overlay.style.bottom = '10px';
     }
     overlay.style.transform = 'scale(0)';
@@ -1894,12 +1896,6 @@ window.startPokemonBattle = async function() {
         else if (mySubId === 'dark_tyranitar') availableMoves[1] = { name: '모래바람', power: 0, type: 'rock', effect: 'atk_down' };
         else if (mySubId === 'dragon_garchomp') availableMoves[1] = { name: '칼춤', power: 0, type: 'normal', effect: 'atk_up' };
         else if (mySubId === 'grass_venusaur') availableMoves[1] = { name: '수면가루', power: 0, type: 'grass', effect: 'def_down' };
-        
-        // ✨ 메가 루카리오 전용 4단계 궁극기 강제 배정 (미래예지 덮어쓰기)
-        // monster.js 데이터상 루카리오는 psychic_lucario 이며 메가진화 도감번호는 10059 입니다.
-        if (mySubId === 'psychic_lucario' || myPokeId === 10059) {
-            availableMoves[3] = { name: '메가파동탄', power: 150, type: 'fighting', effect: '' };
-        }
     } else if (currentStageIdx === 0) {
         availableMoves.push({ ...normalMoves[0], type: 'normal' });
         availableMoves.push({ ...typeMoves[0], type: myMon.type });
@@ -1913,6 +1909,17 @@ window.startPokemonBattle = async function() {
         availableMoves.push({ ...typeMoves[2], type: myMon.type });
         availableMoves.push({ ...typeMoves[0], type: myMon.type });
     }
+
+        // ✨ 루카리오 전용 기술 오버라이드 (일반 폼 3스킬 파동탄 / 메가 폼 4스킬 메가파동탄)
+        let mySubIdCheck = myMon.monsterSubId;
+        if (mySubIdCheck === 'psychic_lucario' || myPokeId === 10059) {
+            if (availableMoves.length >= 3) {
+                availableMoves[2] = { name: '파동탄', power: 90, type: 'fighting', effect: '' };
+            }
+            if (isMaxStage && availableMoves.length >= 4) {
+                availableMoves[3] = { name: '메가파동탄', power: 150, type: 'fighting', effect: '' };
+            }
+        }
 
     let moveButtons = '';
     availableMoves.forEach(m => {
@@ -2297,28 +2304,6 @@ window.initApp = function() {
             $('.char-btn[data-char="' + window.selectedChar + '"]').css('border-color', 'var(--primary)').addClass('selected');
         }
 
-        let interval_id;
-        $('.char-btn').mouseover(function() {
-            let elt = $(this);
-            interval_id = window.setInterval(function() {
-                let posX = elt.css('background-position-x');
-                switch (posX) {
-                    case '0%': case '0px':
-                        elt.css('background-position-x', '528px'); break;
-                    case '528px':
-                        elt.css('background-position-x', '0px'); break;
-                    case '0px':
-                        elt.css('background-position-x', '480px'); break;
-                    case '480px':
-                        elt.css('background-position-x', '0%'); break;
-                }
-            }, 150);
-        });
-        $('.char-btn').mouseout(function() {
-            window.clearInterval(interval_id);
-            $(this).css('background-position-x', '0%');
-        });
-
         // 앱 내부 캐릭터 변경 UI 연동
         $('.char-btn-inapp').click(function() {
             if(window.SFX) window.SFX.play('success'); // ✨ 캐릭터 선택 시 특별한 효과음
@@ -2326,23 +2311,74 @@ window.initApp = function() {
             $(this).css('border-color', 'var(--primary)').addClass('selected');
         });
         
-        let interval_id2;
-        $('.char-btn-inapp').mouseover(function() {
-            let elt = $(this);
-            interval_id2 = window.setInterval(function() {
-                let posX = elt.css('background-position-x');
-                switch (posX) {
-                    case '0%': case '0px': elt.css('background-position-x', '528px'); break;
-                    case '528px': elt.css('background-position-x', '0px'); break;
-                    case '0px': elt.css('background-position-x', '480px'); break;
-                    case '480px': elt.css('background-position-x', '0%'); break;
+        // ★ [신규] 모든 캐릭터가 항상 부드럽게 걷고 있는 애니메이션 전역 적용 (12x1, 3x4, 4x4 완벽 호환)
+        window.charAnimCache = window.charAnimCache || {};
+        window.charAnimFoot = window.charAnimFoot || 0;
+        
+        function updateCharUIAnimation() {
+            window.charAnimFoot = (window.charAnimFoot + 1) % 4;
+            $('.char-btn, .char-btn-inapp').each(function() {
+                let elt = $(this);
+                let charName = elt.data('char');
+                if (!charName) return;
+                
+                if (!window.charAnimCache[charName]) {
+                    window.charAnimCache[charName] = { loaded: false, img: new Image() };
+                    window.charAnimCache[charName].img.onload = function() {
+                        let w = this.naturalWidth;
+                        let h = this.naturalHeight;
+                        let type = '12x1';
+                        let fw, fh, cols;
+                        if (w > h * 2.5) {
+                            type = '12x1'; fw = w / 12; fh = h;
+                        } else {
+                            cols = Math.round(w / (h / 4));
+                            if (cols < 3) cols = 4;
+                            type = cols + 'x4';
+                            fw = w / cols; fh = h / 4;
+                        }
+                        window.charAnimCache[charName] = { loaded: true, type: type, fw: fw, fh: fh, cols: cols };
+                    };
+                    window.charAnimCache[charName].img.src = 'img/characters/' + charName + '.gif';
+                    return;
                 }
-            }, 150);
-        });
-        $('.char-btn-inapp').mouseout(function() {
-            window.clearInterval(interval_id2);
-            $(this).css('background-position-x', '0%');
-        });
+                
+                let cache = window.charAnimCache[charName];
+                if (!cache.loaded) return;
+                
+                let foot = window.charAnimFoot;
+                let frameX = 0, frameY = 0;
+                
+                if (cache.type === '12x1') {
+                    if (foot === 0) frameX = 0;
+                    else if (foot === 1) frameX = 1;
+                    else if (foot === 2) frameX = 0;
+                    else if (foot === 3) frameX = 2;
+                } else if (cache.type === '4x4') {
+                    frameX = foot;
+                    frameY = 0;
+                } else if (cache.type === '3x4') {
+                    if (foot === 0) frameX = 1;
+                    else if (foot === 1) frameX = 0;
+                    else if (foot === 2) frameX = 1;
+                    else if (foot === 3) frameX = 2;
+                    frameY = 0; 
+                }
+                
+                let px = - (frameX * cache.fw);
+                let py = - (frameY * cache.fh);
+                let ox = (50 - cache.fw) / 2;
+                let oy = (50 - cache.fh) / 2;
+                
+                elt.css({
+                    'background-position': (px + ox) + 'px ' + (py + oy) + 'px',
+                    'background-repeat': 'no-repeat'
+                });
+            });
+        }
+        
+        if (window.charAnimInterval) clearInterval(window.charAnimInterval);
+        window.charAnimInterval = setInterval(updateCharUIAnimation, 200);
     }
     
     if (window.activeUser && window.activePw) {
