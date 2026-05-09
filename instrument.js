@@ -136,6 +136,9 @@ window.InstSys = {
     // 원격(광장) 자동 재생용 메서드
     async playMusicData(xmlData, mode, tempo, keyShift, startTimeTs) {
         try {
+            // 방어 코드: 이미 엔진이 재생 중이라면 겹치거나 깨지는 것을 막기 위해 이전 연주 정지
+            if (window.InstrumentEngine && window.InstrumentEngine.isPlaying) window.InstrumentEngine.stop();
+            
             const tracksStr = MMLParser.extractTracks(xmlData);
             if (tracksStr.length === 0) return;
             parsedTracksData = tracksStr.map(t => MMLParser.parse(t));
@@ -331,7 +334,7 @@ window.InstrumentEngine = {
     ctx: null, sampler: null, masterGain: null, analyzer: null, convolver: null, reverbGain: null,
     isPlaying: false, isPaused: false, duration: 0, activeNodes: new Set(), currentTracksData: [], currentMode: 'piano',
     masterKeyShift: 0, tempoMultiplier: 1.0, virtualTime: 0, lastProcessTime: 0, masterQueue: [], scheduleAheadTime: 0.2,
-    timerID: null, animID: null, visualData: null, sustainEnabled: true,
+    timerID: null, animID: null, visualData: null, sustainEnabled: true, mediaRecorder: null, recordedChunks: [],
 
     createReverb() {
         const sr = this.ctx.sampleRate;
@@ -349,11 +352,16 @@ window.InstrumentEngine = {
 
     async init() {
         if (this.ctx) return;
-        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        if (this.ctx.state === 'suspended') await this.ctx.resume();
+        try {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            if (this.ctx.state === 'suspended') await this.ctx.resume();
+        } catch(e) {
+            window.InstSys.log("오디오 엔진을 초기화할 수 없습니다. 화면을 터치한 후 다시 시도해주세요.", "err"); return;
+        }
 
         this.masterGain = this.ctx.createGain(); 
-        this.masterGain.gain.value = 0.7;
+        const volEl = document.getElementById('volumeSlider');
+        this.masterGain.gain.value = volEl ? parseFloat(volEl.value) : 0.7;
         
         this.convolver = this.createReverb();
         this.reverbGain = this.ctx.createGain(); this.reverbGain.gain.value = 0.4;
@@ -378,8 +386,45 @@ window.InstrumentEngine = {
         if(document.getElementById('seekSlider')) document.getElementById('seekSlider').value = 0;
         if(window.InstSys.ctx && window.InstSys.canvas) window.InstSys.ctx.clearRect(0, 0, window.InstSys.canvas.width, window.InstSys.canvas.height);
         
-        this.activeNodes.forEach(node => { try { node.source.stop(); node.source.disconnect(); node.gain.disconnect(); } catch(e){} });
+        this.activeNodes.forEach(node => { 
+            try { node.source.onended = null; node.source.stop(); node.source.disconnect(); } catch(e){} 
+            try { node.gain.disconnect(); } catch(e){} 
+        });
         this.activeNodes.clear();
+
+        if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+            this.mediaRecorder.stop();
+        }
+    },
+
+    startRecording() {
+        try {
+            const dest = this.ctx.createMediaStreamDestination();
+            this.masterGain.connect(dest);
+            this.mediaRecorder = new MediaRecorder(dest.stream);
+            this.recordedChunks = [];
+            this.mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) this.recordedChunks.push(e.data);
+            };
+            this.mediaRecorder.onstop = () => {
+                if (this.recordedChunks.length === 0) return;
+                const blob = new Blob(this.recordedChunks, { type: 'audio/webm' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = (window.InstSys.currentScoreTitle || 'MML_연주') + '.webm';
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => { document.body.removeChild(a); window.URL.revokeObjectURL(url); }, 100);
+                window.InstSys.log("⏺️ 녹음이 저장되었습니다.", 'ok');
+                if(window.showToast) window.showToast("✅ 녹음 파일이 다운로드 되었습니다!");
+            };
+            this.mediaRecorder.start();
+            window.InstSys.log("⏺️ 연주를 녹음 중입니다... (연주가 끝나면 자동으로 다운로드됩니다)", 'sys');
+        } catch(e) {
+            window.InstSys.log("녹음 기능을 지원하지 않는 환경입니다.", 'err');
+        }
     },
 
     seek(targetTime) {
@@ -492,19 +537,36 @@ window.InstrumentEngine = {
         if (window.InstSys.ctx && window.InstSys.canvas) {
             this.analyzer.getByteFrequencyData(this.visualData);
             const cw = window.InstSys.canvas.width, ch = window.InstSys.canvas.height;
+            window.InstSys.ctx.shadowBlur = 0;
             window.InstSys.ctx.fillStyle = '#000'; window.InstSys.ctx.fillRect(0, 0, cw, ch);
+            
+            window.InstSys.ctx.shadowBlur = 12; // ✨ 스튜디오 감성 글로우 이펙트 보강
             let barW = (cw / this.analyzer.frequencyBinCount) * 2.5; let x = 0;
             for(let i=0; i<this.analyzer.frequencyBinCount; i++) {
                 const val = this.visualData[i];
+                window.InstSys.ctx.shadowColor = `rgb(${val}, 100, 255)`;
                 window.InstSys.ctx.fillStyle = `rgb(${val}, ${Math.max(80, val)}, 255)`;
                 window.InstSys.ctx.fillRect(x, ch - (val/255)*ch, barW, (val/255)*ch);
                 x += barW + 1;
             }
+            window.InstSys.ctx.shadowBlur = 0; // 초기화
         }
         if (this.virtualTime > this.duration + 2.0) { 
+            const isLoop = document.getElementById('loopPlay') && document.getElementById('loopPlay').checked;
+            if (isLoop && (!window.PlazaMusic || !window.PlazaMusic.isPlayingRemote)) {
+                window.InstSys.log("🔁 반복 재생을 위해 처음으로 돌아갑니다.", 'sys');
+                this.seek(0);
+                return;
+            }
+
             window.InstSys.log("■ 연주 종료.", 'sys'); 
             this.stop(); 
             if (window.PlazaMusic && !window.PlazaMusic.isPlayingRemote) { window.PlazaMusic.stop(); }
+            if (window.activeUser && typeof firebase !== 'undefined' && (!window.PlazaMusic || !window.PlazaMusic.isPlayingRemote)) {
+                try {
+                    firebase.database().ref('players/' + window.activeUser).update({ isPlayingMusic: false });
+                } catch(e) {}
+            }
             return; 
         }
         this.animID = requestAnimationFrame(() => this.renderVisuals());
@@ -568,7 +630,7 @@ window.addEventListener('DOMContentLoaded', () => {
             if (window.activeUser && typeof firebase !== 'undefined') {
                 try {
                     const db = firebase.database();
-                    db.ref('players/' + window.activeUser).update({ chatMsg: "🎵 악기를 연주 중입니다~!", chatTime: Date.now() });
+                    db.ref('players/' + window.activeUser).update({ chatMsg: "🎵 악기를 연주 중입니다~!", chatTime: Date.now(), isPlayingMusic: true });
                 } catch(e) {}
             }
         } catch (e) {
@@ -577,10 +639,46 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    document.getElementById('recordBtn').addEventListener('click', async () => {
+        if (InstrumentEngine.isPlaying) return window.InstSys.log("이미 연주 중입니다. 정지 후 다시 시도하세요.", 'warn');
+        const rawXml = document.getElementById('mmlInput').value.trim();
+        if (!rawXml) return window.InstSys.log("XML 코드를 붙여넣어 주세요.", 'err');
+        
+        try {
+            window.InstSys.playBtn.disabled = true;
+            document.getElementById('recordBtn').disabled = true;
+            window.InstSys.log("악보 데이터를 분석하고 녹음을 준비 중입니다...", "sys");
+            
+            const tracksStr = MMLParser.extractTracks(rawXml);
+            if (tracksStr.length === 0) throw new Error("MML 데이터를 찾을 수 없습니다.");
+            parsedTracksData = tracksStr.map(t => MMLParser.parse(t));
+            
+            await InstrumentEngine.init();
+            
+            const mode = document.getElementById('ensembleSize').value;
+            if (mode === 'guitar_duo') await Promise.all([InstrumentEngine.sampler.loadInstrument('acoustic_guitar_steel'), InstrumentEngine.sampler.loadInstrument('electric_bass_finger')]);
+            else if (mode === 'flute_harp') await Promise.all([InstrumentEngine.sampler.loadInstrument('flute'), InstrumentEngine.sampler.loadInstrument('orchestral_harp')]);
+            else if (mode === 'oboe_celesta') await Promise.all([InstrumentEngine.sampler.loadInstrument('oboe'), InstrumentEngine.sampler.loadInstrument('celesta')]);
+            else if (mode === 'piano_strings') await Promise.all([InstrumentEngine.sampler.loadInstrument('acoustic_grand_piano'), InstrumentEngine.sampler.loadInstrument('string_ensemble_1')]);
+            else await InstrumentEngine.sampler.loadInstrument('acoustic_grand_piano');
+            
+            if (window.InstSys.initBtn) window.InstSys.initBtn.style.display = 'none';
+            window.InstSys.playBtn.style.display = 'block'; window.InstSys.stopBtn.style.display = 'block'; window.InstSys.pauseBtn.style.display = 'block';
+            
+            InstrumentEngine.startRecording();
+            InstrumentEngine.start(parsedTracksData, mode).then(() => { window.InstSys.playBtn.disabled = false; document.getElementById('recordBtn').disabled = false; });
+        } catch (e) { window.InstSys.log(e.message, 'err'); window.InstSys.playBtn.disabled = false; document.getElementById('recordBtn').disabled = false; }
+    });
+
     window.InstSys.stopBtn.addEventListener('click', () => { 
         InstrumentEngine.stop(); 
         if (window.PlazaMusic) window.PlazaMusic.stop(); // 공유 중지
         window.InstSys.log("■ 강제 종료되었습니다.", 'warn'); 
+        if (window.activeUser && typeof firebase !== 'undefined') {
+            try {
+                firebase.database().ref('players/' + window.activeUser).update({ isPlayingMusic: false });
+            } catch(e) {}
+        }
     });
     
     window.InstSys.pauseBtn.addEventListener('click', () => {
@@ -601,12 +699,26 @@ window.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('tempoSlider').addEventListener('input', (e) => { const val = parseFloat(e.target.value); InstrumentEngine.tempoMultiplier = val; document.getElementById('tempoValue').textContent = val.toFixed(2) + 'x'; });
     
+    const volEl = document.getElementById('volumeSlider');
+    if(volEl) volEl.addEventListener('input', (e) => { 
+        const val = parseFloat(e.target.value); 
+        if(InstrumentEngine.masterGain) InstrumentEngine.masterGain.gain.value = val; 
+        document.getElementById('volumeValue').textContent = Math.round(val * 100) + '%'; 
+    });
+
     const spEl = document.getElementById('sustainPedal');
     if(spEl) spEl.addEventListener('change', (e) => { 
         InstrumentEngine.sustainEnabled = e.target.checked; 
         const label = document.getElementById('sustainLabel');
         if(label) label.textContent = e.target.checked ? 'ON' : 'OFF';
         window.InstSys.log(`🎹 서스테인 페달: ${e.target.checked ? 'ON' : 'OFF'}`, 'sys');
+    });
+
+    const lpEl = document.getElementById('loopPlay');
+    if(lpEl) lpEl.addEventListener('change', (e) => { 
+        const label = document.getElementById('loopLabel');
+        if(label) label.textContent = e.target.checked ? 'ON' : 'OFF';
+        window.InstSys.log(`🔁 반복 재생: ${e.target.checked ? 'ON' : 'OFF'}`, 'sys');
     });
 
     document.getElementById('decodeToMainBtn').addEventListener('click', () => {

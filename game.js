@@ -133,9 +133,16 @@ $(function () {
         }
     });
 
-    var moveRepeat = function(func, i, n) {
+    var moveRepeat = function(func, i, n, lastTime) {
         // 완벽한 60fps 동기화를 위해 시간 계산 없이 1프레임당 1픽셀 이동
-        var step = function() {
+        var step = function(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            var dt = timestamp - lastTime;
+            // 🐛 120Hz 고주사율 모바일/PC에서 캐릭터가 너무 빨리 걷는 모션 버그 방지 (최대 60fps 제한)
+            if (dt < 14) { 
+                requestAnimationFrame(step);
+                return;
+            }
             func();
             if (i%4==1) {
                 var player = game.playerList.getMainPlayer();
@@ -143,7 +150,7 @@ $(function () {
                 if (player.foot == 4) { player.foot = 0; }
             }
             if (i!=n) { 
-                moveRepeat(func, i+1, n); 
+                moveRepeat(func, i+1, n, timestamp); 
             } else { 
                 game.moving = false; 
                 // ★ [원래 기능 복구] 맵 포탈(Borders) 밟기 체크
@@ -155,13 +162,19 @@ $(function () {
                     if (borders[b].x === px && borders[b].y === py) {
                         alert(borders[b].map + " 맵 포탈 작동! (단일 맵 하드코딩 상태라 이동은 막아두었습니다.)");
                     }
-     같            }
+                }
 
-                // ★ 이동이 끝난 직후, 아직 손을 떼지 않은 방향키가 있다면 딜레이 없이 즉시 다음 이동 실행
-                for (var k = 37; k <= 40; k++) {
-                    if (activeKeys[k]) {
-                        handleMovement(k);
-                        break;
+                // ★ 이동이 끝난 직후 조이스틱이 잡혀있다면 강제 유지
+                if (typeof joystickActive !== 'undefined' && joystickActive && typeof currentDir !== 'undefined' && currentDir !== null) {
+                    activeKeys[currentDir] = true;
+                    handleMovement(currentDir);
+                } else {
+                    // ★ 아직 손을 떼지 않은 방향키가 있다면 딜레이 없이 즉시 다음 이동 실행
+                    for (var k = 37; k <= 40; k++) {
+                        if (activeKeys[k]) {
+                            handleMovement(k);
+                            break;
+                        }
                     }
                 }
             }
@@ -229,6 +242,7 @@ $(function () {
                     if (message.val()!='') {
                         // ★ [Firebase] socket.emit('chat') 대신 채팅 DB에 전송
                         db.ref('chats').push({ author: username, content: message.val() });
+                        myRef.update({ chatMsg: message.val(), chatTime: Date.now(), isPlayingMusic: false });
                         message.val('');
                     }
                     message.blur();
@@ -255,6 +269,7 @@ $(function () {
     let currentDir = null; 
 
     function handleJoystickStart(e) {
+        if (e.type && e.type.includes('touch')) e.preventDefault();
         joystickActive = true;
         const rect = joystickZone.getBoundingClientRect();
         joystickCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
@@ -263,10 +278,11 @@ $(function () {
 
     function handleJoystickMove(e) {
         if (!joystickActive) return;
-        e.preventDefault(); 
-        const touch = e.touches ? e.touches[0] : e;
-        const dx = touch.clientX - joystickCenter.x;
-        const dy = touch.clientY - joystickCenter.y;
+        if (e.type && e.type.includes('touch')) e.preventDefault(); 
+        const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
+        const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
+        const dx = clientX - joystickCenter.x;
+        const dy = clientY - joystickCenter.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         const maxDistance = 40; 
         
@@ -276,7 +292,12 @@ $(function () {
 
         let newDir = null;
         if (distance > 10) { 
-            if (Math.abs(dx) > Math.abs(dy)) { newDir = dx > 0 ? 39 : 37; } 
+            // 🐛 조이스틱 대각선 조작 시 잦은 방향 전환 모션 글리치 방지 (Hysteresis 적용)
+            let isHorizontal = Math.abs(dx) > Math.abs(dy);
+            if (currentDir === 37 || currentDir === 39) isHorizontal = Math.abs(dx) > Math.abs(dy) * 0.6;
+            else if (currentDir === 38 || currentDir === 40) isHorizontal = Math.abs(dx) > Math.abs(dy) * 1.6;
+            
+            if (isHorizontal) { newDir = dx > 0 ? 39 : 37; } 
             else { newDir = dy > 0 ? 40 : 38; }
         }
         if (newDir !== currentDir) {
@@ -480,7 +501,7 @@ $(function () {
             }
             
             // 스크롤 맨 아래로
-            chatList.parent().scrollTop(chatList.prop("scrollHeight"));
+            chatList.scrollTop(chatList[0].scrollHeight);
         }
 
         // 말풍선을 위해 해당 플레이어 데이터에 4초간 메시지 임시 저장
@@ -488,6 +509,7 @@ $(function () {
         if (p) {
             p.chatMsg = msg.content;
             p.chatTime = Date.now();
+            p.isPlayingMusic = false;
         }
     });
     }); // end of startGameEvent
@@ -585,8 +607,8 @@ function draw(ctx, game) {
         ctx.fillStyle = "#ffffff";
         ctx.fillText(players[k].name, drawX, drawY);
 
-        // 2. 말풍선 그리기 (채팅 입력 후 4초간 표시)
-        if (players[k].chatMsg && Date.now() - players[k].chatTime < 4000) {
+        // 2. 말풍선 그리기 (채팅 입력 후 4초간 표시 또는 연주 중)
+        if (players[k].chatMsg && (players[k].isPlayingMusic || Date.now() - players[k].chatTime < 4000)) {
             ctx.font = "bold 14px 'Segoe UI', sans-serif";
             var msgWidth = ctx.measureText(players[k].chatMsg).width;
             var bubbleX = drawX;

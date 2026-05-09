@@ -14,7 +14,6 @@ function MapEngine() {
         self.map = {
             "name": "페이스 메이커",
             "file": "img/map.png",
-            "fg_file": "img/map_top.png", // [추가] 캐릭터 앞을 가릴 지붕/나무 투명 이미지
             "width": 24, // 맵 가로 타일 개수 (오류 방지용 하드코딩)
             "height": 22, // 맵 세로 타일 개수
             "start": { "x": 6, "y": 9 },
@@ -65,15 +64,6 @@ function MapEngine() {
         
         // 이벤트 바인딩 후 src를 지정해야 캐시된 이미지도 오류 없이 폭/높이를 계산합니다.
         this.imgs[this.map.file].src = this.map.file;
-
-        // 전경 레이어(Foreground) 로딩 설정
-        if (this.map.fg_file) {
-            this.imgs[this.map.fg_file] = new Image();
-            this.imgs[this.map.fg_file].onerror = function() {
-                console.warn("map_top.png 파일이 없어서 1단 레이어로 실행합니다. (투명한 지붕 이미지를 추가하면 입체감이 생깁니다!)");
-            };
-            this.imgs[this.map.fg_file].src = this.map.fg_file;
-        }
     }
 
     // Load characters images
