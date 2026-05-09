@@ -1,0 +1,209 @@
+header {
+    text-align: center;
+    background: rgba(0, 0, 0, 0.6);
+    height: 60px;
+    box-sizing: border-box;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
+/* Character selection */
+.tab-content {
+    padding:5px;
+}
+
+.character-list {
+    padding:0;
+    margin:0;
+    font-size:0;
+}
+
+.character-thumb {
+    position:relative;
+    width:48px;
+    height:48px;
+    display:inline-block;
+    margin:5px;
+    cursor:pointer;
+    background-color:#eeeeee;
+}
+
+.character-thumb span {
+    position:absolute;
+    margin-left:30px;
+    margin-top:30px;
+    font-size:14px;
+    color:#3c763d;
+}
+
+.character-thumb:hover {
+    background-color:#ffffff;
+}
+
+/* Game */
+.map {
+    display:block;
+    position:absolute;
+    margin:0;
+}
+
+#ui, #tags {
+    margin-top:70px;
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
+    overflow:hidden;
+}
+
+#map-title {
+    white-space:nowrap;
+    right:10px;
+    top:10px;
+}
+
+#menu {
+    left:10px;
+    top:10px;
+    width:200px;
+}
+
+#playerlist {
+    left:10px;
+    bottom:10px;
+    width:200px;
+    height:200px;
+}
+
+#chat {
+    left:220px;
+    bottom:10px;
+    height:200px;
+    right:50%;
+}
+
+#playerlist .panel-body {
+    height:160px;
+}
+
+#chat .panel-body {
+    height:105px;
+}
+
+/* UI 예쁘게 꾸미기 (Glassmorphism 투명 유리 효과) */
+.meta-panel {
+    background: rgba(15, 15, 20, 0.75) !important;
+    backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 16px !important;
+    color: #f8f9fa !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6) !important;
+    transition: all 0.3s ease;
+}
+.meta-panel > .panel-heading {
+    background: rgba(0, 0, 0, 0.5) !important;
+    color: #fff !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 16px 16px 0 0 !important;
+    font-weight: 800;
+    text-align: left;
+    padding: 12px 15px;
+    letter-spacing: 1px;
+}
+.meta-panel > .panel-footer {
+    background: transparent !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 0 0 16px 16px !important;
+}
+
+.meta-panel input::placeholder {
+    color: #aaa;
+}
+
+/* 모바일용 D-Pad 모던 버튼 */
+.dpad-btn {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.dpad-btn:active {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(0.95);
+}
+#playerlist .panel-body, #chat .panel-body {
+    position:relative;
+    overflow:hidden;
+    padding:0;
+}
+
+#playerlist .panel-body > ul, #chat .panel-body > ul {
+    list-style:none;
+    margin:0;
+    padding:5px 10px;
+    white-space:nowrap;
+}
+
+#playerlist .badge {
+    margin:-3px 0;
+}
+
+#menu .panel-body {
+    padding:0;
+}
+
+#menu ul {
+    list-style:none;
+    margin:0;
+    padding:5px 10px;
+    white-space:nowrap;
+}
+
+#menu ul li {
+    padding: 2px 0;
+}
+
+#menu a {
+    cursor:pointer;
+}
+
+.slider {
+    width:150px !important;
+}
+
+/* 스크롤바 디자인 */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+}
+
+/* 광장 악기 연주 모달 전용 스타일 */
+.inst-btn {
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+}
+.inst-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    filter: brightness(1.1);
+}
+.inst-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Meta 스타일 맵 에디터 (완벽 패치본)</title>
+    <!-- ZIP 생성 라이브러리 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        :root { --ig-primary: #0095f6; --ig-primary-hover: #1877f2; --ig-bg: #f0f2f5; --ig-border: #ccd0d5; --ig-text: #1c1e21; --ig-secondary: #e4e6eb; --danger: #ed4956; --success: #10b981; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--ig-bg); color: var(--ig-text); margin: 0; display: flex; height: 100vh; overflow: hidden; user-select: none; }
+        .sidebar { width: 340px; background: #ffffff; border-right: 1px solid var(--ig-border); padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; box-shadow: 2px 0 10px rgba(0,0,0,0.05); z-index: 10; }
+        .workspace { flex: 1; display: flex; flex-direction: column; position: relative; }
+        .topbar { height: 60px; background: #ffffff; border-bottom: 1px solid var(--ig-border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 10; }
+        .canvas-container { flex: 1; overflow: auto; background: #2c3e50; display: flex; align-items: center; justify-content: center; position: relative; outline: none; }
+        canvas { background-color: transparent; cursor: crosshair; image-rendering: pixelated; box-shadow: 0 4px 20px rgba(0,0,0,0.3); transform-origin: top left; }
+        
+        h2 { margin: 0 0 5px 0; font-weight: 700; color: #1877f2; }
+        .section-title { font-size: 13px; color: #65676b; font-weight: 700; margin-bottom: 8px; }
+        .input-group { display: flex; flex-direction: column; gap: 8px; background: #fff; border: 1px solid var(--ig-border); padding: 12px; border-radius: 10px; }
+        .input-row { display: flex; gap: 10px; align-items: center; }
+        
+        input[type="number"], input[type="file"], select { padding: 8px; border: 1px solid var(--ig-border); border-radius: 6px; font-size: 13px; outline: none; width: 100%; box-sizing: border-box; }
+        
+        .segmented-control { display: flex; gap: 5px; background: var(--ig-secondary); padding: 4px; border-radius: 8px; }
+        .segmented-control label { flex: 1; text-align: center; padding: 8px 0; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 700; color: #65676b; transition: 0.2s; }
+        .segmented-control input[type="radio"] { display: none; }
+        .segmented-control input[type="radio"]:checked + label { background: #fff; color: var(--ig-text); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .brush-wall:checked + label { color: var(--danger); }
+        .brush-floor:checked + label { color: var(--success); }
+        .brush-roof:checked + label { color: var(--ig-primary); }
+        .brush-portal:checked + label { color: #9c27b0; }
+
+        .btn { background: var(--ig-primary); color: white; border: none; padding: 10px; font-size: 13px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: 0.2s; text-align: center; }
+        .btn:hover { background: var(--ig-primary-hover); }
+        .btn-danger { background: var(--danger); }
+        .btn-danger:hover { background: #da2c38; }
+        .btn-play { background: #f59e0b; font-size: 14px; padding: 12px; margin-top: 10px; }
+        
+        .toolbar-controls { display: flex; gap: 15px; align-items: center; }
+        .zoom-controls { display: flex; align-items: center; background: var(--ig-secondary); border-radius: 6px; }
+        .zoom-btn { background: transparent; border: none; padding: 6px 12px; cursor: pointer; font-weight: bold; }
+        #saveStatus { font-size: 12px; color: var(--success); font-weight: 700; opacity: 0; transition: opacity 0.3s; }
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-thumb { background: #bcc0c4; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div>
+            <h2>Map Studio Pro</h2>
+            <span style="font-size: 12px; color: #65676b;">v2.0 - 무손실 압축 에디션</span>
+        </div>
+
+        <div class="input-group">
+            <div class="section-title">1. 배경 이미지 열기</div>
+            <input type="file" id="imageInput" accept="image/png, image/jpeg, image/gif" title="기본 바닥 맵 (map.png)">
+            <p style="font-size: 11px; color: #65676b; margin: 4px 0 0 0;">✨ 지붕(🟦)을 칠하면 자동으로 map_top.png(전경)를 분리해 줍니다!</p>
+        </div>
+
+        <div class="input-group">
+            <div class="section-title">2. 그리드 & 1칸 크기 조절</div>
+            <div class="input-row">
+                <input type="number" id="tileSize" value="16" min="8" onchange="gridChanged()" title="타일 크기"> px
+                <input type="number" id="offsetX" value="0" onchange="gridChanged()" title="X 이동"> X
+                <input type="number" id="offsetY" value="0" onchange="gridChanged()" title="Y 이동"> Y
+            </div>
+        </div>
+
+        <div class="input-group">
+            <div class="section-title">3. 브러쉬 (안 칠한 곳은 기본 바닥)</div>
+            <div class="segmented-control">
+                <input type="radio" id="b-wall" name="brush" value="0" class="brush-wall"><label for="b-wall">🟥 벽(1)</label>
+                <!-- 바닥(1)을 지우개 역할로 사용 -->
+                <input type="radio" id="b-floor" name="brush" value="1" class="brush-floor" checked><label for="b-floor">🟩 바닥/지우개(2)</label>
+                <input type="radio" id="b-roof" name="brush" value="2" class="brush-roof"><label for="b-roof">🟦 지붕(3)</label>
+                <input type="radio" id="b-portal" name="brush" value="3" class="brush-portal"><label for="b-portal" title="다른 맵으로 이동하는 포탈">🟪 포탈(P)</label>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <div class="section-title">4. 그리기 도구</div>
+            <div class="segmented-control">
+                <input type="radio" id="t-pen" name="toolMode" value="pen" checked><label for="t-pen">✏️ 펜</label>
+                <input type="radio" id="t-fill" name="toolMode" value="fill"><label for="t-fill">🪣 채우기(4)</label>
+                <input type="radio" id="t-rect" name="toolMode" value="rect"><label for="t-rect">🔲 네모(5)</label>
+            </div>
+        </div>
+
+        <div class="input-group" style="margin-top: auto;">
+            <div class="section-title">5. 플레이 테스트</div>
+            <input type="file" id="charImageInput" accept="image/png, image/gif" title="캐릭터 스프라이트">
+            <label style="font-size: 12px; margin-top: 5px;"><input type="checkbox" id="isSpriteSheet" checked onchange="draw()"> 12x1 포켓몬 스프라이트 사용</label>
+            <button id="testBtn" class="btn btn-play" onclick="toggleTestMode()">▶️ 플레이 테스트 (WASD)</button>
+        </div>
+    </div>
+
+    <div class="workspace">
+        <div class="topbar">
+            <div class="toolbar-controls">
+                <button class="btn" style="background:#e4e6eb; color:#1c1e21;" onclick="undo()">↩️ 취소(Ctrl+Z)</button>
+                <button class="btn btn-danger" onclick="resetMap()">🗑️ 비우기</button>
+                <span id="saveStatus">✓ 자동저장됨</span>
+            </div>
+
+            <div class="toolbar-controls">
+                <div class="zoom-controls">
+                    <button class="zoom-btn" onclick="setZoom(-0.2)">-</button>
+                    <span id="zoomLevel" style="font-size: 12px; width: 40px; text-align: center;">100%</span>
+                    <button class="zoom-btn" onclick="setZoom(0.2)">+</button>
+                </div>
+                <label style="font-size: 12px;"><input type="checkbox" id="showColors" checked onchange="draw()"> 색상 보기(H)</label>
+                <label style="font-size: 12px;"><input type="checkbox" id="showGrid" checked onchange="draw()"> 선 보기</label>
+                <button class="btn" onclick="exportZip()">📦 JSON+PNG ZIP 다운</button>
+            </div>
+        </div>
+
+        <div class="canvas-container" id="canvasContainer" tabindex="0">
+            <!-- 캔버스를 감싸는 래퍼 (줌 적용시 위치 고정용) -->
+            <div id="canvasWrapper" style="transform-origin: top left; position: absolute; top: 50px; left: 50px;">
+                <canvas id="mapCanvas" width="0" height="0"></canvas>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const canvas = document.getElementById('mapCanvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('canvasContainer');
+    const wrapper = document.getElementById('canvasWrapper');
+    
+    let img = null, imgBlobURL = null;
+    let mapData = [], history =[];
+    let cols = 0, rows = 0, zoom = 1.0;
+    
+    // 그리기 변수
+    let activeTool = null; // 현재 사용중인 마우스 도구
+    let rectStartX = -1, rectStartY = -1, rectCurX = -1, rectCurY = -1;
+    
+    // 화면 이동(우클릭 Panning) 변수
+    let isPanning = false;
+    let panStartX = 0, panStartY = 0;
+
+    // 플레이어
+    let isPlayMode = false;
+    let player = { x: -1, y: -1, dir: 0, frame: 0, image: new Image(), imgLoaded: false };
+
+    window.onload = loadAutoSave;
+    window.addEventListener('beforeunload', e => { if(mapData.length > 0) { e.preventDefault(); e.returnValue = ''; } });
+
+    // 단축키 설정
+    window.addEventListener('keydown', e => {
+        if (isPlayMode) {
+            let dx = 0, dy = 0;
+            if (e.key === 'ArrowDown'  || e.key.toLowerCase() === 's') { dy = 1; player.dir = 0; }
+            if (e.key === 'ArrowLeft'  || e.key.toLowerCase() === 'a') { dx = -1; player.dir = 1; }
+            if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') { dx = 1; player.dir = 2; }
+            if (e.key === 'ArrowUp'    || e.key.toLowerCase() === 'w') { dy = -1; player.dir = 3; }
+
+            if (dx !== 0 || dy !== 0) {
+                e.preventDefault();
+                let nx = player.x + dx, ny = player.y + dy;
+                player.frame = (player.frame + 1) % 4;
+                if (nx >= 0 && nx < cols && ny >= 0 && ny < rows && mapData[ny * cols + nx] !== 0) { player.x = nx; player.y = ny; }
+                draw(); 
+            }
+            return; 
+        }
+        
+        if (e.ctrlKey && e.key.toLowerCase() === 'z') { undo(); return; }
+        if (e.key.toLowerCase() === 'h') { document.getElementById('showColors').click(); return; }
+        if (e.key === '1') document.getElementById('b-wall').checked = true;
+        if (e.key === '2') document.getElementById('b-floor').checked = true;
+        if (e.key === '3') document.getElementById('b-roof').checked = true;
+        if (e.key.toLowerCase() === 'p') document.getElementById('b-portal').checked = true;
+        if (e.key === '4') document.getElementById('t-fill').checked = true;
+        if (e.key === '5') document.getElementById('t-rect').checked = true;
+    });
+
+    // 줌 처리
+    function setZoom(delta) { 
+        zoom = Math.max(0.2, Math.min(4.0, zoom + delta)); 
+        document.getElementById('zoomLevel').innerText = Math.round(zoom * 100) + '%'; 
+        wrapper.style.transform = `scale(${zoom})`; 
+    }
+    container.addEventListener('wheel', e => { if (e.ctrlKey) { e.preventDefault(); setZoom(e.deltaY < 0 ? 0.1 : -0.1); } }, { passive: false });
+
+    // 화면 우클릭 Panning 처리
+    container.addEventListener('mousedown', e => {
+        if (e.button === 2) { // 우클릭
+            isPanning = true;
+            panStartX = e.clientX + container.scrollLeft;
+            panStartY = e.clientY + container.scrollTop;
+            container.style.cursor = 'grabbing';
+        }
+    });
+    window.addEventListener('mousemove', e => {
+        if (isPanning) {
+            container.scrollLeft = panStartX - e.clientX;
+            container.scrollTop = panStartY - e.clientY;
+        }
+    });
+    window.addEventListener('mouseup', e => { if(e.button === 2) { isPanning = false; container.style.cursor = 'default'; } });
+    container.addEventListener('contextmenu', e => e.preventDefault()); // 우클릭 메뉴 방지
+
+    // 이미지 파일 로드
+    document.getElementById('imageInput').addEventListener('change', e => {
+        if (!e.target.files[0]) return;
+        imgBlobURL = URL.createObjectURL(e.target.files[0]);
+        const newImg = new Image();
+        newImg.onload = () => { 
+            img = newImg; 
+            canvas.width = img.width; 
+            canvas.height = img.height; 
+            zoom = 1.0; setZoom(0); 
+            
+            // 데이터 유지 여부 확인
+            if(mapData.length > 0) {
+                if(!confirm("새 맵 이미지를 불러왔습니다. 기존에 칠해둔 데이터를 유지할까요?\n(취소 시 모두 초기화)")) {
+                    mapData =[];
+                }
+            }
+            gridChanged(); 
+        }
+        newImg.src = imgBlobURL;
+    });
+
+    // 캐릭터 파일 로드
+    document.getElementById('charImageInput').addEventListener('change', e => {
+        if (!e.target.files[0]) return;
+        const cImg = new Image();
+        cImg.onload = () => { player.image = cImg; player.imgLoaded = true; if(isPlayMode) draw(); }
+        cImg.src = URL.createObjectURL(e.target.files[0]);
+    });
+
+    // 그리드 변경 (데이터 유지 로직 포함)
+    function gridChanged() {
+        if(!img) return;
+        const tSize = parseInt(document.getElementById('tileSize').value);
+        const offX = parseInt(document.getElementById('offsetX').value);
+        const offY = parseInt(document.getElementById('offsetY').value);
+        
+        let newCols = Math.ceil((canvas.width - offX) / tSize);
+        let newRows = Math.ceil((canvas.height - offY) / tSize);
+        
+        let newData = new Array(newCols * newRows).fill(1);
+        
+        // 기존 데이터가 있다면 최대한 복구
+        if(mapData.length > 0) {
+            for(let y=0; y < Math.min(rows, newRows); y++) {
+                for(let x=0; x < Math.min(cols, newCols); x++) {
+                    newData[y * newCols + x] = mapData[y * cols + x];
+                }
+            }
+        }
+        cols = newCols; rows = newRows; mapData = newData;
+        history =[]; saveHistory(); draw(); autoSave();
+    }
+
+    // 마우스 좌표 계산 (줌 스케일 대응)
+    function getTileCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const canvasX = (e.clientX - rect.left) / zoom;
+        const canvasY = (e.clientY - rect.top) / zoom;
+        const tSize = parseInt(document.getElementById('tileSize').value);
+        const offX = parseInt(document.getElementById('offsetX').value);
+        const offY = parseInt(document.getElementById('offsetY').value);
+        return { x: Math.floor((canvasX - offX) / tSize), y: Math.floor((canvasY - offY) / tSize) };
+    }
+
+    // 전역(Window) 마우스 이벤트 연결 (드래그 끊김 해결)
+    canvas.addEventListener('mousedown', e => { 
+        if(!img || isPlayMode || e.button !== 0) return; // 좌클릭만 반응
+        e.preventDefault(); // ★ 브라우저 자체 이미지 드래그가 발생해 네모 그리기가 중간에 끊기는 현상 완벽 방지
+        const mode = document.querySelector('input[name="toolMode"]:checked').value;
+        const c = getTileCoords(e);
+        saveHistory(); 
+        
+        activeTool = mode;
+        if (mode === 'rect') { rectStartX = c.x; rectStartY = c.y; rectCurX = c.x; rectCurY = c.y; } 
+        else { handleTool(c); }
+    });
+
+    window.addEventListener('mousemove', e => { 
+        if(!img || isPlayMode || !activeTool) return;
+        const c = getTileCoords(e);
+        if(activeTool === 'rect') { rectCurX = c.x; rectCurY = c.y; draw(); } 
+        else if (activeTool === 'pen') { handleTool(c); } 
+    });
+
+    window.addEventListener('mouseup', e => {
+        if(e.button !== 0 || !activeTool) return;
+        if (activeTool === 'rect') { applyRectFill(); } 
+        activeTool = null;
+        autoSave();
+    });
+
+    function applyRectFill() {
+        const v = parseInt(document.querySelector('input[name="brush"]:checked').value);
+        const minX = Math.max(0, Math.min(rectStartX, rectCurX));
+        const maxX = Math.min(cols - 1, Math.max(rectStartX, rectCurX));
+        const minY = Math.max(0, Math.min(rectStartY, rectCurY));
+        const maxY = Math.min(rows - 1, Math.max(rectStartY, rectCurY));
+
+        for (let y = minY; y <= maxY; y++) {
+            for (let x = minX; x <= maxX; x++) { mapData[y * cols + x] = v; }
+        }
+        draw();
+    }
+
+    function handleTool(c) {
+        if(c.x < 0 || c.x >= cols || c.y < 0 || c.y >= rows) return;
+        const v = parseInt(document.querySelector('input[name="brush"]:checked').value);
+        if (activeTool === 'pen') { mapData[c.y * cols + c.x] = v; }
+        else if (activeTool === 'fill') { floodFill(c.x, c.y, mapData[c.y * cols + c.x], v); activeTool = null; } // 채우기는 한번만
+        draw();
+    }
+
+    function floodFill(sx, sy, t, f) {
+        if (t === f) return;
+        let s = [[sx, sy]];
+        while(s.length > 0) {
+            let[x, y] = s.pop();
+            if(x < 0 || x >= cols || y < 0 || y >= rows) continue;
+            let i = y * cols + x;
+            if(mapData[i] === t) {
+                mapData[i] = f;
+                s.push([x+1, y],[x-1, y],[x, y+1],[x, y-1]);
+            }
+        }
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if(img) ctx.drawImage(img, 0, 0);
+
+        const tSize = parseInt(document.getElementById('tileSize').value);
+        const offX = parseInt(document.getElementById('offsetX').value);
+        const offY = parseInt(document.getElementById('offsetY').value);
+        const showColors = document.getElementById('showColors').checked;
+        const showGrid = document.getElementById('showGrid').checked;
+
+        // 타일 색상 그리기
+        if (showColors) {
+            for (let i = 0; i < mapData.length; i++) {
+                const x = offX + (i % cols) * tSize;
+                const y = offY + Math.floor(i / cols) * tSize;
+                
+                // 바닥(1)은 투명, 벽(0)은 빨강, 지붕(2)은 파랑
+                if (mapData[i] === 0) { ctx.fillStyle = 'rgba(237, 73, 86, 0.5)'; ctx.fillRect(x, y, tSize, tSize); } 
+                else if (mapData[i] === 2) { ctx.fillStyle = 'rgba(0, 149, 246, 0.5)'; ctx.fillRect(x, y, tSize, tSize); }
+                else if (mapData[i] === 3) { ctx.fillStyle = 'rgba(156, 39, 176, 0.6)'; ctx.fillRect(x, y, tSize, tSize); }
+                
+                if (showGrid) { ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)'; ctx.strokeRect(x, y, tSize, tSize); }
+            }
+        } else if (showGrid) {
+            // 색상은 숨기더라도 그리드 선은 그리기
+            for (let i = 0; i < mapData.length; i++) {
+                const x = offX + (i % cols) * tSize;
+                const y = offY + Math.floor(i / cols) * tSize;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)'; ctx.strokeRect(x, y, tSize, tSize);
+            }
+        }
+
+        // 네모 드래그 점선 표시
+        if (activeTool === 'rect') {
+            const pxX = offX + Math.min(rectStartX, rectCurX) * tSize;
+            const pxY = offY + Math.min(rectStartY, rectCurY) * tSize;
+            const w = (Math.abs(rectStartX - rectCurX) + 1) * tSize;
+            const h = (Math.abs(rectStartY - rectCurY) + 1) * tSize;
+            ctx.fillStyle = `rgba(245, 158, 11, 0.3)`; ctx.fillRect(pxX, pxY, w, h);
+            ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2; ctx.setLineDash([5, 5]); ctx.strokeRect(pxX, pxY, w, h);
+            ctx.setLineDash([]); ctx.lineWidth = 1;
+        }
+
+        // ★ [Y-Sorting 렌더링] 위에서 아래로 줄(Row) 단위로 내려가며 캐릭터와 지붕을 겹쳐 그립니다.
+        if (isPlayMode) {
+            for (let row = -2; row < rows + 2; row++) {
+                // 1. 현재 줄(Row)에 있는 캐릭터 먼저 렌더링
+                if (player.x !== -1 && player.y === row) {
+                    const px = offX + player.x * tSize;
+                    const py = offY + player.y * tSize;
+
+                    if (player.imgLoaded) {
+                        const isSpriteSheet = document.getElementById('isSpriteSheet').checked;
+                        if (isSpriteSheet) {
+                            const fw = player.image.width / 12, fh = player.image.height;
+                            const dw = tSize * 3, dh = tSize * 3;
+                            
+                            let pos = 0;
+                            if (player.dir === 0) pos = 0;
+                            else if (player.dir === 1) pos = 3;
+                            else if (player.dir === 2) pos = 9;
+                            else if (player.dir === 3) pos = 6;
+                            
+                            let walkCycle = 0;
+                            if (player.frame === 1) walkCycle = 1;
+                            else if (player.frame === 3) walkCycle = 2;
+                            
+                            ctx.drawImage(player.image, (pos + walkCycle) * fw, 0, fw, fh, px - tSize, py - tSize, dw, dh);
+                        } else {
+                            const dw = tSize * 3, dh = tSize * 3 * (player.image.height / player.image.width);
+                            ctx.drawImage(player.image, px - tSize, py - tSize, dw, dh);
+                        }
+                    } else {
+                        ctx.fillStyle = '#f59e0b'; ctx.fillRect(px + tSize*0.1, py + tSize*0.1, tSize*0.8, tSize*0.8);
+                        ctx.fillStyle = '#fff'; ctx.fillRect(px + tSize*0.3, py + tSize*0.3, tSize*0.4, tSize*0.4);
+                    }
+                }
+                
+                // 2. 캐릭터를 그린 후, 동일한 줄(Row)의 지붕 타일로 캐릭터의 발 밑을 덮음
+                if (row >= 0 && row < rows) {
+                    for (let x = 0; x < cols; x++) {
+                        if (mapData[row * cols + x] === 2) {
+                            ctx.drawImage(img, x * tSize, row * tSize, tSize, tSize, offX + x * tSize, offY + row * tSize, tSize, tSize);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    function toggleTestMode() {
+        if (!img || mapData.length === 0) return alert("맵을 먼저 열어주세요!");
+        isPlayMode = !isPlayMode;
+        const btn = document.getElementById('testBtn');
+
+        if (isPlayMode) {
+            container.focus(); // 키보드 포커스 뺏어오기
+            btn.innerHTML = "⏹️ 테스트 종료 (에디터로)"; btn.style.background = "var(--danger)";
+            player.x = -1; player.y = -1;
+            // 스폰 위치 찾기 (포탈, 바닥, 지붕 중 아무 곳이나)
+            for(let i=0; i<mapData.length; i++) { if(mapData[i] !== 0) { player.x = i % cols; player.y = Math.floor(i / cols); break; } }
+            if(player.x === -1) { alert("통행 가능한 바닥이 없어 스폰할 수 없습니다."); toggleTestMode(); }
+        } else {
+            btn.innerHTML = "▶️ 플레이 테스트 (WASD)"; btn.style.background = "#f59e0b";
+        }
+        draw();
+    }
+
+    function saveHistory() { if(history.length > 30) history.shift(); history.push([...mapData]); }
+    function undo() { if(history.length > 1) { history.pop(); mapData = [...history[history.length - 1]]; draw(); autoSave(); } }
+    function resetMap() { if(confirm("칠했던 모든 영역을 바닥(통행 가능)으로 비울까요?")) { saveHistory(); mapData.fill(1); draw(); autoSave(); } }
+    
+    function autoSave() {
+        if(!img) return;
+        localStorage.setItem('mapState', JSON.stringify({ mapData, cols, rows, tileSize: document.getElementById('tileSize').value, offsetX: document.getElementById('offsetX').value, offsetY: document.getElementById('offsetY').value }));
+        try {
+            const cvs = document.createElement('canvas'); cvs.width = img.width; cvs.height = img.height; cvs.getContext('2d').drawImage(img, 0, 0);
+            localStorage.setItem('mapImage', cvs.toDataURL('image/jpeg', 0.8));
+            localStorage.removeItem('mapFgImage'); // 하위 호환 잔재 제거
+            const status = document.getElementById('saveStatus');
+            status.style.opacity = '1'; setTimeout(() => status.style.opacity = '0', 2000);
+        } catch(e) {}
+    }
+
+    function loadAutoSave() {
+        const stateStr = localStorage.getItem('mapState'), imgStr = localStorage.getItem('mapImage');
+        if (stateStr && imgStr) {
+            const state = JSON.parse(stateStr);
+            const newImg = new Image();
+            newImg.onload = () => {
+                img = newImg; canvas.width = img.width; canvas.height = img.height;
+                document.getElementById('tileSize').value = state.tileSize; document.getElementById('offsetX').value = state.offsetX; document.getElementById('offsetY').value = state.offsetY;
+                cols = state.cols; rows = state.rows; mapData = state.mapData;
+                history.push([...mapData]); draw();
+                fetch(imgStr).then(res => res.blob()).then(blob => imgBlobURL = URL.createObjectURL(blob));
+            };
+            newImg.src = imgStr;
+        }
+    }
+
+    // ZIP 추출 로직
+    function exportZip() {
+        if(!img || !imgBlobURL) return alert("추출할 이미지 데이터가 없습니다.");
+        
+        let finalData =[];
+        for (let y = 0; y < rows; y++) { finalData.push(mapData.slice(y * cols, (y + 1) * cols)); }
+        
+        // ★ 포탈(Borders) 및 지붕(hasRoof) 추출
+        let exportBorders = [];
+        let hasRoof = false;
+        for (let y = 0; y < rows; y++) {
+            for (let x = 0; x < cols; x++) {
+                if (mapData[y * cols + x] === 3) {
+                    exportBorders.push({ x: x, y: y, map: "next_map_name", start: { x: 0, y: 0 } });
+                }
+                if (mapData[y * cols + x] === 2) {
+                    hasRoof = true;
+                }
+            }
+        }
+
+        const jsonOutput = JSON.stringify({
+            name: "MyCustomMap",
+            file: "img/map.png",
+            fg_file: hasRoof ? "img/map_top.png" : null, // 지붕이 있으면 자동 할당
+            tileSize: parseInt(document.getElementById('tileSize').value),
+            columns: cols, rows: rows,
+            walkableMap: finalData,
+            // ★ 안 칠한 곳(1), 지붕(2), 포탈(3)은 모두 통행 가능(true), 벽(0)만 통행 불가(false)
+            walkable: mapData.map(v => (v !== 0)), 
+            borders: exportBorders
+        }, null, 4);
+
+        const zip = new JSZip();
+        zip.file("map.json", jsonOutput);
+        
+        fetch(imgBlobURL).then(res => res.blob()).then(blob => {
+            zip.file("map.png", blob);
+            
+            // ★ 지붕(2) 타일이 있다면 map_top.png 자동 생성 후 ZIP에 추가
+            if (hasRoof) {
+                const fgCanvas = document.createElement('canvas');
+                fgCanvas.width = canvas.width;
+                fgCanvas.height = canvas.height;
+                const fCtx = fgCanvas.getContext('2d');
+                
+                const tSize = parseInt(document.getElementById('tileSize').value);
+                for (let i = 0; i < mapData.length; i++) {
+                    if (mapData[i] === 2) {
+                        const tx = i % cols;
+                        const ty = Math.floor(i / cols);
+                        fCtx.drawImage(img, tx * tSize, ty * tSize, tSize, tSize, tx * tSize, ty * tSize, tSize, tSize);
+                    }
+                }
+                
+                fgCanvas.toBlob(fgBlob => {
+                    zip.file("map_top.png", fgBlob);
+                    downloadZip(zip);
+                }, 'image/png');
+            } else {
+                downloadZip(zip);
+            }
+        }).catch(err => alert("이미지 저장 중 오류: " + err));
+        
+        function downloadZip(zipObj) {
+            zipObj.generateAsync({type:"blob"}).then(function(content) {
+                const url = URL.createObjectURL(content);
+                const a = document.createElement('a');
+                a.href = url; a.download = "MapMaker_Export.zip"; a.click();
+                URL.revokeObjectURL(url);
+                alert("✅ ZIP 추출 완료!\n\n압축을 풀어 나온 map.json을 적용하고, 이미지들을 img 폴더에 덮어씌우세요.");
+            });
+        }
+    }
+</script>
+
+</body>
+</html>

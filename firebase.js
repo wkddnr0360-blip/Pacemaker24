@@ -204,11 +204,41 @@ export const FirebaseEngine = {
 
     async loadBackup(userId) {
         try {
-            const mainSnap = await getDoc(doc(db, "backup_data", userId));
+            const [mainSnap, diarySnap, todoSnap, monSnap, quizSnap] = await Promise.all([
+                getDoc(doc(db, "backup_data", userId)),
+                getDoc(doc(db, "backup_diary", userId)),
+                getDoc(doc(db, "backup_todo", userId)),
+                getDoc(doc(db, "backup_mon", userId)),
+                getDoc(doc(db, "backup_quiz", userId))
+            ]);
+
             if (!mainSnap.exists()) return { success: false, message: "백업본이 없습니다." };
-            // 구현은 loadAllData와 동일한 방식으로 백업 컬렉션에서 가져오도록 처리 (생략됨)
-            // ... app.js에서 이 인터페이스를 활용할 예정입니다.
-            return { success: true, timestamp: mainSnap.data().time }; // 간소화
+
+            let mainParsed = mainSnap.data().content ? JSON.parse(mainSnap.data().content) : {};
+            let diaryParsed = diarySnap.exists() && diarySnap.data().content ? JSON.parse(diarySnap.data().content) : {};
+            let todoParsed = todoSnap.exists() && todoSnap.data().content ? JSON.parse(todoSnap.data().content) : {};
+            let monParsed = monSnap.exists() && monSnap.data().content ? JSON.parse(monSnap.data().content) : {};
+            let quizParsed = quizSnap.exists() && quizSnap.data().content ? quizSnap.data().content : null;
+
+            let dailyRecordsObj = mainParsed.dailyRecords ? JSON.parse(mainParsed.dailyRecords) : {};
+            let diaryRecs = diaryParsed.diaryRecords ? JSON.parse(diaryParsed.diaryRecords) : {};
+            let todoRecs = todoParsed.todoRecords ? JSON.parse(todoParsed.todoRecords) : {};
+
+            for (let dateStr in diaryRecs) {
+                if (!dailyRecordsObj[dateStr]) dailyRecordsObj[dateStr] = {};
+                if(diaryRecs[dateStr]) dailyRecordsObj[dateStr].diary = diaryRecs[dateStr];
+            }
+            for (let dateStr in todoRecs) {
+                if (!dailyRecordsObj[dateStr]) dailyRecordsObj[dateStr] = {};
+                if(todoRecs[dateStr]) dailyRecordsObj[dateStr].todo = todoRecs[dateStr];
+            }
+            mainParsed.dailyRecords = JSON.stringify(dailyRecordsObj);
+            
+            let finalMonData = Object.keys(monParsed.monsterData || {}).length > 0 ? monParsed.monsterData : mainParsed.monsterData;
+            if (finalMonData) mainParsed.monsterData = finalMonData;
+            if (quizParsed) mainParsed.myQuizzes = quizParsed;
+
+            return { success: true, data: mainParsed, timestamp: mainSnap.data().time };
         } catch (e) {
             return { success: false, message: "백업 로드 실패" };
         }
@@ -236,6 +266,43 @@ export const FirebaseEngine = {
     async writeBoard(postData) {
         try {
             await addDoc(collection(db, "board"), postData);
+            return { success: true };
+        } catch (e) {
+            return { success: false };
+        }
+    },
+
+    // ------------------------------------------
+    // 🎵 악보 공유 (MML) 통신
+    // ------------------------------------------
+    async getSharedScores() {
+        try {
+            const q = query(collection(db, "shared_scores"), orderBy("date", "desc"));
+            const querySnapshot = await getDocs(q);
+            let list = [];
+            querySnapshot.forEach((docSnap) => {
+                let data = docSnap.data();
+                data.id = docSnap.id;
+                list.push(data);
+            });
+            return { success: true, data: list };
+        } catch (e) {
+            return { success: false, message: "악보 목록 로드 실패" };
+        }
+    },
+
+    async uploadSharedScore(scoreData) {
+        try {
+            await addDoc(collection(db, "shared_scores"), scoreData);
+            return { success: true };
+        } catch (e) {
+            return { success: false };
+        }
+    },
+
+    async deleteSharedScore(scoreId) {
+        try {
+            await deleteDoc(doc(db, "shared_scores", scoreId));
             return { success: true };
         } catch (e) {
             return { success: false };

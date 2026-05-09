@@ -555,7 +555,7 @@ export const QuizEngine = {
         
         // 🎵 스마트 학습 / 단어장 모드에서도 포켓몬 BGM 재생
         if(window.BGM) {
-            window.BGM.play('match');
+            window.BGM.play('battle');
             let btn = document.getElementById('btn-player-bgm');
             if(btn) btn.innerText = window.BGM.isMuted ? '🔇' : '🎵';
         }
@@ -908,7 +908,7 @@ export const QuizEngine = {
             container.innerHTML = this.matchDeck.map((item, idx) => `<div class="match-card" id="mc_${idx}" onclick="window.QuizEngine.selectMatchCard(${idx})" style="color: ${item.color};">${window.Utils.escapeHTML(item.text)}</div>`).join('');
         }
         if(window.BGM) {
-            window.BGM.play('match');
+            window.BGM.play('battle');
             let btn = document.getElementById('btn-match-bgm');
             if(btn) btn.innerText = window.BGM.isMuted ? '🔇' : '🎵';
         }

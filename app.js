@@ -12,6 +12,7 @@ window.activeUser = localStorage.getItem('activeUser') !== 'null' ? localStorage
 window.activePw = localStorage.getItem('activePw') !== 'null' ? localStorage.getItem('activePw') : null;
 window.myDeviceToken = localStorage.getItem('deviceToken') || ("DEV_" + Date.now() + "_" + Math.floor(Math.random()*10000));
 localStorage.setItem('deviceToken', window.myDeviceToken);
+window.selectedChar = localStorage.getItem('selectedChar') || 'dpp_boy';
 
 window.memCache = {}; 
 window.boardCache = [];
@@ -103,6 +104,44 @@ window.SFX = {
     }
 };
 
+// ✨ 스킬 효과음(SFX)을 재생하는 함수 (Pokemon Showdown 오디오 활용)
+window.playSkillSound = function(type, isUlt) {
+    if(!window.isSoundOn) return;
+    let url = 'https://play.pokemonshowdown.com/audio/moves/';
+    let soundName = 'tackle'; 
+    
+    if (isUlt) {
+        switch(type) {
+            case 'fire': soundName = 'fireblast'; break;
+            case 'water': soundName = 'hydropump'; break;
+            case 'grass': soundName = 'solarbeam'; break;
+            case 'electric': soundName = 'thunder'; break;
+            case 'psychic': soundName = 'psychic'; break;
+            case 'dark': soundName = 'darkpulse'; break;
+            case 'dragon': soundName = 'outrage'; break;
+            case 'fairy': soundName = 'moonblast'; break;
+            default: soundName = 'hyperbeam'; break;
+        }
+    } else {
+        switch(type) {
+            case 'fire': soundName = 'ember'; break;
+            case 'water': soundName = 'watergun'; break;
+            case 'grass': soundName = 'razorleaf'; break;
+            case 'electric': soundName = 'thundershock'; break;
+            case 'psychic': soundName = 'confusion'; break;
+            case 'dark': soundName = 'bite'; break;
+            case 'dragon': soundName = 'dragonclaw'; break;
+            case 'fairy': soundName = 'fairywind'; break;
+            default: soundName = 'tackle'; break;
+        }
+    }
+    
+    let audio = new Audio(`${url}${soundName}.mp3`);
+    audio.volume = 0.6;
+    let playPromise = audio.play();
+    if (playPromise !== undefined) playPromise.catch(e => {}); // Autoplay 막힘 무시
+};
+
 window.preloadPokemonData = async function() {
     if (!window.monsterData || !window.monsterData.inventory || !window.PokeAPI) return;
     
@@ -124,18 +163,40 @@ window.BGM = {
     audio: null,
     isPlaying: false,
     isMuted: false,
+    currentTrack: null,
+    tracks: {
+        'match': 'https://play.pokemonshowdown.com/audio/hgss-johto-trainer.mp3',
+        'town': 'https://play.pokemonshowdown.com/audio/dpp-route209.mp3',
+        'battle': 'https://play.pokemonshowdown.com/audio/dpp-wildpokemon.mp3'
+    },
     play: function(track) {
-        if (this.isPlaying || !window.isSoundOn) return;
+        if (!window.isSoundOn) return;
+        
+        let src = this.tracks[track];
+        if (!src) return;
 
-        if (track === 'match') {
-            if (!this.audio) {
-                this.audio = new Audio('https://play.pokemonshowdown.com/audio/xy-trainer.mp3');
-                this.audio.loop = true;
-                this.audio.volume = 0.35;
-            }
-            this.audio.muted = this.isMuted;
-            this.audio.play().catch(e => console.log('BGM Error:', e));
-            this.isPlaying = true;
+        if (this.currentTrack === track && this.isPlaying && this.audio && !this.audio.paused) return;
+        if (this.audio) {
+            this.audio.pause();
+            this.audio.src = "";
+            this.audio.load();
+        }
+        
+        this.audio = new Audio(src);
+        this.audio.loop = true;
+        this.audio.volume = 0.35;
+        this.audio.muted = this.isMuted;
+        
+        let playPromise = this.audio.play();
+        if (playPromise !== undefined) {
+            playPromise.then(_ => {
+                this.isPlaying = true;
+                this.currentTrack = track;
+            }).catch(e => {
+                console.log('BGM 자동재생 대기 중...', e);
+                this.isPlaying = false;
+                this.currentTrack = track;
+            });
         }
     },
     stop: function() {
@@ -145,11 +206,28 @@ window.BGM = {
             this.audio.currentTime = 0;
         }
         this.isPlaying = false;
+        this.currentTrack = null;
     },
     toggleMute: function(btnEl) {
         this.isMuted = !this.isMuted;
-        if (this.audio) this.audio.muted = this.isMuted;
+        if (this.audio) {
+            this.audio.muted = this.isMuted;
+            if (!this.isMuted && !this.isPlaying && this.currentTrack) {
+                this.play(this.currentTrack);
+            }
+        } else if (!this.isMuted && this.currentTrack) {
+            this.play(this.currentTrack);
+        }
         if (btnEl) btnEl.innerText = this.isMuted ? '🔇' : '🎵';
+        
+        // ★ 광장 연주(MML) 데이터 수신 제어 (네트워크 자원 절약)
+        if (window.PlazaMusic) {
+            if (this.isMuted) {
+                if(window.PlazaMusic.ignore) window.PlazaMusic.ignore();
+            } else {
+                if(window.PlazaMusic.listen) window.PlazaMusic.listen();
+            }
+        }
     }
 };
 
@@ -163,20 +241,22 @@ window.app.closeModal = function(modalId) {
     
     modal.dataset.closing = "true";
     const box = modal.querySelector('.modal-box') || modal.children[0];
-    const isBottomSheet = box && getComputedStyle(box).animationName.includes('sheet');
     
     if (box) {
-        box.style.transform = ''; // 스와이프 드래그가 남긴 CSS 리셋
-        box.style.animation = isBottomSheet 
-            ? 'sheet-slide-down 0.35s cubic-bezier(0.28, 1.1, 0.32, 1) forwards'
-            : 'modal-pop-out 0.25s cubic-bezier(0.28, 1.1, 0.32, 1) forwards';
+        // 스와이프 도중이든 터치 클릭이든, 현재 위치에서 부드럽게 밑으로 떨어지는 애니메이션 적용
+        box.style.animation = 'none';
+        box.style.transition = 'transform 0.35s cubic-bezier(0.28, 1.1, 0.32, 1), opacity 0.35s ease';
+        box.style.transform = 'translateY(100vh)';
+        box.style.opacity = '0';
             
         setTimeout(() => {
             modal.style.display = 'none';
             document.body.style.overflow = '';
-            box.style.animation = ''; // 재사용을 위한 리셋
+            box.style.transition = ''; // 재사용을 위한 리셋
+            box.style.transform = '';
+            box.style.opacity = '';
             modal.dataset.closing = "false";
-        }, isBottomSheet ? 300 : 200);
+        }, 350);
     } else {
         modal.style.display = 'none';
         document.body.style.overflow = '';
@@ -213,6 +293,7 @@ window.initBottomSheetSwipe = function() {
             startY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
             isDragging = true;
             box.style.transition = 'none'; // 드래그 중에는 애니메이션 끄기
+            box.style.animation = 'none'; // 애니메이션 강제 해제로 드래그 잠김 현상 해결
         };
 
         const onTouchMove = (e) => {
@@ -415,8 +496,9 @@ window.loadBackupDataFromServer = async function() {
     window.showLoading(true, "백업본 가져오는 중... 🔍");
 
     let res = await FirebaseEngine.loadBackup(window.activeUser);
-    if(res.success && res.timestamp) {
-        // 실제 복구는 loadAllData 로직 응용
+    if(res.success && res.data && res.timestamp) {
+        window.saveUserLocalData(res.data);
+        window.executeSafeSync(); // 복구된 데이터를 현재 서버 데이터로 덮어쓰기
         window.showToast(`✅ 복구 완료 (백업일: ${res.timestamp})! 새로고침합니다.`);
         setTimeout(() => location.reload(), 1000);
     } else {
@@ -435,6 +517,12 @@ window.handleAuth = async function() {
     if(!window.activeUser || !rawPw) return document.getElementById('login-status').innerText = "정보를 입력해주세요.";
     
     window.showLoading(true, "서버의 데이터 로드 중... ☁️"); 
+
+    const selectedCharBtn = document.querySelector('.char-btn.selected');
+    if (selectedCharBtn) {
+        window.selectedChar = selectedCharBtn.dataset.char;
+        localStorage.setItem('selectedChar', window.selectedChar);
+    }
     window.activePw = btoa(rawPw); // 간단 해싱
 
     const res = await FirebaseEngine.login(window.activeUser, window.activePw);
@@ -463,9 +551,8 @@ window.applyCloudData = function(parsedData, silent = false) {
     const currentLogicalDate = window.Utils.getLogicalDateString();
     
     window.saveUserLocalData(parsedData); 
+    window.checkAndResetDay();
     window.initLocalState(); 
-    
-    window.setL('lastLogicalDate', currentLogicalDate);
     
     if(window.initMonster) window.initMonster(); 
     window.updateUI(true); window.syncTodayRecord(); window.renderCalendar(); window.updateHighlight(); window.updateDashboardTodoAlert(); window.updateDdayUI();
@@ -550,6 +637,18 @@ window.switchView = function(viewId) {
     if (viewId === 'calendar') { window.renderCalendar(); window.updateDdayUI(); window.scrollTo(0, 0); }
     else if (viewId === 'study') { window.updateHighlight(); window.updateUI(false); window.updateDdayUI(); setTimeout(window.scrollToCurrent, 300); }
     else if (viewId === 'dashboard') { window.updateDashboardTodoAlert(); window.updateUI(false); window.updateDdayUI(); window.scrollTo(0, 0); }
+    else if (viewId === 'game') {
+        if (window.BGM) window.BGM.play('town');
+        if (!window.gameInitialized && typeof $ !== 'undefined') {
+            window.gameInitialized = true;
+            // 게임 뷰 렌더링 후 약간의 딜레이를 주어 컨테이너 크기가 잡힌 뒤 실행
+            setTimeout(() => { $(window).trigger('startGameEvent', [window.activeUser || 'Player', window.selectedChar]); }, 100);
+        } else if (window.gameInitialized && typeof $ !== 'undefined') {
+            setTimeout(() => { $(window).trigger('resize'); }, 100); // 캔버스 다시 리사이징
+        }
+    } else {
+        if (window.BGM && window.BGM.currentTrack === 'town') window.BGM.stop();
+    }
 };
 
 window.initLocalState = function() {
@@ -888,13 +987,14 @@ window.openRecordModal = function(dateStr) {
     
     let tTime = rec.totalTime || '00h 00m';
     let tTarget = rec.targetTime || '00h 00m';
+    let isToday = dateStr === window.Utils.getLogicalDateString();
     
     // 모바일에서 겹치지 않게 유연한 레이아웃으로 변경
     content += `
         <div style="background:var(--bg-sec); padding:16px; border-radius:16px; margin-bottom:15px; border:1px solid var(--border-color);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                 <span style="font-size:14px; font-weight:800; color:var(--text-main);">⏱️ 몰입 시간</span>
-                <button onclick="window.editPastTime('${dateStr}')" style="background: rgba(0, 149, 246, 0.1); color: var(--primary); border: none; padding: 6px 14px; border-radius: 14px; font-size: 13px; font-weight: 800; cursor: pointer; transition: 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">✏️ 시간 수정</button>
+                ${isToday ? '' : `<button onclick="window.editPastTime('${dateStr}')" style="background: rgba(0, 149, 246, 0.1); color: var(--primary); border: none; padding: 6px 14px; border-radius: 14px; font-size: 13px; font-weight: 800; cursor: pointer; transition: 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">✏️ 시간 수정</button>`}
             </div>
             <div style="display:flex; justify-content:space-around; text-align:center; background:var(--surface); padding:12px; border-radius:12px; border:1px solid var(--border-color);">
                 <div><span style="display:block; font-size:11px; color:var(--text-muted); font-weight:800; margin-bottom:4px;">목표 시간</span><strong style="font-size:18px; color:var(--text-muted); font-weight:900; letter-spacing:-1px;">${tTarget}</strong></div>
@@ -917,14 +1017,32 @@ window.openRecordModal = function(dateStr) {
                 if (spec) {
                     let currentStageIdx = monAtTime.selectedStage || 0;
                     let pokeId = spec.pokeIds[currentStageIdx];
-                    let imgUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokeId}.png`;
+                    
+                    let fallbackUrl = pokeId >= 10000 ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokeId}.png` : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokeId}.png`;
+                    let imgUrl = fallbackUrl;
+                    
+                    let isShiny = !!monAtTime.isShiny;
+                    let imgId = 'rec-mon-' + Date.now();
+                    let cachedData = window.PokeAPI && window.PokeAPI.cache ? window.PokeAPI.cache[pokeId] : null;
+                    if (cachedData && cachedData.name) {
+                        let sdName = cachedData.name.toLowerCase().replace('-mega-x', '-megax').replace('-mega-y', '-megay').replace('mr-mime', 'mrmime').replace('ho-oh', 'hooh');
+                        imgUrl = isShiny ? `https://play.pokemonshowdown.com/sprites/ani-shiny/${sdName}.gif` : `https://play.pokemonshowdown.com/sprites/ani/${sdName}.gif`;
+                    } else {
+                        window.PokeAPI.getPokemon(pokeId).then(data => {
+                            if (data && data.name) {
+                                let sdName = data.name.toLowerCase().replace('-mega-x', '-megax').replace('-mega-y', '-megay').replace('mr-mime', 'mrmime').replace('ho-oh', 'hooh');
+                                let targetImg = document.getElementById(imgId);
+                                if (targetImg) targetImg.src = isShiny ? `https://play.pokemonshowdown.com/sprites/ani-shiny/${sdName}.gif` : `https://play.pokemonshowdown.com/sprites/ani/${sdName}.gif`;
+                            }
+                        });
+                    }
                     
                     let tAct = tTime;
                     let growthBadge = tAct !== "00h 00m" ? `<span style="background:rgba(16, 185, 129, 0.15); color:var(--success); padding:3px 8px; border-radius:6px; font-size:11px; font-weight:900; white-space:nowrap;">+${tAct} 성장 🚀</span>` : '';
 
                     monInfoHTML = `
                         <div style="background:var(--bg-sec); border:1px solid var(--border-color); border-radius:18px; padding:18px; margin-bottom:15px; display:flex; align-items:center; gap:15px; position:relative; overflow:hidden; flex-shrink:0;">
-                            <img src="${imgUrl}" class="float-anim" style="width:65px; height:65px; object-fit:contain; z-index:2; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.1)); cursor:pointer;" onclick="window.playPokemonCry(${pokeId}, this, ${currentStageIdx >= 3}, '${spec.name}', ${spec.pokeIds[0]})">
+                            <img id="${imgId}" src="${imgUrl}" onerror="if(this.src !== '${fallbackUrl}') this.src='${fallbackUrl}';" class="float-anim" style="width:65px; height:65px; object-fit:contain; z-index:2; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.1)); cursor:pointer;" onclick="window.playPokemonCry(${pokeId}, this, ${currentStageIdx >= 3}, '${spec.name}', ${spec.pokeIds[0]})">
                             <div style="z-index:2;">
                                 <div style="font-size:11px; color:var(--text-muted); font-weight:800; margin-bottom:2px;">그날 함께한 파트너</div>
                                 <div style="font-size:16px; font-weight:900; color:var(--text-main); margin-bottom:4px;">${monAtTime.nickname || spec.name}</div>
@@ -1278,6 +1396,29 @@ window.openAchievementsModal = function() {
     document.getElementById('achievement-modal').style.display = 'flex'; 
     document.body.style.overflow = 'hidden'; 
 };
+
+window.manualClearBoard = function() {
+    if(!confirm("⚠️ 오늘 하루의 체크 및 달성 기록을 모두 초기화하시겠습니까?\n(이 작업은 되돌릴 수 없으며, 즉시 서버에 반영됩니다)")) return;
+    
+    window.blockSeconds = Array(48).fill(0); 
+    window.targetBlocks = Array(48).fill(false); 
+    window.alarmedBlocks = Array(48).fill(false);
+    for(let i=0; i<48; i++) { 
+        window.removeL(`note_${i}`); 
+        if(window.domCache.notes && window.domCache.notes[i]) window.domCache.notes[i].value = ""; 
+    }
+    
+    window.setL('blockSeconds', JSON.stringify(window.blockSeconds));
+    window.setL('targetBlocks', JSON.stringify(window.targetBlocks));
+    window.setL('alarmedBlocks', JSON.stringify(window.alarmedBlocks));
+    
+    window.syncTodayRecord();
+    window.updateUI(true); 
+    window.triggerAutoSync(true);
+    window.app.closeModal('settings-modal');
+    window.showToast("🧹 오늘의 보드가 성공적으로 초기화되었습니다.");
+};
+
 window.toggleSetting = function(type) { 
     if(navigator.vibrate) navigator.vibrate(10);
     if (type === 'sound') { 
@@ -1480,6 +1621,649 @@ window.showEvolutionPopup = async function(baseName, stageName, pokeId, maxHours
     }, 100);
 };
 
+// 🔥 포켓몬 타입 번역 및 속성 상성 알고리즘
+window.TYPE_TRANSLATION = {
+    normal: '노말', fighting: '격투', flying: '비행', poison: '독', ground: '땅',
+    rock: '바위', bug: '벌레', ghost: '고스트', steel: '강철', fire: '불꽃',
+    water: '물', grass: '풀', electric: '전기', psychic: '에스퍼', ice: '얼음',
+    dragon: '드래곤', dark: '악', fairy: '페어리'
+};
+
+// ✨ 속성별 전용 기술 및 위력 데이터
+window.TYPE_MOVES = {
+    normal: [{name: '몸통박치기', power: 40}, {name: '칼춤', power: 0, effect: 'atk_up'}, {name: '누르기', power: 85}, {name: '파괴광선', power: 120}],
+    fire: [{name: '불꽃세례', power: 40}, {name: '도깨비불', power: 0, effect: 'atk_down'}, {name: '화염방사', power: 90}, {name: '불대문자', power: 110}],
+    water: [{name: '물대포', power: 40}, {name: '아쿠아링', power: 0, effect: 'heal'}, {name: '파도타기', power: 90}, {name: '하이드로펌프', power: 110}],
+    grass: [{name: '잎날가르기', power: 55}, {name: '씨뿌리기', power: 0, effect: 'drain'}, {name: '기가드레인', power: 75, effect: 'heal'}, {name: '솔라빔', power: 120}],
+    electric: [{name: '전기쇼크', power: 40}, {name: '전기자석파', power: 0, effect: 'def_down'}, {name: '10만볼트', power: 90}, {name: '번개', power: 110}],
+    psychic: [{name: '염동력', power: 50}, {name: '명상', power: 0, effect: 'atk_up'}, {name: '사이코키네시스', power: 90}, {name: '미래예지', power: 120}],
+    dark: [{name: '물기', power: 60}, {name: '나쁜음모', power: 0, effect: 'atk_up'}, {name: '악의파동', power: 80}, {name: '속임수', power: 95}],
+    dragon: [{name: '용의분노', power: 40}, {name: '용의춤', power: 0, effect: 'atk_up'}, {name: '드래곤크루', power: 80}, {name: '역린', power: 120}],
+    fairy: [{name: '요정의바람', power: 40}, {name: '달의불빛', power: 0, effect: 'heal'}, {name: '매지컬샤인', power: 80}, {name: '문포스', power: 95}],
+    default: [{name: '부딪치기', power: 40}, {name: '방어', power: 0, effect: 'def_up'}, {name: '돌진', power: 85}, {name: '기가임팩트', power: 150}]
+};
+
+window.getTypeEffectiveness = function(atkType, defTypes) {
+    const matchups = {
+        normal: { strong: [], weak: ['rock', 'steel'], immune: ['ghost'] },
+        fire: { strong: ['grass', 'bug', 'ice', 'steel'], weak: ['fire', 'water', 'rock', 'dragon'] },
+        water: { strong: ['fire', 'ground', 'rock'], weak: ['water', 'grass', 'dragon'] },
+        grass: { strong: ['water', 'ground', 'rock'], weak: ['fire', 'grass', 'poison', 'flying', 'bug', 'dragon', 'steel'] },
+        electric: { strong: ['water', 'flying'], weak: ['electric', 'grass', 'dragon'], immune: ['ground'] },
+        psychic: { strong: ['fighting', 'poison'], weak: ['psychic', 'steel'], immune: ['dark'] },
+        dark: { strong: ['psychic', 'ghost'], weak: ['fighting', 'dark', 'fairy'] },
+        dragon: { strong: ['dragon'], weak: ['steel'], immune: ['fairy'] },
+        fairy: { strong: ['fighting', 'dragon', 'dark'], weak: ['fire', 'poison', 'steel'] }
+    };
+
+    let multiplier = 1;
+    let atkData = matchups[atkType] || { strong: [], weak: [], immune: [] };
+
+    defTypes.forEach(defType => {
+        if (atkData.strong && atkData.strong.includes(defType)) multiplier *= 2;
+        if (atkData.weak && atkData.weak.includes(defType)) multiplier *= 0.5;
+        if (atkData.immune && atkData.immune.includes(defType)) multiplier *= 0;
+    });
+
+    return multiplier;
+};
+
+// ✨ 포켓몬 API 기반 스킬 이펙트 시각화 엔진
+window.playSkillEffect = function(targetId, moveType, movePower = 40, effect = null) {
+    let imgEl = document.getElementById(targetId);
+    if(!imgEl) return;
+    let parent = imgEl.parentElement;
+    
+    // 이펙트 스케일 결정 (위력에 따라 화려함 증폭, 버프/힐은 고정 크기)
+    let isUltimate = movePower >= 110;
+    let scaleMult = Math.max(1, movePower / 40);
+    if(effect) scaleMult = 1.3; 
+    if(isUltimate) scaleMult *= 1.5;
+
+    let emoji = '💥';
+    if(effect === 'heal') emoji = '💚';
+    else if(effect === 'atk_up' || effect === 'def_up') emoji = '✨';
+    else if(effect === 'atk_down' || effect === 'def_down') emoji = '💢';
+    else {
+        switch(moveType) {
+            case 'fire': emoji = '🔥'; break;
+            case 'water': emoji = '🌊'; break;
+            case 'grass': emoji = '🍃'; break;
+            case 'electric': emoji = '⚡'; break;
+            case 'psychic': emoji = '🔮'; break;
+            case 'dark': emoji = '🌒'; break;
+            case 'dragon': emoji = '☄️'; break;
+            case 'fairy': emoji = '✨'; break;
+            case 'normal': emoji = '💢'; break;
+        }
+    }
+    
+    // 💥 궁극기(4단계 스킬)일 때 여러 파티클을 흩뿌리는 다중 이펙트 발생
+    if(isUltimate && !effect) {
+        if(moveType === 'fire') emoji = '🌋';
+        else if(moveType === 'water') emoji = '🌀';
+        else if(moveType === 'grass') emoji = '🌪️';
+        else if(moveType === 'electric') emoji = '🌩️';
+        else if(moveType === 'dragon') emoji = '☄️';
+        else emoji = '🌠';
+        
+        const modalBox = document.querySelector('#battle-modal .modal-box');
+        if (modalBox) {
+            modalBox.animate([
+                { transform: 'translate(15px, 15px) rotate(1deg)' },
+                { transform: 'translate(-15px, -15px) rotate(-1deg)' },
+                { transform: 'translate(15px, -15px) rotate(1deg)' },
+                { transform: 'translate(-15px, 15px) rotate(-1deg)' },
+                { transform: 'translate(0, 0) rotate(0deg)' }
+            ], { duration: 80, iterations: 5 });
+        }
+        
+        // 다중 파티클 생성
+        for(let i=0; i<5; i++) {
+            let particle = document.createElement('div');
+            particle.style.position = 'absolute';
+            particle.style.pointerEvents = 'none';
+            particle.style.zIndex = '10';
+            particle.innerText = emoji;
+            particle.style.fontSize = `${(40 + Math.random()*30) * scaleMult}px`;
+            particle.style.filter = 'drop-shadow(0 0 20px rgba(255,255,255,0.8)) hue-rotate(90deg)';
+            
+            let rx = (Math.random() - 0.5) * 150;
+            let ry = (Math.random() - 0.5) * 150;
+            
+            if(targetId === 'battle-enemy-img') { particle.style.right = `${50 - rx}px`; particle.style.top = `${40 - ry}px`; } 
+            else { particle.style.left = `${60 - rx}px`; particle.style.bottom = `${10 - ry}px`; }
+            
+            parent.appendChild(particle);
+            
+            particle.animate([
+                { transform: 'scale(0.2) rotate(-30deg)', opacity: 0 },
+                { transform: `scale(${1.2 * scaleMult}) rotate(${Math.random()*60}deg) translate(${rx/2}px, ${ry/2}px)`, opacity: 1, offset: 0.3 },
+                { transform: `scale(${1.5 * scaleMult}) rotate(0deg) translate(${rx}px, ${ry}px)`, opacity: 0, offset: 1 }
+            ], { duration: 800 + Math.random()*200, easing: 'ease-out' });
+            setTimeout(() => particle.remove(), 1000);
+        }
+        return; // 메인 오버레이 대신 다중 파티클로 대체
+    }
+
+    let overlay = document.createElement('div');
+    overlay.style.position = 'absolute';
+    if(targetId === 'battle-enemy-img') {
+        overlay.style.right = '50px';
+        overlay.style.top = '40px';
+    } else {
+        overlay.style.left = '60px';
+        overlay.style.bottom = '10px';
+    }
+    overlay.style.transform = 'scale(0)';
+    overlay.style.fontSize = `${70 * scaleMult}px`;
+    overlay.style.pointerEvents = 'none';
+    overlay.style.zIndex = '10';
+    overlay.style.filter = 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))';
+
+    overlay.innerText = emoji;
+    parent.appendChild(overlay);
+    
+    overlay.animate([
+        { transform: 'scale(0.2) rotate(-30deg)', opacity: 0 },
+        { transform: `scale(${1.2 * scaleMult}) rotate(10deg)`, opacity: 1, offset: 0.3 },
+        { transform: `scale(${1.5 * scaleMult}) rotate(0deg)`, opacity: 0, offset: 1 }
+    ], { duration: 500 + (movePower * 2), easing: 'ease-out' });
+    
+    setTimeout(() => overlay.remove(), 500 + (movePower * 2));
+};
+
+// ⚔️ 포켓몬 배틀 시스템 로직 (공부 누적 시간 비례)
+window.startPokemonBattle = async function() {
+    if (!window.monsterData || !window.monsterData.displayId) {
+        return window.showToast("전시된 파트너 몬스터가 없습니다! 가방에서 꺼내주세요.");
+    }
+    let myMon = window.monsterData.inventory.find(x => x.id === window.monsterData.displayId);
+    if (!myMon || myMon.status === 'egg') {
+        return window.showToast("알은 배틀에 나갈 수 없습니다! ⚪");
+    }
+
+    let spec = window.getMonsterSpec(myMon);
+    let evoHours = window.getEvolutionHours(spec);
+    let maxHours = evoHours[evoHours.length - 1] || 40;
+    let totalHours = Math.floor(window.calculateActiveMonsterExp(myMon) / 3600);
+    
+    // 1. 최대 레벨(100) 동기화 알고리즘 (공부 시간 비례)
+    let myLevel = Math.min(100, Math.max(5, Math.floor((totalHours / maxHours) * 100)));
+    let currentStageIdx = myMon.selectedStage || 0;
+    let myPokeId = spec.pokeIds[currentStageIdx];
+    let myName = myMon.nickname || spec.stages[currentStageIdx];
+
+    window.showLoading(true, "야생의 포켓몬을 찾는 중... 🌿");
+    
+    let typeKeys = Object.keys(window.MONSTER_DATA);
+    let randomType = typeKeys[Math.floor(Math.random() * typeKeys.length)];
+    let randomMonList = window.MONSTER_DATA[randomType].monsters;
+    let randomMon = randomMonList[Math.floor(Math.random() * randomMonList.length)];
+    
+    let enemyStageIdx = currentStageIdx;
+    if (Math.random() < 0.3) enemyStageIdx = Math.max(0, currentStageIdx - 1);
+    else if (Math.random() < 0.1 && currentStageIdx < 3) enemyStageIdx = Math.min(3, currentStageIdx + 1);
+    if (enemyStageIdx > 2) enemyStageIdx = 2; // 야생은 메가진화 불가
+
+    let enemyLevel = Math.min(100, Math.max(1, myLevel + Math.floor(Math.random() * 7) - 3)); // 내 레벨 기준 비슷한 레벨의 적
+    let enemyPokeId = randomMon.pokeIds[enemyStageIdx];
+    
+    // 2. 포켓몬 API를 병렬로 호출하여 종족값(Base Stats) 파싱
+    const [enemyData, myPokeData] = await Promise.all([
+        window.PokeAPI.getPokemon(enemyPokeId),
+        window.PokeAPI.getPokemon(myPokeId)
+    ]);
+    
+    let parseStats = (pokeData) => {
+        let stats = { hp: 60, atk: 60, def: 60, spd: 60 };
+        if (pokeData && pokeData.stats) {
+            stats.hp = pokeData.stats.find(s => s.stat.name === 'hp')?.base_stat || 60;
+            stats.atk = pokeData.stats.find(s => s.stat.name === 'attack')?.base_stat || 60;
+            stats.def = pokeData.stats.find(s => s.stat.name === 'defense')?.base_stat || 60;
+            stats.spd = pokeData.stats.find(s => s.stat.name === 'speed')?.base_stat || 60;
+        }
+        return stats;
+    };
+    
+    let myStats = parseStats(myPokeData);
+    let enemyStats = parseStats(enemyData);
+    window.showLoading(false);
+
+    // 3. 실제 포켓몬 체력 공식 적용 및 1.5배 증폭 (치고박는 전투를 위한 HP 상향)
+    let myHp = Math.floor(((2 * myStats.hp * myLevel) / 100) + myLevel + 10) * 1.5;
+    let enemyHp = Math.floor(((2 * enemyStats.hp * enemyLevel) / 100) + enemyLevel + 10) * 1.5;
+
+    let enemyName = randomMon.stages[enemyStageIdx] || (enemyData ? enemyData.name.toUpperCase() : "야생 포켓몬");
+    
+    let enemyTypes = enemyData ? enemyData.types.map(t => t.type.name) : ['normal'];
+    let enemyTypeKor = enemyTypes.map(t => window.TYPE_TRANSLATION[t] || t.toUpperCase()).join('/');
+    let enemySdName = enemyData && enemyData.name ? enemyData.name.toLowerCase().replace('-mega-x', '-megax').replace('-mega-y', '-megay') : 'pikachu';
+    let enemyImg = `https://play.pokemonshowdown.com/sprites/ani/${enemySdName}.gif`;
+
+    window.battleState = {
+        myName: myName, myLevel: myLevel, myHp: myHp, myMaxHp: myHp, myPokeId: myPokeId, myType: myMon.type, myStage: currentStageIdx, myStats: myStats, myAtkMod: 1.0, myDefMod: 1.0,
+        enemyName: enemyName, enemyLevel: enemyLevel, enemyHp: enemyHp, enemyMaxHp: enemyHp, enemyTypes: enemyTypes, enemyStage: enemyStageIdx, enemyStats: enemyStats, enemyAtkMod: 1.0, enemyDefMod: 1.0, ultUsed: false
+    };
+
+    // 내 포켓몬 뒷모습 Showdown 이미지 적용 시도
+    let myImgSrc = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/${myPokeId}.png`;
+    try {
+        if (myPokeData && myPokeData.name) {
+            let mySdName = myPokeData.name.toLowerCase().replace('-mega-x', '-megax').replace('-mega-y', '-megay').replace('mr-mime', 'mrmime').replace('ho-oh', 'hooh');
+            myImgSrc = !!myMon.isShiny ? `https://play.pokemonshowdown.com/sprites/ani-back-shiny/${mySdName}.gif` : `https://play.pokemonshowdown.com/sprites/ani-back/${mySdName}.gif`;
+        }
+    } catch(e) {}
+
+    document.getElementById('battle-my-name').innerText = `Lv.${myLevel} ${myName}`;
+    document.getElementById('battle-enemy-name').innerHTML = `Lv.${enemyLevel} ${enemyName} <span style="font-size:11px; color:#64748b;">(${enemyTypeKor})</span>`;
+    document.getElementById('battle-my-hp').style.width = '100%';
+    document.getElementById('battle-enemy-hp').style.width = '100%';
+    
+    let myImgEl = document.getElementById('battle-my-img');
+    myImgEl.src = myImgSrc;
+    myImgEl.onerror = function() { this.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/${myPokeId}.png`; };
+    myImgEl.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))';
+
+    let enemyImgEl = document.getElementById('battle-enemy-img');
+    enemyImgEl.src = enemyImg;
+    enemyImgEl.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))';
+
+    document.getElementById('battle-log').innerHTML = `앗! 야생의 ${enemyName}이(가) 나타났다!<br>가라, ${myName}!`;
+
+    document.getElementById('battle-actions').style.display = 'flex';
+    document.getElementById('battle-continue').style.display = 'none';
+    
+    let typeMoves = window.TYPE_MOVES[myMon.type] || window.TYPE_MOVES['default'];
+    let normalMoves = window.TYPE_MOVES['normal'];
+
+    let isMaxStage = currentStageIdx >= (spec.pokeIds.length - 1) || currentStageIdx >= 3;
+    let availableMoves = [];
+    if (isMaxStage) {
+        availableMoves.push({ ...typeMoves[0], type: myMon.type });
+        availableMoves.push({ ...typeMoves[1], type: myMon.type });
+        availableMoves.push({ ...typeMoves[2], type: myMon.type });
+        availableMoves.push({ ...typeMoves[3], type: myMon.type });
+        
+        let mySubId = myMon.monsterSubId;
+        if (mySubId === 'fire_charizard') availableMoves[1] = { name: '용의춤', power: 0, type: 'dragon', effect: 'atk_up' };
+        else if (mySubId === 'fire_blaziken') availableMoves[1] = { name: '벌크업', power: 0, type: 'fighting', effect: 'atk_up' };
+        else if (mySubId === 'psychic_gengar') availableMoves[1] = { name: '최면술', power: 0, type: 'psychic', effect: 'def_down' };
+        else if (mySubId === 'water_greninja') availableMoves[1] = { name: '그림자분신', power: 0, type: 'dark', effect: 'def_up' };
+        else if (mySubId === 'electric_raichu') availableMoves[1] = { name: '고속이동', power: 0, type: 'electric', effect: 'atk_up' };
+        else if (mySubId === 'dark_tyranitar') availableMoves[1] = { name: '모래바람', power: 0, type: 'rock', effect: 'atk_down' };
+        else if (mySubId === 'dragon_garchomp') availableMoves[1] = { name: '칼춤', power: 0, type: 'normal', effect: 'atk_up' };
+        else if (mySubId === 'grass_venusaur') availableMoves[1] = { name: '수면가루', power: 0, type: 'grass', effect: 'def_down' };
+        
+        // ✨ 메가 루카리오 전용 4단계 궁극기 강제 배정 (미래예지 덮어쓰기)
+        // monster.js 데이터상 루카리오는 psychic_lucario 이며 메가진화 도감번호는 10059 입니다.
+        if (mySubId === 'psychic_lucario' || myPokeId === 10059) {
+            availableMoves[3] = { name: '메가파동탄', power: 150, type: 'fighting', effect: '' };
+        }
+    } else if (currentStageIdx === 0) {
+        availableMoves.push({ ...normalMoves[0], type: 'normal' });
+        availableMoves.push({ ...typeMoves[0], type: myMon.type });
+    } else if (currentStageIdx === 1) {
+        availableMoves.push({ ...normalMoves[1], type: 'normal' });
+        availableMoves.push({ ...typeMoves[0], type: myMon.type });
+        availableMoves.push({ ...typeMoves[1], type: myMon.type });
+    } else if (currentStageIdx === 2) {
+        availableMoves.push({ ...normalMoves[2], type: 'normal' });
+        availableMoves.push({ ...typeMoves[1], type: myMon.type });
+        availableMoves.push({ ...typeMoves[2], type: myMon.type });
+        availableMoves.push({ ...typeMoves[0], type: myMon.type });
+    }
+
+    let moveButtons = '';
+    availableMoves.forEach(m => {
+        let color = m.type === 'normal' ? '#6b7280' : (window.MONSTER_DATA[m.type] ? `rgb(${window.MONSTER_DATA[m.type].color})` : '#3b82f6');
+        let icon = m.type === 'normal' ? '⚔️' : '✨';
+        if(m.type === 'fire') icon = '🔥';
+        if(m.type === 'water') icon = '💧';
+        if(m.type === 'grass') icon = '🌿';
+        if(m.type === 'electric') icon = '⚡';
+        
+        let powerLabel = m.power > 0 ? `위력 ${m.power}` : (m.effect === 'heal' ? '회복기' : '변화기');
+        let isUlt = m.power >= 110;
+        let borderStyle = isUlt ? `2px solid #fbbf24` : `2px solid rgba(0,0,0,0.3)`;
+        let glowStyle = isUlt ? `box-shadow: 0 4px 0 rgba(0,0,0,0.3), 0 0 15px rgba(251, 191, 36, 0.8);` : `box-shadow: 0 4px 0 rgba(0,0,0,0.3);`;
+        
+        moveButtons += `<button class="btn-primary" data-is-ult="${isUlt}" style="background: ${color}; border: ${borderStyle}; ${glowStyle} font-size: 15px; border-radius: 10px; padding: 12px 0; transition: transform 0.1s, filter 0.3s, opacity 0.3s;" onclick="window.executeBattleTurn('${m.name}', '${m.type}', ${m.power}, '${m.effect || ''}', this)">${icon} ${m.name}<br><span style="font-size:11px; opacity:0.8; font-weight:normal;">${powerLabel}</span></button>`;
+    });
+
+    document.getElementById('battle-moves-grid').innerHTML = moveButtons;
+
+    document.getElementById('battle-modal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    if (window.BGM) window.BGM.play('battle');
+    if (window.app && window.app.playSfx) window.app.playSfx('success');
+};
+
+window.executeBattleTurn = function(moveName = '공격', atkType = 'normal', movePower = 40, effect = '', btnEl = null) {
+    let state = window.battleState;
+    if (state.myHp <= 0 || state.enemyHp <= 0) return;
+
+    let isUlt = movePower >= 110 && !effect;
+    
+    // 전투당 1회 궁극기 사용 제한 로직
+    if (isUlt && state.ultUsed) {
+        if(window.showToast) window.showToast("궁극기는 전투당 1번만 사용할 수 있습니다!");
+        return;
+    }
+
+    // 중복 클릭 방지용 버튼 비활성화
+    const btns = document.querySelectorAll('#battle-moves-grid button');
+    btns.forEach(b => b.disabled = true);
+
+    if (isUlt) {
+        state.ultUsed = true;
+        if (btnEl) {
+            btnEl.style.opacity = '0.4';
+            btnEl.style.filter = 'grayscale(100%)';
+            btnEl.style.transform = 'scale(0.95)';
+        }
+    }
+
+    if (isUlt) {
+        let effectColor = atkType === 'fire' ? 'red' : atkType === 'water' ? 'blue' : atkType === 'grass' ? 'green' : atkType === 'electric' ? 'yellow' : 'white';
+        let isSpecialUlt = [10034, 10050, 26, 25, 10043, 10079, 10054, 10059].includes(state.myPokeId);
+        if (isSpecialUlt) effectColor = 'magenta';
+        
+        if(!document.getElementById('ult-cinematic-style')) {
+            let style = document.createElement('style');
+            style.id = 'ult-cinematic-style';
+            style.innerHTML = `
+                @keyframes speed-lines-anim { 0% { background-position: 0 0; } 100% { background-position: 100px 100px; } }
+                @keyframes ult-zoom-in { 0% { transform: translateX(-100vw) scale(1); opacity: 0; } 100% { transform: translateX(0) scale(1.5); opacity: 1; } }
+                @keyframes ult-dash-out { 0% { transform: translateX(0) scale(1.5); } 100% { transform: translateX(100vw) scale(2) rotate(15deg); opacity: 0; } }
+                @keyframes ult-text-slide { 0% { transform: translateX(50px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+                @keyframes special-ult-bg { 0% { filter: hue-rotate(0deg) brightness(1); } 50% { filter: hue-rotate(180deg) brightness(1.5); } 100% { filter: hue-rotate(360deg) brightness(1); } }
+                @keyframes special-ult-shake { 0%, 100% { transform: translate(0,0) rotate(0deg); } 25% { transform: translate(-10px,-10px) rotate(-3deg); } 50% { transform: translate(10px,-5px) rotate(3deg); } 75% { transform: translate(-5px,10px) rotate(-1deg); } }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        let cutin = document.createElement('div');
+        cutin.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:3000; display:flex; align-items:center; justify-content:center; overflow:hidden; opacity:0; transition:opacity 0.3s; pointer-events:none;';
+        
+        if (moveName === '메가파동탄') {
+            // ✨ 비디오 자동재생 차단 방지를 위해 반드시 muted 속성 추가 및 화면 흔들림(shake) 애니메이션
+            cutin.innerHTML = `
+                <video id="mega-lucario-vid" src="img/characters/megamotion01.mp4" style="position:absolute; width:100%; height:100%; object-fit:cover; z-index:1;" autoplay playsinline muted></video>
+                <div style="position:absolute; width:300%; height:300%; animation: speed-lines-anim 0.1s linear infinite, special-ult-bg 1s infinite; background:repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.1) 10px, rgba(255,255,255,0.1) 20px); z-index:2; mix-blend-mode: overlay;"></div>
+                <div style="position:absolute; bottom:15%; right:10%; color:white; font-size:55px; font-weight:900; font-style:italic; text-shadow:0 0 20px magenta, 0 0 10px magenta; animation: ult-text-slide 0.3s ease-out 0.3s forwards; opacity:0; z-index:3;">🔥 초궁극기: ${moveName}!!</div>
+            `;
+            cutin.style.animation = 'special-ult-shake 0.2s infinite';
+            document.body.appendChild(cutin);
+            
+            setTimeout(() => cutin.style.opacity = '1', 50);
+            
+            setTimeout(() => {
+                if(window.playPokemonCry) {
+                    window.playPokemonCry(state.myPokeId, null, true, state.myName, state.myPokeId);
+                }
+            }, 400);
+            
+            setTimeout(() => {
+                cutin.style.opacity = '0';
+                setTimeout(() => cutin.remove(), 300);
+                window.processAttackSequence(moveName, atkType, movePower, effect);
+            }, 2500); 
+        } else {
+            let bgExtra = isSpecialUlt ? `animation: speed-lines-anim 0.1s linear infinite, special-ult-bg 1s infinite; background:repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.1) 10px, rgba(255,255,255,0.1) 20px);` : `animation: speed-lines-anim 0.3s linear infinite; background:repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.05) 20px, rgba(255,255,255,0.05) 40px);`;
+            let imgExtra = isSpecialUlt ? `animation: ult-zoom-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, special-ult-shake 0.2s infinite; filter:drop-shadow(0 0 50px ${effectColor}) brightness(1.5);` : `animation: ult-zoom-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; filter:drop-shadow(0 0 30px ${effectColor}) brightness(1.2);`;
+
+            cutin.innerHTML = `
+                <div style="position:absolute; width:300%; height:300%; ${bgExtra}"></div>
+                <img src="${document.getElementById('battle-my-img').src}" style="width:250px; height:250px; object-fit:contain; ${imgExtra}">
+                <div style="position:absolute; bottom:15%; right:10%; color:white; font-size:${isSpecialUlt?'55px':'45px'}; font-weight:900; font-style:italic; text-shadow:0 0 20px ${effectColor}, 0 0 10px ${effectColor}; animation: ult-text-slide 0.3s ease-out 0.3s forwards; opacity:0;">${isSpecialUlt ? '🔥 초궁극기: ' : ''}${moveName}!!</div>
+            `;
+            document.body.appendChild(cutin);
+            
+            setTimeout(() => cutin.style.opacity = '1', 50);
+            
+            setTimeout(() => {
+                if(window.playPokemonCry) {
+                    let m = window.monsterData.inventory.find(x => x.id === window.monsterData.displayId);
+                    let spec = window.getMonsterSpec(m);
+                    let baseIdForCry = state.myStage >= 3 ? (spec.pokeIds[2] || spec.pokeIds[0]) : state.myPokeId;
+                    window.playPokemonCry(state.myPokeId, null, state.myStage >= 3, state.myName, baseIdForCry);
+                }
+            }, 400);
+            
+            setTimeout(() => {
+                let img = cutin.querySelector('img');
+                if(img) img.style.animation = 'ult-dash-out 0.2s ease-in forwards';
+            }, isSpecialUlt ? 2200 : 1800);
+            
+            setTimeout(() => {
+                cutin.style.opacity = '0';
+                setTimeout(() => cutin.remove(), 300);
+                window.processAttackSequence(moveName, atkType, movePower, effect);
+            }, isSpecialUlt ? 2400 : 2000);
+        }
+    } else {
+        window.processAttackSequence(moveName, atkType, movePower, effect);
+    }
+};
+
+window.processAttackSequence = function(moveName, atkType, movePower, effect) {
+    let state = window.battleState;
+    const btns = document.querySelectorAll('#battle-moves-grid button');
+    
+    // 스킬 사운드 재생 (기존의 틱 소리를 덮어씀)
+    if (window.playSkillSound && movePower > 0) window.playSkillSound(atkType, movePower >= 110, moveName);
+
+    let targetEl = (effect === 'heal' || effect === 'atk_up' || effect === 'def_up') ? 'battle-my-img' : 'battle-enemy-img';
+    if(window.playSkillEffect) window.playSkillEffect(targetEl, atkType, movePower, effect);
+
+    let log = `${state.myName}의 ${moveName}!<br>`;
+    
+    if (movePower === 0) {
+        if (effect === 'atk_up') { state.myAtkMod *= 1.5; log += `<span style="color:#3b82f6;">공격력이 크게 올랐다!</span><br>`; }
+        else if (effect === 'def_up') { state.myDefMod *= 1.5; log += `<span style="color:#3b82f6;">방어력이 든든해졌다!</span><br>`; }
+        else if (effect === 'atk_down') { state.enemyAtkMod *= 0.7; log += `<span style="color:#ef4444;">야생의 ${state.enemyName}의 공격력이 떨어졌다!</span><br>`; }
+        else if (effect === 'def_down') { state.enemyDefMod *= 0.7; log += `<span style="color:#ef4444;">야생의 ${state.enemyName}의 방어력이 떨어졌다!</span><br>`; }
+        else if (effect === 'heal') {
+            let healAmount = Math.floor(state.myMaxHp * 0.4);
+            state.myHp = Math.min(state.myMaxHp, state.myHp + healAmount);
+            document.getElementById('battle-my-hp').style.width = `${(state.myHp / state.myMaxHp) * 100}%`;
+            log += `<span style="color:#10b981;">체력을 크게 회복했다!</span><br>`;
+        }
+        else if (effect === 'drain') {
+            let drainAmount = Math.floor(state.enemyMaxHp * 0.15);
+            state.enemyHp = Math.max(0, state.enemyHp - drainAmount);
+            state.myHp = Math.min(state.myMaxHp, state.myHp + drainAmount);
+            document.getElementById('battle-my-hp').style.width = `${(state.myHp / state.myMaxHp) * 100}%`;
+            document.getElementById('battle-enemy-hp').style.width = `${(state.enemyHp / state.enemyMaxHp) * 100}%`;
+            log += `<span style="color:#10b981;">야생 포켓몬의 체력을 흡수했다!</span><br>`;
+        }
+    } else {
+        let isCrit = Math.random() < 0.15;
+        let levelFactor = Math.floor((2 * state.myLevel) / 5) + 2;
+        let statRatio = (state.myStats.atk * state.myAtkMod) / (state.enemyStats.def * state.enemyDefMod); 
+        let baseDamage = Math.floor((levelFactor * movePower * statRatio) / 65) + 2;
+        
+        let stabMult = (atkType === state.myType) ? 1.5 : 1;
+        let multiplier = window.getTypeEffectiveness(atkType, state.enemyTypes);
+        let myDamage = Math.floor(baseDamage * stabMult * multiplier * (isCrit ? 1.5 : 1) * ((Math.floor(Math.random() * 16) + 85) / 100));
+
+        if (multiplier > 0 && myDamage < 1) myDamage = 1;
+
+        state.enemyHp = Math.max(0, state.enemyHp - myDamage);
+        document.getElementById('battle-enemy-hp').style.width = `${(state.enemyHp / state.enemyMaxHp) * 100}%`;
+        
+        if (multiplier > 1) log += `<span style="color:#f59e0b; font-weight:900;">효과가 굉장했다!!</span><br>`;
+        else if (multiplier < 1 && multiplier > 0) log += `<span style="color:#9ca3af; font-weight:900;">효과가 별로인 것 같다...</span><br>`;
+        else if (multiplier === 0) log += `<span style="color:#9ca3af; font-weight:900;">효과가 없는 것 같다...</span><br>`;
+        
+        if (isCrit && multiplier > 0) log += `<span style="color:#ef4444; font-weight:900;">급소에 맞았다!!</span><br>`;
+        
+        if (multiplier === 0) log += `야생의 ${state.enemyName}에게 데미지를 주지 못했다!`;
+        else log += `야생의 ${state.enemyName}에게 ${myDamage}의 데미지를 주었다!`;
+
+        if (effect === 'heal') {
+            let healAmount = Math.floor(myDamage * 0.5);
+            state.myHp = Math.min(state.myMaxHp, state.myHp + healAmount);
+            document.getElementById('battle-my-hp').style.width = `${(state.myHp / state.myMaxHp) * 100}%`;
+            log += `<br><span style="color:#10b981;">가한 데미지의 절반을 회복했다!</span>`;
+        }
+    }
+    
+    document.getElementById('battle-log').innerHTML = log;
+    if(window.app && window.app.playSfx) window.app.playSfx('tap');
+    
+    if(movePower > 0) {
+        let enemyImg = document.getElementById('battle-enemy-img');
+        enemyImg.style.transition = 'transform 0.1s';
+        let effectColor = atkType === 'fire' ? 'red' : atkType === 'water' ? 'blue' : atkType === 'grass' ? 'green' : atkType === 'electric' ? 'yellow' : 'white';
+        
+        if (movePower >= 110) {
+            let scaleEffect = 1.6;
+            enemyImg.style.transform = `scale(${scaleEffect}) rotate(25deg)`;
+            enemyImg.style.filter = `brightness(4) sepia(1) hue-rotate(-50deg) saturate(10) drop-shadow(0 0 50px ${effectColor})`;
+        } else {
+            let scaleEffect = 1 + (movePower / 150); 
+            enemyImg.style.transform = `scale(${scaleEffect}) rotate(15deg)`;
+            enemyImg.style.filter = `brightness(3) sepia(1) hue-rotate(-50deg) saturate(5) drop-shadow(0 0 30px ${effectColor})`;
+        }
+        
+        setTimeout(() => {
+            enemyImg.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))';
+            enemyImg.style.transform = 'scale(1) rotate(0deg)';
+        }, movePower >= 110 ? 400 : 150 + movePower); 
+    } else {
+        let tImg = document.getElementById(targetEl);
+        tImg.style.transition = 'transform 0.3s ease';
+        tImg.style.transform = 'scale(1.2)';
+        setTimeout(() => tImg.style.transform = 'scale(1)', 300);
+    }
+
+    if (state.enemyHp === 0) {
+        setTimeout(() => {
+            document.getElementById('battle-log').innerHTML = `<b>야생의 ${state.enemyName}은(는) 쓰러졌다!</b><br>배틀에서 승리했다! 🎉`;
+            if(window.app && window.app.playSfx) window.app.playSfx('success');
+            
+            document.getElementById('battle-actions').style.display = 'none';
+            document.getElementById('battle-continue').style.display = 'flex';
+            
+            if (window.monsterData.activeId) {
+                let m = window.monsterData.inventory.find(x => x.id === window.monsterData.activeId);
+                if (m) {
+                    let expReward = 10 + (state.enemyLevel * 2) + (state.enemyStage * 10);
+                    m.bonusSeconds = (m.bonusSeconds || 0) + (expReward * 60);
+                    if(window.setL) window.setL('monsterData', JSON.stringify(window.monsterData));
+                    if(window.checkMonsterCompletion) window.checkMonsterCompletion();
+                    if(window.updateMonsterUI) window.updateMonsterUI();
+                    if(window.triggerAutoSync) window.triggerAutoSync();
+                    setTimeout(() => window.showToast(`승리 보상으로 ${state.myName}의 성장 경험치(+${expReward}분)가 올랐습니다! 🚀`), 500);
+                }
+            }
+        }, 1000);
+        return;
+    }
+
+    setTimeout(() => {
+        if (state.enemyHp <= 0) return;
+        
+        let enemyAtkType = state.enemyTypes[Math.floor(Math.random() * state.enemyTypes.length)] || 'normal';
+        let myDefTypes = [state.myType];
+        
+        let typeMoves = window.TYPE_MOVES[state.enemyTypes[0]] || window.TYPE_MOVES['default'];
+        let normalMoves = window.TYPE_MOVES['normal'];
+        let enemyAvailableMoves = [typeMoves[0], typeMoves[1], normalMoves[0], normalMoves[1]]; 
+        let selectedEnemyMove = enemyAvailableMoves[Math.floor(Math.random() * enemyAvailableMoves.length)];
+        
+        enemyAtkType = selectedEnemyMove.power > 0 ? (state.enemyTypes[Math.floor(Math.random() * state.enemyTypes.length)] || 'normal') : 'normal';
+        let enemyMovePower = selectedEnemyMove.power;
+        let enemyEffect = selectedEnemyMove.effect || '';
+        
+        // 적의 스킬 사운드 재생
+        if (window.playSkillSound && enemyMovePower > 0) window.playSkillSound(enemyAtkType, enemyMovePower >= 110, selectedEnemyMove.name);
+
+        let enemyTargetEl = (enemyEffect === 'heal' || enemyEffect === 'atk_up' || enemyEffect === 'def_up') ? 'battle-enemy-img' : 'battle-my-img';
+        
+        if(window.playSkillEffect) window.playSkillEffect(enemyTargetEl, enemyAtkType, enemyMovePower, enemyEffect);
+        
+        let enemyAtkKor = window.TYPE_TRANSLATION[enemyAtkType] || enemyAtkType.toUpperCase();
+        let enemyLog = `야생의 ${state.enemyName}의 ${selectedEnemyMove.name}!<br>`;
+
+        if (enemyMovePower === 0) {
+            if (enemyEffect === 'atk_up') { state.enemyAtkMod *= 1.5; enemyLog += `<span style="color:#ef4444;">야생 포켓몬의 공격력이 올랐다!</span><br>`; }
+            else if (enemyEffect === 'def_up') { state.enemyDefMod *= 1.5; enemyLog += `<span style="color:#ef4444;">야생 포켓몬의 방어력이 올랐다!</span><br>`; }
+            else if (enemyEffect === 'atk_down') { state.myAtkMod *= 0.7; enemyLog += `<span style="color:#3b82f6;">${state.myName}의 공격력이 떨어졌다...</span><br>`; }
+            else if (enemyEffect === 'def_down') { state.myDefMod *= 0.7; enemyLog += `<span style="color:#3b82f6;">${state.myName}의 방어력이 떨어졌다...</span><br>`; }
+            else if (enemyEffect === 'heal') {
+                let healAmount = Math.floor(state.enemyMaxHp * 0.4);
+                state.enemyHp = Math.min(state.enemyMaxHp, state.enemyHp + healAmount);
+                document.getElementById('battle-enemy-hp').style.width = `${(state.enemyHp / state.enemyMaxHp) * 100}%`;
+                enemyLog += `<span style="color:#10b981;">야생 포켓몬이 체력을 회복했다!</span><br>`;
+            }
+        } else {
+            let enemyLevelFactor = Math.floor((2 * state.enemyLevel) / 5) + 2;
+            let enemyStatRatio = (state.enemyStats.atk * state.enemyAtkMod) / (state.myStats.def * state.myDefMod);
+            let enemyBaseDmg = Math.floor((enemyLevelFactor * enemyMovePower * enemyStatRatio) / 75) + 2; 
+            
+            let enemyMultiplier = window.getTypeEffectiveness(enemyAtkType, myDefTypes);
+            let enemyDamage = Math.floor(enemyBaseDmg * 1.0 * enemyMultiplier * ((Math.floor(Math.random() * 16) + 85) / 100));
+            
+            if (enemyMultiplier > 0 && enemyDamage < 1) enemyDamage = 1;
+
+            state.myHp = Math.max(0, state.myHp - enemyDamage);
+            document.getElementById('battle-my-hp').style.width = `${(state.myHp / state.myMaxHp) * 100}%`;
+            
+            if (enemyMultiplier > 1) enemyLog += `<span style="color:#f59e0b; font-weight:900;">효과가 굉장했다!!</span><br>`;
+            else if (enemyMultiplier < 1 && enemyMultiplier > 0) enemyLog += `<span style="color:#9ca3af; font-weight:900;">효과가 별로인 것 같다...</span><br>`;
+            else if (enemyMultiplier === 0) enemyLog += `<span style="color:#9ca3af; font-weight:900;">효과가 없는 것 같다...</span><br>`;
+            
+            if (enemyMultiplier === 0) enemyLog += `${state.myName}은(는) 데미지를 입지 않았다!`;
+            else enemyLog += `${state.myName}은(는) ${enemyDamage}의 데미지를 입었다!`;
+        }
+
+        document.getElementById('battle-log').innerHTML = enemyLog;
+        if(window.app && window.app.playSfx && enemyMovePower > 0) window.app.playSfx('eat'); 
+        
+        if(enemyMovePower > 0) {
+            let myImg = document.getElementById('battle-my-img');
+            myImg.style.transition = 'transform 0.1s';
+            let enemyEffectColor = enemyAtkType === 'fire' ? 'red' : enemyAtkType === 'water' ? 'blue' : enemyAtkType === 'grass' ? 'green' : enemyAtkType === 'electric' ? 'yellow' : 'white';
+            
+            if (enemyMovePower >= 110) {
+                let enemyScaleEffect = 1.6;
+                myImg.style.transform = `scale(${enemyScaleEffect}) rotate(-25deg)`;
+                myImg.style.filter = `brightness(4) sepia(1) hue-rotate(-50deg) saturate(10) drop-shadow(0 0 50px ${enemyEffectColor})`;
+            } else {
+                let enemyScaleEffect = 1 + (enemyMovePower / 150);
+                myImg.style.transform = `scale(${enemyScaleEffect}) rotate(-15deg)`;
+                myImg.style.filter = `brightness(3) sepia(1) hue-rotate(-50deg) saturate(5) drop-shadow(0 0 30px ${enemyEffectColor})`;
+            }
+            
+            setTimeout(() => {
+                myImg.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))';
+                myImg.style.transform = 'scale(1) rotate(0deg)';
+            }, enemyMovePower >= 110 ? 400 : 150 + enemyMovePower);
+        } else {
+            let tImg = document.getElementById(enemyTargetEl);
+            tImg.style.transition = 'transform 0.3s ease';
+            tImg.style.transform = 'scale(1.2)';
+            setTimeout(() => tImg.style.transform = 'scale(1)', 300);
+        }
+        
+        if (state.myHp === 0) {
+            setTimeout(() => {
+                document.getElementById('battle-log').innerHTML = `<b>${state.myName}은(는) 쓰러졌다...</b><br>눈앞이 깜깜해졌다!`;
+                document.getElementById('battle-actions').style.display = 'none';
+                document.getElementById('battle-continue').style.display = 'flex';
+            }, 1000);
+        } else {
+            btns.forEach(b => {
+                if (b.dataset.isUlt === "true" && state.ultUsed) b.disabled = true;
+                else b.disabled = false;
+            });
+        }
+    }, 1800);
+};
+
 // 🌐 온라인/오프라인 네트워크 상태 실시간 감지
 window.updateNetworkStatus = function() {
     const badge = document.getElementById('network-status');
@@ -1498,6 +2282,68 @@ window.addEventListener('offline', window.updateNetworkStatus);
 window.initApp = function() {
     window.injectToolbar('diary-toolbar-container'); 
     window.injectToolbar('todo-toolbar-container'); // board -> todo로 정상화
+    window.initBottomSheetSwipe(); // 팝업창 드래그해서 닫기 제스처 활성화
+
+    // 캐릭터 선택 UI 클릭 및 애니메이션 처리
+    if (typeof $ !== 'undefined') {
+        $('.char-btn').click(function() {
+                if(window.SFX) window.SFX.play('success'); // ✨ 캐릭터 선택 시 특별한 효과음
+            $('.char-btn').css('border-color', 'transparent').removeClass('selected');
+            $(this).css('border-color', 'var(--primary)').addClass('selected');
+        });
+        
+        if (window.selectedChar) {
+            $('.char-btn').css('border-color', 'transparent').removeClass('selected');
+            $('.char-btn[data-char="' + window.selectedChar + '"]').css('border-color', 'var(--primary)').addClass('selected');
+        }
+
+        let interval_id;
+        $('.char-btn').mouseover(function() {
+            let elt = $(this);
+            interval_id = window.setInterval(function() {
+                let posX = elt.css('background-position-x');
+                switch (posX) {
+                    case '0%': case '0px':
+                        elt.css('background-position-x', '528px'); break;
+                    case '528px':
+                        elt.css('background-position-x', '0px'); break;
+                    case '0px':
+                        elt.css('background-position-x', '480px'); break;
+                    case '480px':
+                        elt.css('background-position-x', '0%'); break;
+                }
+            }, 150);
+        });
+        $('.char-btn').mouseout(function() {
+            window.clearInterval(interval_id);
+            $(this).css('background-position-x', '0%');
+        });
+
+        // 앱 내부 캐릭터 변경 UI 연동
+        $('.char-btn-inapp').click(function() {
+            if(window.SFX) window.SFX.play('success'); // ✨ 캐릭터 선택 시 특별한 효과음
+            $('.char-btn-inapp').css('border-color', 'transparent').removeClass('selected');
+            $(this).css('border-color', 'var(--primary)').addClass('selected');
+        });
+        
+        let interval_id2;
+        $('.char-btn-inapp').mouseover(function() {
+            let elt = $(this);
+            interval_id2 = window.setInterval(function() {
+                let posX = elt.css('background-position-x');
+                switch (posX) {
+                    case '0%': case '0px': elt.css('background-position-x', '528px'); break;
+                    case '528px': elt.css('background-position-x', '0px'); break;
+                    case '0px': elt.css('background-position-x', '480px'); break;
+                    case '480px': elt.css('background-position-x', '0%'); break;
+                }
+            }, 150);
+        });
+        $('.char-btn-inapp').mouseout(function() {
+            window.clearInterval(interval_id2);
+            $(this).css('background-position-x', '0%');
+        });
+    }
     
     if (window.activeUser && window.activePw) {
         if(document.getElementById('login-view')) document.getElementById('login-view').style.display = 'none'; 
@@ -1535,6 +2381,21 @@ window.initApp = function() {
     // 앱 버전 표기
     const verDisplay = document.querySelector('.app-version-display');
     if (verDisplay) verDisplay.innerText = window.APP_VERSION;
+};
+
+window.changeCharacterInApp = function() {
+    const selected = document.querySelector('.char-btn-inapp.selected');
+    if (selected) {
+        window.selectedChar = selected.dataset.char;
+        localStorage.setItem('selectedChar', window.selectedChar);
+        
+        if (typeof $ !== 'undefined') {
+            $(window).trigger('changeCharacterEvent', [window.selectedChar]);
+        }
+        
+        window.app.closeModal('char-change-modal');
+        window.showToast("✨ 캐릭터가 성공적으로 변경되었습니다!");
+    }
 };
 
 // 모듈 로딩 시점과 관계없이 확실하게 초기화되도록 이벤트 변경
@@ -1610,7 +2471,7 @@ window.renderBoardItems = function(posts) {
             <div style="padding: 16px; background: var(--surface); border-bottom: 8px solid var(--bg-sec); display: flex; gap: 12px; align-items: center;">
                 <div style="width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--target)); display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 18px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">${window.activeUser.charAt(0).toUpperCase()}</div>
                 <div style="flex-grow: 1; position: relative;">
-                    <textarea id="new-post-content" class="note-input" placeholder="새로운 소식을 남겨보세요..." style="min-height: 48px; padding: 14px 44px 14px 16px; border-radius: 24px; width: 100%; box-sizing: border-box; resize: none; overflow: hidden; background: var(--bg-sec);" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+                    <textarea id="new-post-content" class="note-input" placeholder="새로운 소식을 남겨보세요..." style="min-height: 48px; padding: 14px 44px 14px 16px; border-radius: 24px; width: 100%; box-sizing: border-box; resize: none; overflow: hidden; background: var(--bg-sec);" oninput="window.setL('boardDraft', this.value); this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${window.getL('boardDraft') || ''}</textarea>
                     <button onclick="window.writePost()" style="position: absolute; right: 6px; bottom: 8px; background: var(--primary); color: white; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,149,246,0.3);">⬆️</button>
                 </div>
             </div>
@@ -1633,7 +2494,12 @@ window.renderBoardItems = function(posts) {
                             <span style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">${item.date ? new Date(item.date).toLocaleDateString() : ''}</span>
                         </div>
                     </div>
-                    ${isMine ? `<button style="background: transparent; border: none; color: #ef4444; font-size: 13px; font-weight: 800; cursor: pointer; padding: 4px 8px; border-radius: 12px; transition: background 0.2s;" onclick="window.deletePost('${item.id}')">삭제</button>` : ''}
+                    ${isMine ? `
+                    <div style="display: flex; gap: 6px;">
+                        <button style="background: transparent; border: none; color: var(--primary); font-size: 13px; font-weight: 800; cursor: pointer; padding: 4px 8px; border-radius: 12px; transition: background 0.2s;" onclick="window.editPostPrompt('${item.id}', '${window.Utils.escapeHTML(item.content).replace(/'/g, "\\'")}')">수정</button>
+                        <button style="background: transparent; border: none; color: #ef4444; font-size: 13px; font-weight: 800; cursor: pointer; padding: 4px 8px; border-radius: 12px; transition: background 0.2s;" onclick="window.deletePost('${item.id}')">삭제</button>
+                    </div>
+                    ` : ''}
                 </div>
                 
                 <div style="margin: 16px 0; font-size: 15px; line-height: 1.6; color: var(--text-main); word-break: break-word; white-space: pre-wrap;">${window.Utils.escapeHTML(item.content)}</div>
@@ -1696,7 +2562,12 @@ window.viewPost = function(id) {
                             <span style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">${dStr}</span>
                         </div>
                     </div>
-                    ${isMine ? `<button style="background: transparent; border: none; color: #ef4444; font-size: 13px; font-weight: 800; cursor: pointer; padding: 4px 8px; border-radius: 12px;" onclick="window.deletePost('${post.id}')">삭제</button>` : ''}
+                    ${isMine ? `
+                    <div style="display: flex; gap: 6px;">
+                    <button style="background: transparent; border: none; color: var(--primary); font-size: 13px; font-weight: 800; cursor: pointer; padding: 4px 8px; border-radius: 12px;" onclick="window.editPostPrompt('${post.id}', '${window.Utils.escapeJS(post.content)}')">수정</button>
+                        <button style="background: transparent; border: none; color: #ef4444; font-size: 13px; font-weight: 800; cursor: pointer; padding: 4px 8px; border-radius: 12px;" onclick="window.deletePost('${post.id}')">삭제</button>
+                    </div>
+                    ` : ''}
                 </div>
                 
                 <div style="margin: 20px 0; font-size: 16px; line-height: 1.7; color: var(--text-main); word-break: break-word; white-space: pre-wrap;">${window.Utils.escapeHTML(post.content).replace(/\\n/g, '<br>')}</div>
@@ -1740,7 +2611,7 @@ window.viewPost = function(id) {
         
         <div style="padding: 12px 16px; background: var(--surface); border-top: 1px solid var(--border-color); flex-shrink: 0; z-index: 10;">
             <div style="display: flex; gap: 10px; align-items: center; background: var(--bg-sec); border-radius: 24px; padding: 4px 6px 4px 16px; border: 1px solid var(--border-color);">
-                <input type="text" id="comment-input" placeholder="${window.activeUser}(으)로 댓글 달기..." style="flex-grow: 1; background: transparent; border: none; font-size: 14px; color: var(--text-main); outline: none; padding: 8px 0; font-family: inherit;">
+                <input type="text" id="comment-input" placeholder="${window.activeUser}(으)로 댓글 달기..." style="flex-grow: 1; background: transparent; border: none; font-size: 14px; color: var(--text-main); outline: none; padding: 8px 0; font-family: inherit;" onkeypress="if(event.key === 'Enter') window.submitComment('${post.id}')">
                 <button style="background: var(--primary); color: white; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; transition: 0.2s;" onclick="window.submitComment('${post.id}')">⬆️</button>
             </div>
         </div>
@@ -1757,7 +2628,8 @@ window.handleLike = async function(id, current) {
 // 수정 및 삭제 기능
 window.deletePost = async function(id) {
     if(!confirm("정말 이 글을 삭제할까요?")) return;
-    if(await window.FirebaseEngine.deleteBoard(id)) {
+    let res = await window.FirebaseEngine.deleteBoard(id);
+    if(res && res.success) {
         window.showToast("🗑️ 글이 삭제되었습니다.");
         window.openBoardModal();
     }
@@ -1797,7 +2669,8 @@ window.deleteComment = async function(postId, commentId) {
 window.editPostPrompt = async function(id, oldContent) {
     const newContent = prompt("내용을 수정하세요:", oldContent);
     if(newContent && newContent.trim() !== "" && newContent !== oldContent) {
-        if(await window.FirebaseEngine.updateBoard(id, newContent)) {
+        let res = await window.FirebaseEngine.updateBoard(id, newContent);
+        if(res && res.success) {
             window.showToast("✨ 수정이 완료되었습니다.");
             window.openBoardModal();
         }
@@ -1822,6 +2695,7 @@ window.writePost = async function() {
     
     window.showLoading(false);
     if (res.success) {
+        window.removeL('boardDraft');
         window.showToast("✅ 게시글이 등록되었습니다.");
         window.openBoardModal(); // 새로고침
     } else {
