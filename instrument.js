@@ -8,6 +8,15 @@ window.InstSys = {
     sharedScores: [],
     currentScoreTitle: "이름 없는 악보",
     
+    async preloadInstruments() {
+        try {
+            await window.InstrumentEngine.init();
+            window.InstrumentEngine.sampler.loadInstrument('acoustic_grand_piano');
+        } catch(e) {
+            console.warn("Preload failed", e);
+        }
+    },
+    
     initDOM() {
         this.logs = document.getElementById('consoleBody');
         this.playBtn = document.getElementById('playBtn');
@@ -154,6 +163,7 @@ window.InstSys = {
             if (mode === 'guitar_duo') await Promise.all([window.InstrumentEngine.sampler.loadInstrument('acoustic_guitar_steel'), window.InstrumentEngine.sampler.loadInstrument('electric_bass_finger')]);
             else if (mode === 'flute_harp') await Promise.all([window.InstrumentEngine.sampler.loadInstrument('flute'), window.InstrumentEngine.sampler.loadInstrument('orchestral_harp')]);
             else if (mode === 'oboe_celesta') await Promise.all([window.InstrumentEngine.sampler.loadInstrument('oboe'), window.InstrumentEngine.sampler.loadInstrument('celesta')]);
+            else if (mode === 'music_box') await window.InstrumentEngine.sampler.loadInstrument('music_box');
             else if (mode === 'piano_strings') await Promise.all([window.InstrumentEngine.sampler.loadInstrument('acoustic_grand_piano'), window.InstrumentEngine.sampler.loadInstrument('string_ensemble_1')]);
             else await window.InstrumentEngine.sampler.loadInstrument('acoustic_grand_piano');
 
@@ -278,7 +288,7 @@ class MMLParser {
 }
 
 class CustomSampler {
-    constructor(audioCtx) { this.ctx = audioCtx; this.buffers = {}; }
+    constructor(audioCtx) { this.ctx = audioCtx; this.buffers = {}; this.loadPromises = {}; }
 
     async decodeBase64(base64Str) {
         const base64Data = base64Str.split(',')[1] || base64Str;
@@ -291,29 +301,39 @@ class CustomSampler {
 
     async loadInstrument(instrumentName) {
         if (this.buffers[instrumentName]) return;
-        InstSys.log(`[다운로드] ${instrumentName} 로드 중...`, 'sys');
+        if (this.loadPromises[instrumentName]) return this.loadPromises[instrumentName];
+        
+        InstSys.log(`[다운로드] ${instrumentName} 사운드 데이터 수신 중...`, 'sys');
         const url = `https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/${instrumentName}-ogg.js`;
-        try {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-            const text = await response.text();
-            const audioDataMap = {};
-            const regex = /"([A-Ga-g][b#]?\d)"\s*:\s*"([^"]+)"/g;
-            let match;
-            while ((match = regex.exec(text)) !== null) { audioDataMap[match[1]] = match[2]; }
+        
+        this.loadPromises[instrumentName] = (async () => {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+                const text = await response.text();
+                const audioDataMap = {};
+                const regex = /"([A-Ga-g][b#]?\d)"\s*:\s*"([^"]+)"/g;
+                let match;
+                while ((match = regex.exec(text)) !== null) { audioDataMap[match[1]] = match[2]; }
 
-            this.buffers[instrumentName] = {};
-            const decodePromises = Object.keys(audioDataMap).map(async (noteName) => {
-                try {
-                    const buffer = await this.decodeBase64(audioDataMap[noteName]);
-                    const m = noteName.toLowerCase().match(/^([a-g][b#]?)(\d+)$/);
-                    const notes = { 'c':0, 'c#':1, 'db':1, 'd':2, 'd#':3, 'eb':3, 'e':4, 'f':5, 'f#':6, 'gb':6, 'g':7, 'g#':8, 'ab':8, 'a':9, 'a#':10, 'bb':10, 'b':11 };
-                    if (m) this.buffers[instrumentName][(parseInt(m[2]) + 1) * 12 + notes[m[1]]] = buffer;
-                } catch(e) {} 
-            });
-            await Promise.all(decodePromises);
-            InstSys.log(`[완료] ${instrumentName} 준비 완료!`, 'ok');
-        } catch (error) { InstSys.log(`[실패] 오류: ${error.message}`, 'err'); throw error; }
+                this.buffers[instrumentName] = {};
+                const decodePromises = Object.keys(audioDataMap).map(async (noteName) => {
+                    try {
+                        const buffer = await this.decodeBase64(audioDataMap[noteName]);
+                        const m = noteName.toLowerCase().match(/^([a-g][b#]?)(\d+)$/);
+                        const notes = { 'c':0, 'c#':1, 'db':1, 'd':2, 'd#':3, 'eb':3, 'e':4, 'f':5, 'f#':6, 'gb':6, 'g':7, 'g#':8, 'ab':8, 'a':9, 'a#':10, 'bb':10, 'b':11 };
+                        if (m) this.buffers[instrumentName][(parseInt(m[2]) + 1) * 12 + notes[m[1]]] = buffer;
+                    } catch(e) {} 
+                });
+                await Promise.all(decodePromises);
+                InstSys.log(`[완료] ${instrumentName} 준비 완료!`, 'ok');
+            } catch (error) { 
+                InstSys.log(`[실패] 오류: ${error.message}`, 'err'); 
+                delete this.loadPromises[instrumentName];
+                throw error; 
+            }
+        })();
+        return this.loadPromises[instrumentName];
     }
 
     getBufferAndPitch(instrumentName, midiNumber) {
@@ -446,6 +466,7 @@ window.InstrumentEngine = {
             if (mode === 'guitar_duo') instName = (idx === 0) ? 'acoustic_guitar_steel' : 'electric_bass_finger';
             else if (mode === 'flute_harp') instName = (idx === 0) ? 'flute' : 'orchestral_harp';
             else if (mode === 'oboe_celesta') instName = (idx === 0) ? 'oboe' : 'celesta';
+            else if (mode === 'music_box') instName = 'music_box';
             else if (mode === 'piano_strings') instName = (idx === 0) ? 'acoustic_grand_piano' : 'string_ensemble_1';
             
             track.events.forEach((note) => {
@@ -517,11 +538,14 @@ window.InstrumentEngine = {
         let release = this.sustainEnabled ? (isChord ? 3.0 : 1.5) : 0.1;
         if (!isPerc) { attack = 0.1; release = 0.5; }
         
+        // 🐛 삑소리(Click Glitch) 완벽 방지: 짧은 노트 연주 시 attack 시간이 duration을 초과해서 파형이 깨지는 문제 해결
+        attack = Math.min(attack, Math.max(0.005, dur * 0.5));
+
         const safeVol = Math.max(0.01, vol);
         gain.gain.setValueAtTime(0, time);
         gain.gain.linearRampToValueAtTime(safeVol, time + attack);
-        gain.gain.setValueAtTime(safeVol, time + dur);
-        gain.gain.exponentialRampToValueAtTime(0.001, time + dur + release); 
+        gain.gain.setValueAtTime(safeVol, time + Math.max(attack, dur));
+        gain.gain.exponentialRampToValueAtTime(0.001, time + Math.max(attack, dur) + release); 
         
         source.connect(gain); gain.connect(this.convolver); gain.connect(this.masterGain);
         this.activeNodes.add({ source, gain });
@@ -610,6 +634,7 @@ window.addEventListener('DOMContentLoaded', () => {
             if (mode === 'guitar_duo') await Promise.all([InstrumentEngine.sampler.loadInstrument('acoustic_guitar_steel'), InstrumentEngine.sampler.loadInstrument('electric_bass_finger')]);
             else if (mode === 'flute_harp') await Promise.all([InstrumentEngine.sampler.loadInstrument('flute'), InstrumentEngine.sampler.loadInstrument('orchestral_harp')]);
             else if (mode === 'oboe_celesta') await Promise.all([InstrumentEngine.sampler.loadInstrument('oboe'), InstrumentEngine.sampler.loadInstrument('celesta')]);
+            else if (mode === 'music_box') await InstrumentEngine.sampler.loadInstrument('music_box');
             else if (mode === 'piano_strings') await Promise.all([InstrumentEngine.sampler.loadInstrument('acoustic_grand_piano'), InstrumentEngine.sampler.loadInstrument('string_ensemble_1')]);
             else await InstrumentEngine.sampler.loadInstrument('acoustic_grand_piano');
             
@@ -659,6 +684,7 @@ window.addEventListener('DOMContentLoaded', () => {
             if (mode === 'guitar_duo') await Promise.all([InstrumentEngine.sampler.loadInstrument('acoustic_guitar_steel'), InstrumentEngine.sampler.loadInstrument('electric_bass_finger')]);
             else if (mode === 'flute_harp') await Promise.all([InstrumentEngine.sampler.loadInstrument('flute'), InstrumentEngine.sampler.loadInstrument('orchestral_harp')]);
             else if (mode === 'oboe_celesta') await Promise.all([InstrumentEngine.sampler.loadInstrument('oboe'), InstrumentEngine.sampler.loadInstrument('celesta')]);
+            else if (mode === 'music_box') await InstrumentEngine.sampler.loadInstrument('music_box');
             else if (mode === 'piano_strings') await Promise.all([InstrumentEngine.sampler.loadInstrument('acoustic_grand_piano'), InstrumentEngine.sampler.loadInstrument('string_ensemble_1')]);
             else await InstrumentEngine.sampler.loadInstrument('acoustic_grand_piano');
             

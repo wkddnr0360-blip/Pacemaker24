@@ -207,3 +207,360 @@ header {
     opacity: 0.5;
     cursor: not-allowed;
 }
+
+:root { 
+    --primary: #0095f6; 
+    --primary-dark: #1877f2; 
+    --bg: #fafafa; 
+    --surface: #ffffff; 
+    --text-main: #262626; 
+    --text-muted: #737373; 
+    --success: #10b981; 
+    --warning: #f59e0b; 
+    --target: #8b5cf6; 
+    --border-color: rgba(0, 0, 0, 0.08); 
+    --bg-sec: #f2f2f7;
+    --insta-purple: #c13584; 
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --primary: #0095f6;
+        --bg: #000000;
+        --surface: #121212;
+        --text-main: #f5f5f5;
+        --text-muted: #a3a3a3;
+        --border-color: rgba(255, 255, 255, 0.1);
+        --bg-sec: #1c1c1e;
+        --insta-purple: #d946ef; 
+    }
+    body { background-color: var(--bg); color: var(--text-main); }
+    .input-field, .dash-today-summary, .guide-box, .tl-content, .cb-icon-box { background: var(--bg-sec) !important; color: var(--text-main) !important; border-color: var(--border-color) !important; }
+    .dash-btn-outline { background: var(--surface) !important; color: var(--text-main) !important; }
+    .modal-box { background: var(--surface); border: 1px solid var(--border-color); }
+    .cal-day.has-data { background: rgba(255, 255, 255, 0.05) !important; }
+    #toast-notification { background: var(--surface); border: 1px solid var(--border-color); color: var(--text-main); }
+    .dash-monster-box { background: var(--bg-sec) !important; border-color: var(--border-color) !important; }
+    .bag-item { background: var(--bg-sec) !important; border-color: var(--border-color) !important; }
+    .achievement-item.locked { filter: grayscale(1); opacity: 0.6; }
+    .unified-toolbar { background: rgba(30, 30, 30, 0.75) !important; border-color: rgba(255,255,255,0.1) !important; }
+    .color-btn { border-color: #333 !important; }
+    .action-row { background: rgba(255, 255, 255, 0.05) !important; border-color: rgba(255,255,255,0.1) !important; }
+    .sheet-handle { background: rgba(255, 255, 255, 0.3) !important; }
+    
+    .list-item.planned { background-color: rgba(139, 92, 246, 0.15) !important; border-color: #a78bfa !important; }
+    .list-item.current { background-color: rgba(245, 158, 11, 0.15) !important; border-color: #fbbf24 !important; }
+    .list-item.completed { background-color: rgba(16, 185, 129, 0.15) !important; border-color: #34d399 !important; }
+}
+
+.list-item.planned { background-color: rgba(139, 92, 246, 0.04); border-color: var(--target); }
+.list-item.current { background-color: rgba(245, 158, 11, 0.05); border-color: var(--warning); }
+.list-item.completed { background-color: rgba(16, 185, 129, 0.05); border-color: var(--success); }
+
+html, body { width: 100%; margin: 0; padding: 0; }
+body { overflow-x: hidden; font-family: 'Pretendard', sans-serif; background-color: var(--bg); display: flex; flex-direction: column; align-items: center; padding-bottom: 0; -webkit-user-select: auto; }
+.view-layer { width: 100%; display: none; flex-direction: column; align-items: center; }
+.container { background: var(--surface); width: 100%; max-width: 600px; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.03); position: relative; border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); }
+
+/* 화면별 맞춤 하단 여백 설정 */
+#dashboard-view .container { padding-bottom: 40px; }
+#study-view .container { padding-bottom: 120px; }
+#calendar-view .container { padding-bottom: 40px; }
+
+.input-field { width: 100%; box-sizing: border-box; padding: 16px 18px; margin-bottom: 16px; border: 1px solid transparent; border-radius: 16px; font-size: 15px; font-weight: 500; background: var(--bg-sec); transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); font-family: inherit; color: var(--text-main); }
+.input-field:focus { outline: none; background: var(--surface); border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,149,246,0.15); transform: scale(1.01); }
+
+/* ✨ 120Hz ProMotion 부드러운 스프링 애니메이션 및 터치 피드백 */
+* { -webkit-tap-highlight-color: transparent; }
+.btn-primary, .dash-btn, .dash-btn-outline, .btn-action, .setting-btn, .action-pill, .cal-day, .bag-item-grid, .board-card, .ed-btn, .color-btn, .cb-icon-box {
+    transition: transform 0.25s cubic-bezier(0.25, 1.2, 0.25, 1), box-shadow 0.25s ease, background-color 0.25s ease, opacity 0.25s !important;
+    will-change: transform;
+}
+.btn-primary:active, .dash-btn:active, .dash-btn-outline:active, .btn-action:active, .setting-btn:active, .action-pill:active, .bag-item-grid:active, .ed-btn:active, .color-btn:active, .cb-icon-box:active {
+    transform: scale(0.92) !important;
+}
+.view-layer { transform-origin: top center; }
+
+/* ✨ 프리미엄 에디터 UI (인스타/iOS Bottom Sheet 감성) */
+.unified-toolbar { display: flex; gap: 8px; flex-wrap: wrap; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 10px 16px; border-radius: 22px; margin: 0 16px 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid var(--border-color); position: sticky; top: 10px; z-index: 100; justify-content: center; align-items: center; }
+.ed-btn { background: transparent; border: none; border-radius: 12px; width: 36px; height: 36px; padding: 0; font-size: 16px; font-weight: 800; cursor: pointer; color: var(--text-main); display: flex; align-items: center; justify-content: center; transition: 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); touch-action: manipulation; }
+.ed-btn:hover { background: var(--bg-sec); }
+.color-btn { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--surface); cursor: pointer; box-sizing:border-box; margin: 0 3px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); align-self: center; }
+.color-black { background: var(--text-main); }
+.color-red { background: #ef4444; }
+.color-blue { background: #0095f6; }
+.color-yellow { background: #fef08a; border: 1px solid #e5e7eb; }
+.toolbar-divider { width: 1.5px; height: 22px; background: var(--border-color); margin: 0 4px; border-radius: 1px; }
+
+.rich-editor { width: 100%; min-height: 50vh; padding: 10px 24px 40px; border-radius: 0; border: none; font-family: inherit; font-size: 17px; font-weight: 500; letter-spacing: -0.3px; box-sizing: border-box; background: transparent; color: var(--text-main); line-height: 1.8; outline: none; cursor: text; word-break: break-word; white-space: pre-wrap; }
+.rich-editor:empty:before { content: attr(placeholder); color: var(--text-muted); pointer-events: none; display: block; font-style: normal; opacity: 0.7;}
+.editor-container { border: none; border-radius: 0; overflow: visible; margin-bottom: 0; box-shadow: none; }
+
+.btn-primary { background: var(--primary); color: white; border: none; padding: 16px; width: 100%; border-radius: 16px; font-size: 16px; font-weight: 800; letter-spacing: -0.3px; cursor: pointer; touch-action: manipulation; box-shadow: 0 8px 24px rgba(0, 149, 246, 0.25); }
+
+#login-view, #dashboard-view { justify-content: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
+#dashboard-view { background-color: var(--bg-sec); } /* iOS 위젯 뒷배경 느낌 */
+
+.auth-box { background: var(--surface); padding: 40px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); width: 100%; max-width: 360px; text-align: center; border: 1px solid var(--border-color); }
+.auth-box h1 { font-size: 24px; color: var(--text-main); margin-bottom: 8px; font-weight: 800; }
+
+/* ✨ iOS 위젯 스타일 레이아웃 분리 */
+.dash-card { background: transparent; padding: 10px 10px; border-radius: 0; box-shadow: none; width: 100%; max-width: 420px; text-align: center; position: relative; border: none; display: flex; flex-direction: column; gap: 18px; }
+.dash-today-summary { background: var(--surface); border: none; border-radius: 28px; padding: 24px; margin-bottom: 0; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.05); }
+.dash-today-summary strong { font-size: 32px; font-variant-numeric: tabular-nums; font-weight: 900; letter-spacing: -1px; }
+
+/* 🐉 몬스터 시스템 UI */
+.dash-monster-box { background: var(--surface); border: none; border-radius: 28px; padding: 24px; text-align: center; margin-bottom: 0; box-shadow: 0 8px 30px rgba(0,0,0,0.05); position: relative; overflow: hidden; }
+.dash-monster-box::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.4), transparent); transform: skewX(-20deg); animation: card-shine 6s infinite; pointer-events: none; z-index: 3; }
+@keyframes card-shine { 0% { left: -100%; } 15% { left: 200%; } 100% { left: 200%; } }
+.monster-icon { animation: float 3s ease-in-out infinite; display: inline-block; position: relative; z-index: 2;}
+.monster-aurora { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80px; height: 80px; border-radius: 50%; z-index: 1; transition: all 0.5s ease; pointer-events: none; }
+@keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
+.monster-exp-container { width: 100%; height: 10px; background: var(--bg-sec); border-radius: 5px; margin-top: 10px; overflow: hidden; border: 1px solid var(--border-color); }
+.monster-exp-fill { height: 100%; background: linear-gradient(90deg, #8b5cf6, #d946ef); width: 0%; transition: width 0.5s ease-out; }
+.monster-label { font-size: 14px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; display: flex; justify-content: center; align-items: center; gap: 8px;}
+.monster-subtext { font-size: 11px; color: var(--text-muted); font-weight: 700; margin-top: 8px; }
+
+.bag-item { background: var(--surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+.bag-item.active { border: 2px solid var(--primary); background: rgba(0, 149, 246, 0.05) !important; }
+
+.bag-grid-container { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 5px 0; }
+.bag-item-grid { background: var(--surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 15px 5px 12px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; box-shadow: 0 6px 16px rgba(0,0,0,0.03); min-width: 0; overflow: hidden; transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.bag-item-grid.active { border: 2px solid var(--primary); background: rgba(0, 149, 246, 0.05) !important; }
+
+.dash-btn { width: 100%; padding: 18px; border-radius: 20px; font-size: 16px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; touch-action: manipulation; box-shadow: 0 8px 24px rgba(0, 149, 246, 0.3); }
+.dash-btn-outline { width: 100%; padding: 18px; border-radius: 20px; font-size: 15px; font-weight: 800; border: none; background: var(--surface); color: var(--text-main); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; touch-action: manipulation; box-shadow: 0 8px 30px rgba(0,0,0,0.05); }
+
+#todo-alert-banner { display: none !important; }
+@keyframes ring-bell { 0% { transform: rotate(0); } 10% { transform: rotate(15deg); } 20% { transform: rotate(-10deg); } 30% { transform: rotate(5deg); } 40% { transform: rotate(-5deg); } 50%, 100% { transform: rotate(0); } }
+
+.dday-badge { color: var(--text-main); padding: 10px 16px; border-radius: 20px; font-size: 14px; font-weight: 800; cursor: pointer; transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); display: inline-flex; align-items: center; gap: 6px; position: relative; z-index: 1; background: var(--surface); box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+.dday-badge:active { transform: scale(0.95); opacity: 0.8; }
+
+/* ✨ 헤더 레이아웃을 겹치지 않는 Sticky(가변 고정) 모드로 변경 */
+.fixed-header { position: sticky; top: 0; z-index: 150; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); color: var(--text-main); padding: 16px 20px; text-align: center; border-bottom: 1px solid var(--border-color); width: 100%; box-sizing: border-box; }
+.cal-fixed-wrap { position: sticky; top: 0; z-index: 150; width: 100%; box-sizing: border-box; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--border-color); }
+
+/* ✨ iOS Segmented Control Style */
+.action-row { display: flex; justify-content: center; gap: 6px; width: 100%; margin-top: 12px; background: var(--bg-sec); padding: 4px; border-radius: 16px; border: 1px solid var(--border-color); box-sizing: border-box; }
+.btn-action { flex: 1; border: none; background: transparent; color: var(--text-main); padding: 10px 0; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; white-space: nowrap; touch-action: manipulation; box-shadow: none; }
+
+/* ✨ 공부 기록(오늘의 달리기) 리스트 인스타 피드 감성 */
+.list-wrapper { padding: 0; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 0; background: var(--surface); border-radius: 24px; border: 1px solid var(--border-color); overflow: hidden; box-shadow: none; margin-top: 10px; }
+.list-item { display: flex; padding: 12px 14px; align-items: center; border-radius: 0; background: transparent; border: none; border-bottom: 1px solid var(--border-color); transition: background-color 0.3s; gap: 6px; }
+.list-item:last-child { border-bottom: none; }
+
+.controls-wrap { display: flex; flex-direction: row; gap: 6px; margin-right: 4px; align-items: center; flex-shrink: 0; }
+.cb-icon-box { position: relative; width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--border-color); background: var(--surface); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); touch-action: manipulation; box-shadow: none; }
+.cb-icon-box input { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; margin: 0; z-index: 2; }
+.cb-icon-box span { font-size: 15px; opacity: 0.2; transition: all 0.2s; filter: grayscale(100%); transform: scale(0.8); }
+.cb-icon-box:active { transform: scale(0.9); }
+.cb-icon-box.target.active { border-color: var(--target); background: var(--target); animation: check-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.cb-icon-box.target.active span { opacity: 1; filter: none; transform: scale(1); color: white; }
+.cb-icon-box.done.active { border-color: var(--primary); background: var(--primary); animation: check-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.cb-icon-box.done.active span { opacity: 1; filter: none; transform: scale(1); color: white; font-size: 16px; }
+@keyframes check-pop { 0% { transform: scale(0.8); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
+
+.time-col { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 48px; flex-shrink: 0; margin-right: 4px;}
+.time { font-size: 14px; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; margin-bottom: 4px; }
+
+.manual-min-input {
+    width: 46px; height: 26px; text-align: center; border: none;
+    border-radius: 8px; font-size: 14px; font-weight: 800; background: var(--bg-sec); color: var(--text-main);
+    font-variant-numeric: tabular-nums; padding: 0; outline: none; transition: all 0.2s; font-family: inherit;
+}
+.manual-min-input:focus { border-color: var(--primary); background: var(--surface); }
+.manual-min-input.full { background: var(--success); color: white; border-color: var(--success); }
+.manual-min-input::-webkit-outer-spin-button, .manual-min-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.manual-min-input[type=number] { -moz-appearance: textfield; }
+
+.text-wrapper { flex-grow: 1; min-width: 0; }
+.note-input { width: 100%; box-sizing: border-box; padding: 12px 16px; border: 1px solid transparent; border-radius: 14px; font-size: 14.5px; background: var(--bg-sec); -webkit-user-select: auto; font-family: inherit; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); color: var(--text-main); font-weight: 500; }
+.note-input:focus { outline: none; background: var(--surface); border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,149,246,0.15); transform: scale(1.01); }
+.note-input::placeholder { color: var(--text-muted); opacity: 0.7; font-weight: 400; }
+
+.btn-target { position: fixed; bottom: 160px; right: 25px; background: var(--primary); color: white; border: none; width: 54px; height: 54px; border-radius: 50%; font-size: 24px; box-shadow: 0 4px 15px rgba(0,149,246,0.3); z-index: 110; cursor: pointer; transition: transform 0.2s; display: flex; align-items: center; justify-content: center; touch-action: manipulation;}
+.btn-target:active { transform: scale(0.9); }
+
+/* ✨ 캘린더 iOS 위젯 룩 (무경계 디자인) */
+.cal-weekdays { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); text-align: center; padding: 24px 10px 10px; font-size: 13px; font-weight: 800; color: var(--text-muted); width: 100%; box-sizing: border-box; background: transparent; }
+.cal-weekdays .sun { color: #ef4444; }
+.cal-weekdays .sat { color: var(--primary); }
+
+.cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; padding: 0 10px 20px; background: transparent; width: 100%; box-sizing: border-box; }
+.cal-day { background: transparent; height: 100%; min-height: 90px; padding: 8px 4px; border-radius: 16px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; box-sizing: border-box; position: relative; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); border: none; overflow: hidden; }
+.cal-day.has-data { background: var(--bg-sec); }
+.cal-day:active { transform: scale(0.92); background: var(--border-color); }
+.cal-day.today { background: var(--surface); box-shadow: 0 4px 15px rgba(0, 149, 246, 0.15); border: 2px solid var(--primary); }
+.cal-day.empty { background: transparent; border: none; cursor: default; box-shadow: none; }
+.cal-day-bg-fill { position: absolute; bottom: 0; left: 0; width: 100%; pointer-events: none; background: linear-gradient(180deg, rgba(16, 185, 129, 0) 0%, rgba(16, 185, 129, 0.12) 100%) !important; z-index: 1; transition: height 0.5s ease-out; }
+
+.date-num { font-size: 14px; font-weight: 800; color: var(--text-main); margin-bottom: 6px; z-index: 2; transition: color 0.2s; }
+.cal-day.today .date-num { color: var(--primary); font-size: 15px; font-weight: 900; }
+.date-num.sun { color: #ef4444; }
+.date-num.sat { color: var(--primary); }
+
+.cal-badge-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%; z-index: 2; margin-top: 2px; }
+.cal-badge { font-size: 10.5px; font-weight: 800; padding: 4px 1px; border-radius: 6px; width: 100%; text-align: center; letter-spacing: -0.8px; white-space: nowrap; overflow: hidden; text-overflow: clip; font-variant-numeric: tabular-nums; box-sizing: border-box; }
+.cal-badge.actual { color: var(--primary); background: var(--surface); box-shadow: 0 2px 8px rgba(0, 149, 246, 0.15); border: none; }
+.cal-badge.actual.high { color: #ffffff; background: var(--primary); border: none; box-shadow: 0 4px 12px rgba(0,149,246,0.3); }
+
+@keyframes mega-attack {
+    0% { transform: scale(1.15) translate(0, 0); filter: drop-shadow(0 0 10px rgba(0,0,0,0.2)); }
+    15% { transform: scale(1.25) translate(-5px, 0); filter: drop-shadow(0 0 20px #ef4444) brightness(1.3); }
+    35% { transform: scale(1.25) translate(5px, -5px); filter: drop-shadow(0 0 30px #eab308) brightness(1.5); }
+    55% { transform: scale(1.25) translate(-5px, 5px); filter: drop-shadow(0 0 30px #3b82f6) brightness(1.4); }
+    75% { transform: scale(1.25) translate(5px, 0); filter: drop-shadow(0 0 20px #8b5cf6) brightness(1.3); }
+    100% { transform: scale(1.15) translate(0, 0); filter: drop-shadow(0 0 10px rgba(0,0,0,0.2)); }
+}
+.mega-attack-anim { animation: mega-attack 0.5s ease-out; }
+
+/* 🐉 진화 애니메이션 이펙트 */
+.evo-blinking { animation: evo-blink 1.8s ease-in-out infinite; }
+@keyframes evo-blink {
+    0%, 100% { filter: brightness(1) drop-shadow(0 0 20px rgba(255,255,255,0.8)); transform: scale(1); }
+    50% { filter: brightness(10) drop-shadow(0 0 60px rgba(255,255,255,1)); transform: scale(1.15); }
+}
+.evo-flash { position: absolute; top:0; left:0; width:100%; height:100%; background: white; border-radius:50%; opacity: 0; z-index: 3; pointer-events:none; }
+@keyframes flash-bang { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
+
+/* 🍓 간식 및 ✋ 쓰다듬기 이펙트 */
+.pet-hand { position: absolute; font-size: 50px; z-index: 10; animation: pet-motion 1.2s ease-in-out; pointer-events: none; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2)); }
+@keyframes pet-motion {
+    0% { transform: translate(30px, -30px) rotate(15deg) scale(1.2); opacity: 0; }
+    20% { transform: translate(0, -10px) rotate(0deg) scale(1); opacity: 1; }
+    40% { transform: translate(-15px, 0) rotate(-15deg) scale(0.95); }
+    60% { transform: translate(15px, -5px) rotate(10deg) scale(1.05); }
+    80% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+    100% { transform: translate(-30px, 30px) rotate(-15deg) scale(1.2); opacity: 0; }
+}
+.feed-berry { position: absolute; width: 40px; height: 40px; z-index: 10; animation: feed-motion 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; pointer-events: none; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
+@keyframes feed-motion {
+    0% { transform: translateY(-60px) scale(1.5) rotate(-20deg); opacity: 0; }
+    30% { transform: translateY(-20px) scale(1.2) rotate(10deg); opacity: 1; }
+    80% { transform: translateY(10px) scale(1) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(30px) scale(0.5) rotate(20deg); opacity: 0; }
+}
+
+@keyframes float-gentle { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
+.float-anim { animation: float-gentle 3s ease-in-out infinite; }
+
+/* ✨ 모달 팝업 인스타 감성 정리 */
+.overlay-base { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.45); justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 2000; cursor: pointer; }
+.modal-box { background: var(--surface); width: 100%; max-width: 420px; border-radius: 32px; max-height: 85vh; display:flex; flex-direction:column; box-shadow: 0 25px 60px -12px rgba(0,0,0,0.25); box-sizing: border-box; cursor: default; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); animation: modal-pop 0.5s cubic-bezier(0.28, 1.1, 0.32, 1) forwards; will-change: transform, opacity; }
+@keyframes modal-pop { 0% { transform: scale(0.85) translateY(30px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+@keyframes sheet-slide-up { 0% { transform: translateY(100%); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+@keyframes sheet-slide-down { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(100%); opacity: 0; } }
+@keyframes modal-pop-out { 0% { transform: scale(1) translateY(0); opacity: 1; } 100% { transform: scale(0.85) translateY(30px); opacity: 0; } }
+.sheet-handle { width: 40px; height: 5px; background: rgba(0,0,0,0.15); border-radius: 3px; margin: 12px auto 0; }
+.modal-header { padding: 18px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: center; align-items: center; background: var(--surface); z-index: 20; flex-shrink: 0; position: relative; }
+.modal-header h3 { font-size: 16px !important; font-weight: 800; letter-spacing: -0.3px; margin: 0; text-align: center; }
+.modal-content-scroll { flex-grow: 1; overflow-y: auto; padding: 20px; background: var(--bg); position: relative; -webkit-overflow-scrolling: touch; }
+.modal-footer { padding: 16px 20px; background: var(--surface); border-top: 1px solid var(--border-color); z-index: 20; flex-shrink: 0; }
+
+/* ✨ 블록 드래그 앤 드롭 기능 */
+.sortable-item { transition: transform 0.2s, box-shadow 0.2s; }
+.sortable-item.dragging { opacity: 0.8; box-shadow: 0 10px 20px rgba(0,0,0,0.15); transform: scale(1.02); border: 2px dashed var(--primary); z-index: 50; }
+.drag-handle { touch-action: none; user-select: none; -webkit-user-select: none; }
+
+/* ✨ 스플래시(시작) 화면 애니메이션 */
+#splash-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s ease-out; }
+.splash-logo { font-size: 64px; margin-bottom: 20px; animation: splash-bounce 1s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.splash-text { font-size: 26px; font-weight: 900; color: var(--text-main); letter-spacing: -1px; opacity: 0; animation: fade-in-up 0.8s ease-out 0.3s forwards; }
+@keyframes splash-bounce { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+@keyframes fade-in-up { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
+
+/* ✨ 톱니바퀴 회전 애니메이션 */
+@keyframes gear-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(180deg); } }
+.gear-spin-active { animation: gear-spin 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+#loading-overlay { background: rgba(0,0,0,0.7); flex-direction: column; gap: 10px; color: white; font-weight: bold; z-index: 9999; font-size: 16px; cursor: default; backdrop-filter: none; }
+#toast-notification { 
+    position: fixed; 
+    top: -120px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    background: var(--text-main); 
+    color: var(--surface); 
+    padding: 14px 20px; 
+    border-radius: 30px; 
+    font-size: 13.5px; 
+    font-weight: 700; 
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2); 
+    z-index: 9999; 
+    transition: top 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); 
+    width: 90%; 
+    max-width: 380px; 
+    text-align: center; 
+    word-break: keep-all; 
+    line-height: 1.4;
+    box-sizing: border-box;
+    cursor: pointer;
+    pointer-events: auto;
+}
+#toast-notification.show { top: 20px; }
+
+.achievement-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+.achievement-item { background: var(--surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.03); transition: all 0.2s; }
+.achievement-item.unlocked { border-color: #facc15; background: #fffbeb; }
+
+.modal-total-time { text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-around; }
+.modal-total-time div { display: flex; flex-direction: column; align-items: center; }
+.modal-total-time span { display: block; font-size: 13px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; }
+.modal-total-time strong { font-size: 26px; color: var(--text-main); font-weight: 900; letter-spacing: -0.5px; }
+.modal-total-time strong.target-text { color: var(--text-muted); }
+
+.guide-box { padding: 16px; border-radius: 16px; margin-bottom: 14px; text-align: left; background: var(--bg-sec); border: 1px solid var(--border-color); box-sizing: border-box; }
+.guide-title { font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; letter-spacing: -0.5px;}
+.guide-desc { font-size: 13.5px; color: var(--text-muted); line-height: 1.6; word-break: keep-all; font-weight: 500;}
+
+#settings-modal, #patch-note-modal, #guide-modal, #dday-modal, #monster-bag-modal { z-index: 2200; }
+#pokemon-info-modal, #quiz-import-modal { z-index: 2300; }
+#evolution-chain-modal, #achievement-modal { z-index: 2400; }
+#hatch-modal { z-index: 2300; }
+#diary-modal, #todo-modal, #capture-modal { z-index: 2100; }
+#record-modal, #board-modal { z-index: 2000; }
+
+/* ✨ 설정 UI 피드 감성 (경계선 구분) */
+.setting-item { display: flex; justify-content: space-between; align-items: center; padding: 20px 16px; background: transparent; border: none; border-bottom: 1px solid var(--border-color); border-radius: 0; margin-bottom: 0; font-weight: 800; color: var(--text-main); font-size: 15px; }
+.setting-btn { background: var(--bg-sec); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 18px; border-radius: 20px; font-weight: 800; font-size: 13px; cursor: pointer; transition: 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); touch-action: manipulation; box-shadow: none; }
+.setting-btn:active { transform: scale(0.92); }
+.setting-btn.active-state { background: var(--primary); color: white; border-color: var(--primary); }
+
+.modal-close-btn { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: transparent; color: var(--text-main); border: none; width: 34px; height: 34px; border-radius: 50%; font-weight: bold; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.5; transition: 0.2s; }
+.modal-close-btn:hover { opacity: 1; background: var(--bg-sec); }
+
+.reading-content {
+    max-height: 350px; overflow-y: auto; font-size: 16px; color: var(--text-main); 
+    line-height: 1.9; letter-spacing: -0.3px; word-break: break-word; padding: 15px;
+    background: var(--bg-sec); border-radius: 12px; border: 1px solid var(--border-color);
+    -webkit-overflow-scrolling: touch;
+}
+
+#insta-card-container { position: fixed; top: -9999px; left: -9999px; width: 1080px; height: 1500px; opacity: 0; pointer-events: none; z-index: -9999; }
+#insta-card { width: 1080px; height: 1500px; padding: 80px; box-sizing: border-box; display: flex; flex-direction: column; font-family: 'Pretendard', sans-serif; position: relative; letter-spacing: -1px; }
+.ic-glass-box { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 2px solid rgba(255, 255, 255, 0.4); border-radius: 40px; padding: 50px; text-align: center; margin-bottom: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); }
+#ic-total { font-size:190px; font-weight:900; line-height:1; letter-spacing:-4px; white-space: nowrap; }
+#ic-heatmap-grid { display: flex !important; flex-wrap: wrap !important; gap: 12px !important; width: 100% !important; justify-content: flex-start !important; align-content: flex-start; }
+
+.monster-display { background-size: 200% 200%; background-position: 0% 50%; animation: bgShift 4s ease infinite; }
+@keyframes bgShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+.pulse-stage-1 { animation: pulse-stage-1 2s ease-in-out infinite; }
+@keyframes pulse-stage-1 { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+.pulse-stage-2 { animation: pulse-stage-2 1.8s ease-in-out infinite; }
+@keyframes pulse-stage-2 { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+.pulse-stage-3 { animation: pulse-stage-3 1.6s ease-in-out infinite; }
+@keyframes pulse-stage-3 { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.09); } }
+.pulse-stage-4 { animation: pulse-stage-4 1.4s ease-in-out infinite; }
+@keyframes pulse-stage-4 { 0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(255,215,0,0.6); } 50% { transform: scale(1.12); box-shadow: 0 0 40px rgba(255,215,0,1); } }
+.pulse-egg { animation: pulse-egg 2.5s ease-in-out infinite; }
+@keyframes pulse-egg { 0%, 100% { transform: scale(1) rotateZ(0deg); } 25% { transform: scale(0.98) rotateZ(-2deg); } 50% { transform: scale(1.02) rotateZ(2deg); } 75% { transform: scale(0.98) rotateZ(-2deg); } }
+.pulse-retired { animation: pulse-retired 1.5s ease-in-out infinite; }
+@keyframes pulse-retired { 0%, 100% { transform: scale(1); box-shadow: 0 0 15px rgba(212,175,55,0.8); } 50% { transform: scale(1.08); box-shadow: 0 0 30px rgba(255,215,0,1); } }
+.pulse-max { animation: pulse-max 1.5s ease-in-out infinite; }
+@keyframes pulse-max { 0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(255,255,255,0.8); } 50% { transform: scale(1.15); box-shadow: 0 0 50px rgba(255,215,0,1); } }
+
+.reading-content img { max-width: 100%; border-radius: 8px; margin: 10px 0; }
+.reading-content ul, .reading-content ol { padding-left: 20px; margin: 10px 0; }
+.reading-content li { margin-bottom: 5px; }
+.reading-content { word-break: break-word; color: var(--text-main); }
