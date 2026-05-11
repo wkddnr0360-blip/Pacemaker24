@@ -83,12 +83,31 @@ window.openBoardModal = async function() {
     document.getElementById('board-header-title').innerText = "스터디 라운지";
     if (document.getElementById('board-back-btn')) document.getElementById('board-back-btn').style.visibility = 'hidden';
     const contentArea = document.getElementById('board-content-area');
-    contentArea.innerHTML = '<div style="padding:40px; text-align:center; color:var(--text-muted); font-weight:bold;">📡 피드 수신 중...</div>';
-
-    let res = await FirebaseEngine.getBoardList();
-    if (res.success) {
-        window.allPosts = res.data;
+    
+    // 기존 데이터 캐시가 있다면 즉각 렌더링하여 체감 속도 향상
+    if (window.allPosts && window.allPosts.length > 0) {
         window.renderBoardItems(window.allPosts);
+    } else {
+        contentArea.innerHTML = '<div style="padding:40px; text-align:center; color:var(--text-muted); font-weight:bold;">📡 피드 수신 중...</div>';
+    }
+
+    if (!navigator.onLine && (!window.allPosts || window.allPosts.length === 0)) {
+        contentArea.innerHTML = `<div style="padding:40px; text-align:center; color:#ef4444; font-weight:bold;">📴 오프라인 상태입니다.<br><span style="font-size:13px; color:var(--text-muted);">인터넷 연결을 확인해주세요.</span><br><br><button class="btn-primary" style="width:auto; padding:8px 20px; border-radius:20px; font-size:14px; box-shadow:none;" onclick="window.openBoardModal()">다시 시도</button></div>`;
+        return;
+    }
+
+    try {
+        let res = await FirebaseEngine.getBoardList();
+        if (res && res.success) {
+            window.allPosts = res.data || [];
+            window.renderBoardItems(window.allPosts);
+        } else if (!window.allPosts || window.allPosts.length === 0) {
+            contentArea.innerHTML = `<div style="padding:40px; text-align:center; color:#ef4444; font-weight:bold;">❌ 피드를 불러오지 못했습니다.<br><span style="font-size:13px; color:var(--text-muted);">${res ? res.message : '서버 응답 지연'}</span><br><br><button class="btn-primary" style="width:auto; padding:8px 20px; border-radius:20px; font-size:14px; box-shadow:none;" onclick="window.openBoardModal()">다시 시도</button></div>`;
+        }
+    } catch (err) {
+        if (!window.allPosts || window.allPosts.length === 0) {
+            contentArea.innerHTML = `<div style="padding:40px; text-align:center; color:#ef4444; font-weight:bold;">❌ 통신 오류 발생<br><span style="font-size:13px; color:var(--text-muted);">${err.message}</span><br><br><button class="btn-primary" style="width:auto; padding:8px 20px; border-radius:20px; font-size:14px; box-shadow:none;" onclick="window.openBoardModal()">다시 시도</button></div>`;
+        }
     }
 };
 
@@ -104,7 +123,7 @@ window.renderBoardItems = function(posts) {
 
     if (!document.getElementById('board-header-area')) {
         contentArea.innerHTML = `
-            <div style="background: var(--bg); display:flex; flex-direction:column;">
+            <div id="board-header-area" style="background: var(--bg); display:flex; flex-direction:column;">
                 <!-- 검색바 -->
                 <div class="board-search-bar" style="padding: 16px 16px 0;">
                     <div style="position:relative; width: 100%;">
@@ -116,7 +135,7 @@ window.renderBoardItems = function(posts) {
                 <!-- 작성 카드 -->
                 <div class="board-input-card">
                     <div style="display: flex; gap: 12px; align-items: flex-start;">
-                        <div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--target)); display: flex; justify-content: center; align-items: center; color: white; font-weight: 900; font-size: 18px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">${window.activeUser.charAt(0).toUpperCase()}</div>
+                        <div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--target)); display: flex; justify-content: center; align-items: center; color: white; font-weight: 900; font-size: 18px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">${window.activeUser ? window.activeUser.charAt(0).toUpperCase() : 'U'}</div>
                         <div style="flex-grow: 1;">
                             <textarea id="new-post-content" placeholder="현재 상태나 고민을 공유해주세요..." style="width: 100%; box-sizing: border-box; background: var(--bg-sec); border: 1px solid var(--border-color); border-radius: 16px; font-size: 15px; font-weight:600; color: var(--text-main); resize: none; overflow: hidden; min-height: 48px; outline: none; padding: 14px 16px; font-family: inherit; line-height:1.5; letter-spacing:-0.3px;" oninput="window.setL('boardDraft', this.value); this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'">${window.getL('boardDraft') || ''}</textarea>
                         </div>
@@ -268,7 +287,7 @@ window.viewPost = function(id) {
             <div style="padding: 16px 0 0; background: var(--surface); border-top: 1px solid var(--border-color); flex-shrink: 0; z-index: 10;">
                 <div style="display: flex; gap: 12px; align-items: center; background: var(--bg-sec); border-radius: 28px; padding: 6px 6px 6px 16px; border: 1px solid var(--border-color);">
                     <input type="text" id="comment-input" placeholder="${window.activeUser}님, 답글을 남겨주세요..." style="flex-grow: 1; background: transparent; border: none; font-size: 15px; font-weight:600; color: var(--text-main); outline: none; padding: 8px 0; font-family: inherit;" onkeypress="if(event.key === 'Enter') window.submitComment('${post.id}')">
-                    <button style="background: var(--text-main); color: var(--surface); font-weight:800; border: none; border-radius: 22px; padding: 10px 20px; cursor: pointer; font-size: 14px; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" onclick="window.submitComment('${post.id}')">전송</button>
+                    <button id="submit-comment-btn" style="background: var(--text-main); color: var(--surface); font-weight:800; border: none; border-radius: 22px; padding: 10px 20px; cursor: pointer; font-size: 14px; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" onclick="window.submitComment('${post.id}')">전송</button>
                 </div>
             </div>
         </div>
@@ -296,11 +315,15 @@ window.submitComment = async function(postId) {
     const text = document.getElementById('comment-input').value.trim();
     if (!text) return window.showToast("내용을 입력해주세요.");
     
+    const btn = document.getElementById('submit-comment-btn');
+    if (btn) btn.disabled = true; // 더블클릭 중복 작성 방지
+
     window.showLoading(true, "댓글 등록 중... 💬");
     const commentData = { id: "cmt_" + Date.now(), author: window.activeUser || "익명", text: text, date: new Date().toISOString() };
     
     let res = await FirebaseEngine.addComment(postId, commentData);
     window.showLoading(false);
+    if (btn) btn.disabled = false;
     
     if (res.success) {
         const post = window.allPosts.find(p => p.id === postId);
